@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Heart, CheckCircle2, XCircle, Users, Utensils, Send, Sparkles, UserCheck, Search } from 'lucide-react';
+import { Heart, CheckCircle2, XCircle, Users, Utensils, Send, Sparkles, UserCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Guest, GuestStatus } from '../types';
 import { storageService } from '../services/storageService';
@@ -17,8 +17,6 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Guest[]>([]);
 
   useEffect(() => {
     if (currentGuest) {
@@ -29,20 +27,6 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
       setIsSubmitted(currentGuest.status !== 'pendiente');
     }
   }, [currentGuest]);
-
-  const handleGuestSearch = (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    const all = storageService.getGuests();
-    const filtered = all.filter(g =>
-      g.name.toLowerCase().includes(query.toLowerCase()) ||
-      g.code.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(filtered);
-  };
 
   const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,9 +74,9 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-orange-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-amber-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
         >
-          <UserCheck className="w-3.5 h-3.5 text-orange-400" />
+          <UserCheck className="w-3.5 h-3.5 text-amber-400" />
           <span>Confirmación de Asistencia</span>
         </motion.div>
 
@@ -111,48 +95,6 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
         </p>
       </div>
 
-      {/* Guest Selector / Search Box */}
-      <div className="mb-8 max-w-lg mx-auto relative">
-        <div className="relative flex items-center">
-          <Search className="w-4 h-4 text-amber-400 absolute left-4 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => handleGuestSearch(e.target.value)}
-            placeholder="Buscar tu nombre o pase de invitado..."
-            className="w-full pl-11 pr-4 py-3 rounded-full glass-panel border border-white/20 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-300/60 transition-all"
-          />
-        </div>
-
-        {/* Search Results Dropdown */}
-        {searchResults.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 z-30 rounded-2xl liquid-glass border border-white/20 p-2 shadow-2xl max-h-60 overflow-y-auto">
-            {searchResults.map(g => (
-              <button
-                key={g.id}
-                onClick={() => {
-                  onSelectGuest(g);
-                  setSearchQuery('');
-                  setSearchResults([]);
-                }}
-                className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-between text-xs cursor-pointer"
-              >
-                <div>
-                  <strong className="text-amber-100 font-medium block">{g.name}</strong>
-                  <span className="text-[10px] text-amber-200/60 font-mono">{g.category} • {g.passesAllowed} pases</span>
-                </div>
-                <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] ${
-                  g.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300' :
-                  g.status === 'declinado' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'
-                }`}>
-                  {g.status.toUpperCase()}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Main RSVP Card */}
       {currentGuest ? (
         <motion.div
@@ -164,7 +106,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           {/* Top Guest Info Ribbon */}
           <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10 mb-8">
             <div>
-              <span className="text-[10px] font-mono text-amber-300/70 uppercase tracking-widest block">Pase Personalizado</span>
+              <span className="text-[10px] font-mono text-amber-300/70 uppercase tracking-widest block">Pase Exclusivo</span>
               <h3 className="font-cinzel text-2xl font-light text-amber-100">{currentGuest.name}</h3>
               <span className="text-xs text-amber-200/70 font-mono mt-0.5 block">Categoría: {currentGuest.category}</span>
             </div>
@@ -251,7 +193,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                         onClick={() => setPassesConfirmed(num)}
                         className={`w-12 h-12 rounded-xl border font-sans font-bold text-lg flex items-center justify-center transition-all cursor-pointer ${
                           passesConfirmed === num
-                            ? 'bg-orange-500 text-white border-orange-400 scale-105 shadow-lg'
+                            ? 'bg-[var(--color-accent)] text-white border-amber-400 scale-105 shadow-lg'
                             : 'glass-panel border-white/15 text-amber-100 hover:border-white/30'
                         }`}
                       >
@@ -282,7 +224,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
             <div>
               <label className="text-xs font-mono uppercase tracking-widest text-amber-200/80 flex items-center gap-2 mb-2">
                 <Heart className="w-3.5 h-3.5 text-amber-400" />
-                Mensaje Especial para Mateo & Camila
+                Mensaje Especial para los Novios
               </label>
               <textarea
                 rows={3}
@@ -298,7 +240,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
               type="submit"
               disabled={isSubmitting}
               id="btn-submit-rsvp"
-              className="w-full py-4 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer shadow-xl disabled:opacity-50"
+              className="w-full py-4 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-98 transition-all cursor-pointer shadow-xl disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Guardando Respuesta...</span>
@@ -319,9 +261,11 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           </form>
         </motion.div>
       ) : (
-        <div className="p-8 rounded-3xl glass-panel border border-amber-300/30 text-center">
-          <p className="text-amber-200 font-serif italic mb-4">
-            Utiliza la barra de búsqueda superior para seleccionar tu nombre e ingresar a tu pase personalizado.
+        <div className="p-10 rounded-3xl glass-panel border border-amber-300/30 text-center max-w-lg mx-auto">
+          <UserCheck className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+          <h3 className="font-cinzel text-xl text-amber-100 mb-2">Invitación Personal Exclusiva</h3>
+          <p className="text-xs text-amber-200/80 font-serif italic leading-relaxed">
+            Ingresa a través del enlace personalizado enviado a tu WhatsApp para acceder a tu pase de asistencia de forma privada.
           </p>
         </div>
       )}

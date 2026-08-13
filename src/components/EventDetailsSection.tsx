@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Church, GlassWater, MapPin, Clock, ExternalLink, Compass } from 'lucide-react';
-import { VENUES } from '../data/weddingData';
+import { weddingConfigService } from '../services/weddingConfigService';
 
 export const EventDetailsSection: React.FC = () => {
+  const [config, setConfig] = useState(weddingConfigService.getConfig());
+
+  useEffect(() => {
+    const unsub = weddingConfigService.subscribe(() => {
+      setConfig(weddingConfigService.getConfig());
+    });
+    return unsub;
+  }, []);
+
+  const visibleVenues = config.venues.filter(v => v.isVisible !== false);
+
   return (
-    <section id="evento" className="relative py-24 px-6 max-w-7xl mx-auto">
+    <section id="detalles" className="relative py-24 px-6 max-w-7xl mx-auto">
       {/* Section Header */}
       <div className="text-center mb-16">
         <motion.div
@@ -13,9 +24,9 @@ export const EventDetailsSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-orange-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-amber-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
         >
-          <Compass className="w-3.5 h-3.5 text-orange-400" />
+          <Compass className="w-3.5 h-3.5 text-amber-400" />
           <span>Ubicación & Cronograma</span>
         </motion.div>
 
@@ -30,15 +41,15 @@ export const EventDetailsSection: React.FC = () => {
         </motion.h2>
 
         <p className="mt-3 text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase max-w-xl mx-auto">
-          Dos ubicaciones icónicas en el corazón de Ambato, Ecuador.
+          Ubicaciones especiales en {config.hero.city}.
         </p>
       </div>
 
       {/* Venues Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {VENUES.map((venue, idx) => (
+        {visibleVenues.map((venue, idx) => (
           <motion.div
-            key={venue.name}
+            key={venue.id || venue.name}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -103,7 +114,7 @@ export const EventDetailsSection: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 id={`btn-map-${venue.type}`}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-98 transition-all cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-98 transition-all cursor-pointer"
               >
                 <MapPin className="w-4 h-4 text-white" />
                 <span>Cómo Llegar en Google Maps</span>

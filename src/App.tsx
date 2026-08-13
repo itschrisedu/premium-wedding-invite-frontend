@@ -15,7 +15,8 @@ import { AudioPlayer } from './components/AudioPlayer';
 import { Modal } from './components/ui/Modal';
 import { Guest } from './types';
 import { storageService } from './services/storageService';
-import { Heart, Sparkles, UserCheck, X } from 'lucide-react';
+import { weddingConfigService } from './services/weddingConfigService';
+import { Heart, UserCheck } from 'lucide-react';
 
 export default function App() {
   const [showLoader, setShowLoader] = useState(true);
@@ -24,6 +25,14 @@ export default function App() {
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [currentGuest, setCurrentGuest] = useState<Guest | undefined>(undefined);
   const [appUrl, setAppUrl] = useState<string>('');
+  const [config, setConfig] = useState(weddingConfigService.getConfig());
+
+  useEffect(() => {
+    const unsub = weddingConfigService.subscribe(() => {
+      setConfig(weddingConfigService.getConfig());
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -37,9 +46,7 @@ export default function App() {
         if (codeParam) {
           const normalized = codeParam.toLowerCase().trim();
           const found = guests.find(guest => guest.code.toLowerCase() === normalized || guest.id.toLowerCase() === normalized);
-          setCurrentGuest(found ?? guests[0]);
-        } else if (guests.length > 0) {
-          setCurrentGuest(guests[0]);
+          setCurrentGuest(found);
         }
       };
 
@@ -55,7 +62,6 @@ export default function App() {
   const handleSelectGuest = (guest: Guest) => {
     setCurrentGuest(guest);
     setIsGuestSelectorOpen(false);
-    // Update URL quietly without reload
     const newUrl = `${window.location.pathname}?invitado=${guest.code}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
   };
@@ -74,8 +80,10 @@ export default function App() {
     }
   };
 
+  const vis = config.sectionVisibility;
+
   return (
-    <div className="min-h-screen bg-[#0d0c0a] text-[#ece8e1] relative font-sans selection:bg-[#d4af37]/30 selection:text-[#f8f5ee]">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] relative font-sans selection:bg-[var(--color-gold)]/30 selection:text-white">
       {/* 1. Loader Screen */}
       {showLoader && <LoaderScreen onComplete={handleLoaderComplete} />}
 
@@ -93,37 +101,41 @@ export default function App() {
       )}
 
       {/* 4. Fullscreen Portada Hero */}
-      <HeroSection
-        currentGuest={currentGuest}
-        onExploreClick={scrollToStory}
-      />
+      {vis.hero !== false && (
+        <HeroSection
+          currentGuest={currentGuest}
+          onExploreClick={scrollToStory}
+        />
+      )}
 
       {/* 5. Nuestra Historia & Timeline */}
-      <StorySection />
+      {vis.story !== false && <StorySection />}
 
       {/* 6. Galería Tipo Revista */}
-      <GallerySection />
+      {vis.gallery !== false && <GallerySection />}
 
       {/* 7. Video Reel de los Novios */}
-      <CoupleVideoSection />
+      {vis.video !== false && <CoupleVideoSection />}
 
       {/* 8. Cuenta Regresiva Animada */}
-      <CountdownSection />
+      {vis.countdown !== false && <CountdownSection />}
 
       {/* 9. Detalles del Evento & Google Maps */}
-      <EventDetailsSection />
+      {vis.eventDetails !== false && <EventDetailsSection />}
 
       {/* 10. Dress Code con Ilustraciones */}
-      <DressCodeSection />
+      {vis.dressCode !== false && <DressCodeSection />}
 
       {/* 11. Mesa de Regalos */}
-      <GiftRegistrySection />
+      {vis.giftRegistry !== false && <GiftRegistrySection />}
 
       {/* 12. Confirmación RSVP Personalizada */}
-      <RSVPSection
-        currentGuest={currentGuest}
-        onSelectGuest={handleSelectGuest}
-      />
+      {vis.rsvp !== false && (
+        <RSVPSection
+          currentGuest={currentGuest}
+          onSelectGuest={handleSelectGuest}
+        />
+      )}
 
       {/* 13. Panel Administrativo Modal */}
       <AdminPanel
@@ -131,7 +143,8 @@ export default function App() {
         onClose={() => setIsAdminOpen(false)}
         appUrl={appUrl}
       />
-      {/* GUEST SELECTOR MODAL DRAWER */}
+
+      {/* GUEST SELECTOR MODAL DRAWER (para pruebas admin) */}
       <Modal
         isOpen={isGuestSelectorOpen}
         onClose={() => setIsGuestSelectorOpen(false)}
@@ -141,7 +154,7 @@ export default function App() {
       >
         <div className="space-y-4">
           <p className="text-xs text-amber-200/70 font-serif italic">
-            Selecciona un invitado para ver cómo luce su enlace personalizado:
+            Selecciona un invitado para probar su enlace personalizado:
           </p>
 
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -174,11 +187,11 @@ export default function App() {
       <footer className="py-12 px-6 text-center border-t border-white/10 bg-[#0a0908] text-xs text-amber-200/60 font-serif italic space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Heart className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="font-cinzel text-amber-100 text-sm">Mateo Andrade & Camila Viteri</span>
+          <span className="font-cinzel text-amber-100 text-sm">{config.hero.groom} & {config.hero.bride}</span>
         </div>
-        <p>14 de Noviembre de 2026 • Quinta Loren, Ambato, Ecuador</p>
+        <p>{config.hero.dateFormatted} • {config.hero.city}</p>
         <p className="text-[10px] font-mono uppercase tracking-widest text-amber-400/50 pt-2">
-          Experiencia Interactiva de Boda Realizada con Excelencia
+          Experiencia Nupcial Exclusiva Multitenant
         </p>
       </footer>
     </div>

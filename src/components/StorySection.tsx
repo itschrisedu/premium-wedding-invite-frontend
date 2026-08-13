@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Heart, MapPin, Sparkles, BookOpen } from 'lucide-react';
-import { LOVE_STORY_CHAPTERS, COUPLE_INFO } from '../data/weddingData';
+import { weddingConfigService } from '../services/weddingConfigService';
 
 export const StorySection: React.FC = () => {
+  const [config, setConfig] = useState(weddingConfigService.getConfig());
+
+  useEffect(() => {
+    const unsub = weddingConfigService.subscribe(() => {
+      setConfig(weddingConfigService.getConfig());
+    });
+    return unsub;
+  }, []);
+
+  const visibleChapters = config.loveStory.filter(c => c.isVisible !== false);
+
   return (
     <section id="historia" className="relative py-24 px-6 max-w-6xl mx-auto overflow-hidden">
       {/* Decorative Glow */}
@@ -16,9 +27,9 @@ export const StorySection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-orange-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-amber-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
         >
-          <BookOpen className="w-3.5 h-3.5 text-orange-400" />
+          <BookOpen className="w-3.5 h-3.5 text-amber-400" />
           <span>El Comienzo del Viaje</span>
         </motion.div>
 
@@ -33,7 +44,7 @@ export const StorySection: React.FC = () => {
         </motion.h2>
 
         <p className="mt-3 text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase max-w-xl mx-auto">
-          Inspirados por la calidez de Ambato, sus valles fértiles y atardeceres andinos.
+          Inspirados por nuestro amor y la calidez de nuestras familias.
         </p>
       </div>
 
@@ -49,8 +60,8 @@ export const StorySection: React.FC = () => {
         >
           <div className="relative rounded-2xl overflow-hidden liquid-glass border border-white/20 shadow-2xl p-2">
             <img
-              src={COUPLE_INFO.storyImage}
-              alt="Mateo Andrade y Camila Viteri en Ficoa Ambato"
+              src={config.hero.secondaryImage || config.hero.coverImage}
+              alt={`${config.hero.groom} & ${config.hero.bride}`}
               className="w-full h-[480px] object-cover rounded-xl filter contrast-[1.03]"
             />
             {/* Glass Tag Overlay */}
@@ -69,9 +80,9 @@ export const StorySection: React.FC = () => {
           <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gradient-to-b from-amber-400/40 via-amber-300/20 to-transparent" />
 
           <div className="space-y-8 pl-10">
-            {LOVE_STORY_CHAPTERS.map((chapter, index) => (
+            {visibleChapters.map((chapter, index) => (
               <motion.div
-                key={chapter.year}
+                key={chapter.id || chapter.year}
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}

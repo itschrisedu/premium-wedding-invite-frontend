@@ -20,16 +20,33 @@ import {
   UserCog,
   Camera,
   Upload,
-  RefreshCw
+  RefreshCw,
+  Palette,
+  Layout,
+  Music,
+  Eye,
+  EyeOff,
+  Sliders,
+  Building2,
+  Heart,
+  Calendar,
+  Check,
+  ToggleLeft,
+  ToggleRight,
+  Sparkles,
+  Lock,
+  Unlock,
+  AlertTriangle
 } from 'lucide-react';
 import { Guest, GuestCategory } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
-import { apiService, type AuthSession, type AdminUser, type GalleryAlbum, type SiteSection } from '../services/apiService';
-import { BANK_DETAILS } from '../data/weddingData';
+import { apiService, type AuthSession, type AdminUser, type GalleryAlbum } from '../services/apiService';
 import { galleryService } from '../services/galleryService';
 import { Modal } from './ui/Modal';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { ELEGANT_WEDDING_THEMES, ThemePalette } from '../data/weddingThemes';
+import { weddingConfigService, WeddingSiteConfig, DynamicBankAccount, DynamicVenue, DynamicTimelineEvent, DynamicLoveStoryChapter } from '../services/weddingConfigService';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -37,8 +54,11 @@ interface AdminPanelProps {
   appUrl: string;
 }
 
+type AdminTab = 'invitados' | 'apariencia' | 'secciones' | 'usuarios';
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl }) => {
   const [session, setSession] = useState<AuthSession | null>(authService.getSession());
+  const [activeTab, setActiveTab] = useState<AdminTab>('invitados');
   const [guests, setGuests] = useState<Guest[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [albums, setAlbums] = useState<GalleryAlbum[]>([]);
@@ -52,32 +72,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isSavingGuest, setIsSavingGuest] = useState(false);
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+
+  // Site Config state
+  const [siteConfig, setSiteConfig] = useState<WeddingSiteConfig>(weddingConfigService.getConfig());
+
+  // User Management extra states (Superadmin controls)
+  const [userEditPermissions, setUserEditPermissions] = useState<Record<string, boolean>>({});
+  const [userStatusMap, setUserStatusMap] = useState<Record<string, 'active' | 'disabled'>>({});
+
+  // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
+
+  // Edit items
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [guestFormData, setGuestFormData] = useState({
     name: '',
-    code: '',
     category: 'Familia' as GuestCategory,
     passesAllowed: 2,
     phone: '',
     email: '',
     notes: ''
   });
+
   const [userFormData, setUserFormData] = useState({
     username: '',
     password: '',
     fullName: '',
     role: 'user' as 'superadmin' | 'admin' | 'user'
   });
+
+  const [editingBank, setEditingBank] = useState<DynamicBankAccount | null>(null);
+  const [bankFormData, setBankFormData] = useState({
+    bankName: '',
+    accountType: 'Cuenta de Ahorros',
+    accountNumber: '',
+    holderName: '',
+    idNumber: '',
+    email: ''
+  });
+
+  const [editingVenue, setEditingVenue] = useState<DynamicVenue | null>(null);
+  const [venueFormData, setVenueFormData] = useState({
+    name: '',
+    type: 'recepcion' as 'ceremonia' | 'recepcion',
+    time: '19:00 PM',
+    address: '',
+    city: 'Ambato, Ecuador',
+    googleMapsUrl: '',
+    imageUrl: '',
+    description: ''
+  });
+
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-  const [sections, setSections] = useState<SiteSection[]>([]);
-  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
-  const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
-  const [sectionFormData, setSectionFormData] = useState({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
-  const [activeUserSettingsId, setActiveUserSettingsId] = useState<string | null>(null);
-  const [userSettingsForm, setUserSettingsForm] = useState<{ sections?: Record<string, boolean>; bankAccountIndex?: number | null }>({ sections: {}, bankAccountIndex: null });
 
   // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -89,6 +138,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger' });
 
   const isSuperadmin = session?.user.role === 'superadmin';
+  const currentUserId = session?.user.id || '';
+  const canEditPage = isSuperadmin || userEditPermissions[currentUserId] !== false;
 
   const loadData = async () => {
     const nextGuests = await storageService.refreshGuests();
@@ -104,16 +155,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     if (token && session) {
       const nextUsers = await apiService.listUsers(token);
       setUsers(nextUsers);
-      try {
-        const nextSections = await apiService.listSections(token);
-        setSections(nextSections);
-      } catch {
-        setSections([]);
-      }
     }
   };
 
   useEffect(() => {
+    const unsubConfig = weddingConfigService.subscribe(() => {
+      setSiteConfig(weddingConfigService.getConfig());
+    });
+
     const unsubscribeAuth = authService.subscribe(nextSession => {
       setSession(nextSession);
       if (!nextSession) {
@@ -130,6 +179,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     void loadData();
 
     return () => {
+      unsubConfig();
       unsubscribeAuth();
       unsubscribeGuests();
     };
@@ -141,10 +191,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   }, [session?.token]);
 
-  // --- ESC to close admin panel ---
+  // ESC to close panel
   useEffect(() => {
     if (!isOpen || !session) return;
-    const hasNestedModal = isGuestModalOpen || isUserModalOpen || isSectionModalOpen || isUserSettingsModalOpen || confirmDialog.isOpen;
+    const hasNestedModal = isGuestModalOpen || isUserModalOpen || isBankModalOpen || isVenueModalOpen || confirmDialog.isOpen;
     if (hasNestedModal) return;
 
     const handleEsc = (e: KeyboardEvent) => {
@@ -155,7 +205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     };
     document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
-  }, [isOpen, session, onClose, isGuestModalOpen, isUserModalOpen, isSectionModalOpen, isUserSettingsModalOpen, confirmDialog.isOpen]);
+  }, [isOpen, session, onClose, isGuestModalOpen, isUserModalOpen, isBankModalOpen, isVenueModalOpen, confirmDialog.isOpen]);
 
   const filteredGuests = useMemo(() => {
     return guests.filter(guest => {
@@ -172,6 +222,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   if (!isOpen) return null;
 
+  // Login Modal if not authenticated
   if (!session) {
     return (
       <AnimatePresence>
@@ -184,8 +235,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     <Shield className="w-6 h-6 text-amber-400" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Acceso Administrativo</span>
-                    <h1 className="font-cinzel text-2xl font-light text-amber-100 gold-gradient-text">Mateo & Camila</h1>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Acceso Administrativo Nupcial</span>
+                    <h1 className="font-cinzel text-2xl font-light text-amber-100 gold-gradient-text">Boda & Matrimonio</h1>
                   </div>
                 </div>
                 <button onClick={onClose} className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
@@ -217,7 +268,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" placeholder="••••••••" />
                 </div>
                 {loginError && <p className="text-rose-300 text-xs font-mono">{loginError}</p>}
-                <button type="submit" disabled={isLoggingIn} className="w-full py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">
+                <button type="submit" disabled={isLoggingIn} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">
                   {isLoggingIn ? 'Validando...' : 'Entrar al panel'}
                 </button>
               </form>
@@ -228,18 +279,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     );
   }
 
-  const totalGuests = guests.length;
-  const confirmedCount = guests.filter(g => g.status === 'confirmado').length;
-  const pendingCount = guests.filter(g => g.status === 'pendiente').length;
-  const declinedCount = guests.filter(g => g.status === 'declinado').length;
-  const totalPassesConfirmed = guests.reduce((acc, g) => acc + (g.status === 'confirmado' ? g.passesConfirmed : 0), 0);
-  const totalPassesAllowed = guests.reduce((acc, g) => acc + g.passesAllowed, 0);
-  const confirmationPercentage = totalGuests > 0 ? Math.round((confirmedCount / totalGuests) * 100) : 0;
-
-  // --- Guest CRUD ---
+  // --- Guest Handlers ---
   const openCreateGuest = () => {
     setEditingGuest(null);
-    setGuestFormData({ name: '', code: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
+    setGuestFormData({ name: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
     setIsGuestModalOpen(true);
   };
 
@@ -247,7 +290,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     setEditingGuest(guest);
     setGuestFormData({
       name: guest.name,
-      code: guest.code,
       category: guest.category,
       passesAllowed: guest.passesAllowed,
       phone: guest.phone || '',
@@ -263,15 +305,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
     setIsSavingGuest(true);
     try {
-      const generatedCode = guestFormData.code.trim()
-        ? guestFormData.code.toLowerCase().replace(/\s+/g, '-')
-        : guestFormData.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      // Auto-generate unique code slug from name
+      const autoCode = guestFormData.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
       if (editingGuest) {
         await storageService.updateGuest({
           ...editingGuest,
           name: guestFormData.name,
-          code: generatedCode,
+          code: editingGuest.code || autoCode,
           category: guestFormData.category,
           passesAllowed: Number(guestFormData.passesAllowed),
           phone: guestFormData.phone,
@@ -281,7 +322,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       } else {
         await storageService.addGuest({
           name: guestFormData.name,
-          code: generatedCode,
+          code: autoCode,
           category: guestFormData.category,
           passesAllowed: Number(guestFormData.passesAllowed),
           passesConfirmed: 0,
@@ -308,7 +349,137 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     });
   };
 
-  // --- User CRUD ---
+  // --- Bank Account Handlers ---
+  const openCreateBank = () => {
+    setEditingBank(null);
+    setBankFormData({ bankName: '', accountType: 'Cuenta de Ahorros', accountNumber: '', holderName: '', idNumber: '', email: '' });
+    setIsBankModalOpen(true);
+  };
+
+  const openEditBank = (bank: DynamicBankAccount) => {
+    setEditingBank(bank);
+    setBankFormData({
+      bankName: bank.bankName,
+      accountType: bank.accountType,
+      accountNumber: bank.accountNumber,
+      holderName: bank.holderName,
+      idNumber: bank.idNumber,
+      email: bank.email
+    });
+    setIsBankModalOpen(true);
+  };
+
+  const saveBank = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bankFormData.bankName || !bankFormData.accountNumber) return;
+
+    const accounts = [...siteConfig.bankAccounts];
+    if (editingBank) {
+      const idx = accounts.findIndex(a => a.id === editingBank.id);
+      if (idx !== -1) {
+        accounts[idx] = { ...editingBank, ...bankFormData };
+      }
+    } else {
+      accounts.push({
+        id: `bank-${Date.now()}`,
+        ...bankFormData,
+        isVisible: true
+      });
+    }
+    weddingConfigService.updateConfig({ bankAccounts: accounts });
+    setIsBankModalOpen(false);
+  };
+
+  const toggleBankVisibility = (id: string) => {
+    const accounts = siteConfig.bankAccounts.map(a => a.id === id ? { ...a, isVisible: !a.isVisible } : a);
+    weddingConfigService.updateConfig({ bankAccounts: accounts });
+  };
+
+  const deleteBank = (id: string, name: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar Cuenta Bancaria',
+      message: `¿Eliminar la cuenta ${name}?`,
+      onConfirm: () => {
+        const accounts = siteConfig.bankAccounts.filter(a => a.id !== id);
+        weddingConfigService.updateConfig({ bankAccounts: accounts });
+      },
+      variant: 'danger'
+    });
+  };
+
+  // --- Venue Handlers ---
+  const openCreateVenue = () => {
+    setEditingVenue(null);
+    setVenueFormData({ name: '', type: 'recepcion', time: '19:00 PM', address: '', city: 'Ambato, Ecuador', googleMapsUrl: '', imageUrl: '', description: '' });
+    setIsVenueModalOpen(true);
+  };
+
+  const openEditVenue = (venue: DynamicVenue) => {
+    setEditingVenue(venue);
+    setVenueFormData({
+      name: venue.name,
+      type: venue.type,
+      time: venue.time,
+      address: venue.address,
+      city: venue.city,
+      googleMapsUrl: venue.googleMapsUrl,
+      imageUrl: venue.imageUrl,
+      description: venue.description
+    });
+    setIsVenueModalOpen(true);
+  };
+
+  const saveVenue = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!venueFormData.name) return;
+
+    const venues = [...siteConfig.venues];
+    if (editingVenue) {
+      const idx = venues.findIndex(v => v.id === editingVenue.id);
+      if (idx !== -1) {
+        venues[idx] = { ...editingVenue, ...venueFormData };
+      }
+    } else {
+      venues.push({
+        id: `venue-${Date.now()}`,
+        ...venueFormData,
+        isVisible: true
+      });
+    }
+    weddingConfigService.updateConfig({ venues });
+    setIsVenueModalOpen(false);
+  };
+
+  const toggleVenueVisibility = (id: string) => {
+    const venues = siteConfig.venues.map(v => v.id === id ? { ...v, isVisible: !v.isVisible } : v);
+    weddingConfigService.updateConfig({ venues });
+  };
+
+  const deleteVenue = (id: string, name: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar Lugar',
+      message: `¿Eliminar ${name}?`,
+      onConfirm: () => {
+        const venues = siteConfig.venues.filter(v => v.id !== id);
+        weddingConfigService.updateConfig({ venues });
+      },
+      variant: 'danger'
+    });
+  };
+
+  // --- Section Visibility Toggle ---
+  const toggleSection = (sectionKey: keyof WeddingSiteConfig['sectionVisibility']) => {
+    weddingConfigService.updateConfig({
+      sectionVisibility: {
+        ...siteConfig.sectionVisibility,
+        [sectionKey]: !siteConfig.sectionVisibility[sectionKey]
+      }
+    });
+  };
+
+  // --- User Superadmin Handlers ---
   const openCreateUser = () => {
     setUserFormData({ username: '', password: '', fullName: '', role: 'user' });
     setIsUserModalOpen(true);
@@ -329,82 +500,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
-  // --- Section CRUD ---
-  const openCreateSection = () => {
-    setEditingSection(null);
-    setSectionFormData({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
-    setIsSectionModalOpen(true);
+  const toggleUserStatus = (user: AdminUser) => {
+    const current = userStatusMap[user.id] || 'active';
+    const next = current === 'active' ? 'disabled' : 'active';
+    setUserStatusMap(prev => ({ ...prev, [user.id]: next }));
   };
 
-  const openEditSection = (section: SiteSection) => {
-    setEditingSection(section);
-    setSectionFormData({ sectionKey: section.sectionKey, title: section.title, subtitle: section.subtitle || '', body: section.body, sortOrder: section.sortOrder, isVisible: section.isVisible });
-    setIsSectionModalOpen(true);
+  const toggleUserEditPermission = (userId: string) => {
+    const current = userEditPermissions[userId] !== false;
+    setUserEditPermissions(prev => ({ ...prev, [userId]: !current }));
   };
 
-  const saveSection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = authService.getToken();
-    if (!token) return;
-
-    if (editingSection) {
-      const updated = await apiService.updateSection(token, editingSection.id, {
-        title: sectionFormData.title,
-        subtitle: sectionFormData.subtitle || null,
-        body: sectionFormData.body,
-        sortOrder: Number(sectionFormData.sortOrder),
-        isVisible: Boolean(sectionFormData.isVisible)
-      });
-      setSections(s => s.map(sx => sx.id === updated.id ? updated : sx));
-    } else {
-      const created = await apiService.createSection(token, {
-        sectionKey: sectionFormData.sectionKey,
-        title: sectionFormData.title,
-        subtitle: sectionFormData.subtitle || null,
-        body: sectionFormData.body,
-        sortOrder: Number(sectionFormData.sortOrder),
-        isVisible: Boolean(sectionFormData.isVisible)
-      });
-      setSections(s => [created, ...s]);
-    }
-
-    setIsSectionModalOpen(false);
-  };
-
-  const removeSection = (sectionId: string) => {
+  const deleteUserCascade = (user: AdminUser) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Eliminar sección',
-      message: '¿Eliminar sección? Esta acción es irreversible.',
-      onConfirm: async () => {
-        const token = authService.getToken();
-        if (!token) return;
-        await apiService.deleteSection(token, sectionId);
-        setSections(s => s.filter(x => x.id !== sectionId));
-      },
-      variant: 'danger'
-    });
-  };
-
-  // --- User Settings ---
-  const openUserSettings = async (userId: string) => {
-    const token = authService.getToken();
-    if (!token) return;
-    try {
-      const res = await apiService.getUserSettings(token, userId);
-      setActiveUserSettingsId(userId);
-      setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
-      setIsUserSettingsModalOpen(true);
-    } catch {
-      // ignore
-    }
-  };
-
-  const deleteUser = (user: AdminUser) => {
-    setConfirmDialog({
-      isOpen: true,
-      title: 'Eliminar usuario',
-      message: `¿Eliminar usuario ${user.username}? Esta acción es irreversible.`,
+      title: 'Eliminación Total de Admin (Cascada)',
+      message: `¿Estás seguro de eliminar permanentemente al admin "${user.fullName}" (${user.username})? Se eliminarán todos sus invitados, configuraciones y datos de forma irreversible.`,
       onConfirm: async () => {
         const token = authService.getToken();
         if (!token) return;
@@ -419,7 +530,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     });
   };
 
-  // --- Gallery ---
+  // --- Photo Upload ---
   const uploadPhotos = async () => {
     const token = authService.getToken();
     if (!token || !selectedAlbumId || photoFiles.length === 0) return;
@@ -434,46 +545,35 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
+  const totalGuests = guests.length;
+  const confirmedCount = guests.filter(g => g.status === 'confirmado').length;
+  const pendingCount = guests.filter(g => g.status === 'pendiente').length;
+  const declinedCount = guests.filter(g => g.status === 'declinado').length;
+  const totalPassesConfirmed = guests.reduce((acc, g) => acc + (g.status === 'confirmado' ? g.passesConfirmed : 0), 0);
+  const totalPassesAllowed = guests.reduce((acc, g) => acc + g.passesAllowed, 0);
+  const confirmationPercentage = totalGuests > 0 ? Math.round((confirmedCount / totalGuests) * 100) : 0;
+
   const sendWhatsApp = (guest: Guest) => {
     window.open(storageService.buildWhatsAppMessage(guest, appUrl), '_blank');
   };
 
-  const isSendingEnabled = Boolean(selectedAlbumId && photoFiles.length > 0);
-
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-4 md:p-8">
-        <div className="max-w-7xl mx-auto space-y-8 pb-16">
+        <div className="max-w-7xl mx-auto space-y-6 pb-16">
+          {/* Header Panel */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-amber-300">
                 <Shield className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Panel de Administración Nupcial</span>
-                <h1 className="font-cinzel text-2xl md:text-3xl font-light text-amber-100 gold-gradient-text">Mateo & Camila — Ambato 2026</h1>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Panel Administrativo Multitenant Nupcial</span>
+                <h1 className="font-cinzel text-2xl md:text-3xl font-light text-amber-100 gold-gradient-text">{siteConfig.hero.groom} & {siteConfig.hero.bride}</h1>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button onClick={() => storageService.exportToExcel()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-mono text-xs uppercase tracking-wider hover:bg-emerald-500/30 transition-all cursor-pointer">
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                <span>Exportar Excel</span>
-              </button>
-              <button onClick={() => storageService.exportToPDF()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all cursor-pointer">
-                <FileText className="w-4 h-4 text-amber-400" />
-                <span>Exportar PDF</span>
-              </button>
-              <button onClick={openCreateGuest} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
-                <Plus className="w-4 h-4 text-white" />
-                <span>Nuevo Invitado</span>
-              </button>
-              {isSuperadmin && (
-                <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
-                  <UserPlus className="w-4 h-4 text-white" />
-                  <span>Nuevo Usuario</span>
-                </button>
-              )}
               <button onClick={() => authService.logout()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 border border-white/15 text-white font-mono text-xs uppercase tracking-wider hover:bg-white/20 transition-all cursor-pointer">
                 <LogOut className="w-4 h-4 text-white" />
                 <span>Salir</span>
@@ -484,149 +584,523 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl liquid-glass border border-white/15 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-amber-100">
-              <UserCog className="w-5 h-5 text-amber-400" />
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70">Sesión activa</p>
-                <p className="text-sm font-semibold">{session.user.fullName} · {session.user.role}</p>
-              </div>
-            </div>
-            <p className="text-xs text-amber-100/60 font-serif">
-              {isSuperadmin ? 'Puedes administrar invitados, usuarios y fotos.' : 'Puedes administrar invitados y fotos, pero no usuarios.'}
-            </p>
+          {/* Navigation Tabs */}
+          <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl liquid-glass border border-white/15">
+            <button
+              onClick={() => setActiveTab('invitados')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'invitados' ? 'bg-amber-500 text-white font-bold shadow-lg' : 'text-amber-200/70 hover:bg-white/10'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Invitados ({totalGuests})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('apariencia')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'apariencia' ? 'bg-amber-500 text-white font-bold shadow-lg' : 'text-amber-200/70 hover:bg-white/10'
+              }`}
+            >
+              <Palette className="w-4 h-4" />
+              <span>Colores & Temas</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('secciones')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'secciones' ? 'bg-amber-500 text-white font-bold shadow-lg' : 'text-amber-200/70 hover:bg-white/10'
+              }`}
+            >
+              <Layout className="w-4 h-4" />
+              <span>Editor de Secciones & Contenido</span>
+            </button>
+
+            {isSuperadmin && (
+              <button
+                onClick={() => setActiveTab('usuarios')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === 'usuarios' ? 'bg-amber-500 text-white font-bold shadow-lg' : 'text-amber-200/70 hover:bg-white/10'
+                }`}
+              >
+                <UserCog className="w-4 h-4" />
+                <span>Superadmin & Usuarios</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="p-6 rounded-2xl glass-panel border border-white/10">
-              <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-200/60">Total Invitaciones</span><Users className="w-4 h-4 text-amber-400" /></div>
-              <span className="font-cinzel text-3xl font-light text-amber-100 block">{totalGuests}</span>
-              <span className="text-[11px] text-amber-200/50 font-serif">Familias / Personas</span>
-            </div>
-            <div className="p-6 rounded-2xl glass-panel border border-emerald-500/20 bg-emerald-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-emerald-300">Confirmados</span><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div><span className="font-cinzel text-3xl font-light text-emerald-300 block">{confirmedCount}</span><span className="text-[11px] text-emerald-200/60 font-serif">{totalPassesConfirmed} Pases Confirmados</span></div>
-            <div className="p-6 rounded-2xl glass-panel border border-amber-500/20 bg-amber-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300">Pendientes</span><Clock className="w-4 h-4 text-amber-400" /></div><span className="font-cinzel text-3xl font-light text-amber-300 block">{pendingCount}</span><span className="text-[11px] text-amber-200/60 font-serif">Por Responder</span></div>
-            <div className="p-6 rounded-2xl glass-panel border border-rose-500/20 bg-rose-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-rose-300">Declinados</span><XCircle className="w-4 h-4 text-rose-400" /></div><span className="font-cinzel text-3xl font-light text-rose-300 block">{declinedCount}</span><span className="text-[11px] text-rose-200/60 font-serif">No Asistirán</span></div>
-            <div className="p-6 rounded-2xl liquid-glass border border-amber-300/30 flex flex-col justify-between"><div><div className="flex items-center justify-between mb-1"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-200/70">% Confirmado</span><RefreshCw className="w-4 h-4 text-amber-400" /></div><span className="font-cinzel text-3xl font-light text-amber-100 gold-gradient-text block">{confirmationPercentage}%</span></div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mt-3 border border-white/10"><div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${confirmationPercentage}%` }} /></div></div>
-          </div>
-
-          <div className="p-6 rounded-2xl glass-panel border border-white/15 flex flex-wrap items-center justify-between gap-4">
-            <div className="relative flex-1 min-w-[240px]"><Search className="w-4 h-4 text-amber-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" /><input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscador por nombre, código o teléfono..." className="w-full pl-11 pr-4 py-2.5 rounded-full glass-panel border border-white/20 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-300" /></div>
-            <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-amber-400" /><select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#181612] border border-white/20 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="todos">Todas las Categorías</option><option value="Familia">Familia</option><option value="Amigos">Amigos</option><option value="VIP">VIP</option><option value="Trabajo">Trabajo</option></select></div>
-            <div className="flex items-center gap-2"><select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#181612] border border-white/20 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="todos">Todos los Estados</option><option value="confirmado">Confirmados</option><option value="pendiente">Pendientes</option><option value="declinado">Declinados</option></select></div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-3xl liquid-glass border border-white/15 overflow-hidden shadow-2xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs text-amber-100">
-                  <thead>
-                    <tr className="bg-white/5 border-b border-white/10 text-[10px] font-mono uppercase tracking-widest text-amber-300/80">
-                      <th className="p-4">Invitado / Familia</th>
-                      <th className="p-4">Categoría</th>
-                      <th className="p-4">Pases</th>
-                      <th className="p-4">Estado</th>
-                      <th className="p-4 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {filteredGuests.length > 0 ? filteredGuests.map(guest => (
-                      <tr key={guest.id} className="hover:bg-white/[0.03] transition-colors">
-                        <td className="p-4 font-medium"><strong className="text-amber-100 block text-sm">{guest.name}</strong><span className="text-[10px] text-amber-300/70 italic block">{guest.phone || 'Sin teléfono'}</span></td>
-                        <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-[10px]">{guest.category}</span></td>
-                        <td className="p-4 font-mono font-semibold text-amber-200">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
-                        <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>{guest.status}</span></td>
-                        <td className="p-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"><Send className="w-3.5 h-3.5" /></button><button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
-                      </tr>
-                    )) : (<tr><td colSpan={5} className="p-8 text-center text-amber-200/50 font-serif italic">No se encontraron invitados con los criterios seleccionados.</td></tr>)}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
+          {/* TAB 1: INVITADOS */}
+          {activeTab === 'invitados' && (
             <div className="space-y-6">
-              <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Galería</span><h2 className="font-cinzel text-2xl text-amber-100">Subir varias fotos</h2></div><Camera className="w-5 h-5 text-amber-400" /></div>
-                <select value={selectedAlbumId} onChange={e => setSelectedAlbumId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
-                  {albums.map(album => <option key={album.id} value={album.id}>{album.title} ({album.photoCount})</option>)}
-                </select>
-                <input type="file" multiple accept="image/*" onChange={e => setPhotoFiles(Array.from(e.target.files || []))} className="w-full text-xs text-amber-100" />
-                {photoFiles.length > 0 && <p className="text-[11px] text-amber-200/60 font-mono">{photoFiles.length} archivo(s) seleccionado(s)</p>}
-                <button onClick={() => void uploadPhotos()} disabled={isUploadingPhotos || !isSendingEnabled} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"><Upload className="w-4 h-4" />{isUploadingPhotos ? 'Subiendo...' : 'Subir fotos'}</button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="p-6 rounded-2xl glass-panel border border-white/10">
+                  <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-200/60">Total Invitaciones</span><Users className="w-4 h-4 text-amber-400" /></div>
+                  <span className="font-cinzel text-3xl font-light text-amber-100 block">{totalGuests}</span>
+                  <span className="text-[11px] text-amber-200/50 font-serif">Familias / Personas</span>
+                </div>
+                <div className="p-6 rounded-2xl glass-panel border border-emerald-500/20 bg-emerald-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-emerald-300">Confirmados</span><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div><span className="font-cinzel text-3xl font-light text-emerald-300 block">{confirmedCount}</span><span className="text-[11px] text-emerald-200/60 font-serif">{totalPassesConfirmed} Pases Confirmados</span></div>
+                <div className="p-6 rounded-2xl glass-panel border border-amber-500/20 bg-amber-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300">Pendientes</span><Clock className="w-4 h-4 text-amber-400" /></div><span className="font-cinzel text-3xl font-light text-amber-300 block">{pendingCount}</span><span className="text-[11px] text-amber-200/60 font-serif">Por Responder</span></div>
+                <div className="p-6 rounded-2xl glass-panel border border-rose-500/20 bg-rose-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-rose-300">Declinados</span><XCircle className="w-4 h-4 text-rose-400" /></div><span className="font-cinzel text-3xl font-light text-rose-300 block">{declinedCount}</span><span className="text-[11px] text-rose-200/60 font-serif">No Asistirán</span></div>
+                <div className="p-6 rounded-2xl liquid-glass border border-amber-300/30 flex flex-col justify-between"><div><div className="flex items-center justify-between mb-1"><span className="text-[10px] font-mono uppercase tracking-widest text-amber-200/70">% Confirmado</span><RefreshCw className="w-4 h-4 text-amber-400" /></div><span className="font-cinzel text-3xl font-light text-amber-100 gold-gradient-text block">{confirmationPercentage}%</span></div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mt-3 border border-white/10"><div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${confirmationPercentage}%` }} /></div></div>
               </div>
 
-                {(session.user.role === 'admin' || session.user.role === 'superadmin') && (
-                  <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
-                    <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Secciones del Sitio</span><h2 className="font-cinzel text-2xl text-amber-100">Contenido del sitio</h2></div><Plus className="w-5 h-5 text-amber-400" /></div>
-                    <div className="grid gap-3">
-                      {sections.length === 0 && <div className="p-4 text-amber-200/60 italic">No hay secciones aún.</div>}
-                      {sections.map(section => (
-                        <div key={section.id} className="p-3 rounded-lg glass-panel border border-white/10 flex items-center justify-between">
-                          <div>
-                            <strong className="text-amber-100 block text-sm">{section.title}</strong>
-                            <span className="text-[10px] text-amber-300/70">{section.sectionKey} · {section.isVisible ? 'Visible' : 'Oculta'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => openEditSection(section)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => removeSection(section.id)} className="p-2 rounded-md bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <button onClick={openCreateSection} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
-                  </div>
-                )}
+              {/* Action Bar */}
+              <div className="p-6 rounded-2xl glass-panel border border-white/15 flex flex-wrap items-center justify-between gap-4">
+                <div className="relative flex-1 min-w-[240px]">
+                  <Search className="w-4 h-4 text-amber-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscador por nombre o teléfono..." className="w-full pl-11 pr-4 py-2.5 rounded-full glass-panel border border-white/20 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-300" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-amber-400" />
+                  <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#181612] border border-white/20 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
+                    <option value="todos">Todas las Categorías</option>
+                    <option value="Familia">Familia</option>
+                    <option value="Amigos">Amigos</option>
+                    <option value="VIP">VIP</option>
+                    <option value="Trabajo">Trabajo</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#181612] border border-white/20 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
+                    <option value="todos">Todos los Estados</option>
+                    <option value="confirmado">Confirmados</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="declinado">Declinados</option>
+                  </select>
+                </div>
+                <button onClick={openCreateGuest} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+                  <Plus className="w-4 h-4 text-white" />
+                  <span>Nuevo Invitado</span>
+                </button>
+              </div>
 
-              {isSuperadmin && (
-                <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-6 shadow-2xl">
-                  <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Usuarios del sistema</span><h2 className="font-cinzel text-2xl text-amber-100">Control de accesos</h2></div><UserPlus className="w-5 h-5 text-amber-400" /></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {users.map(user => (
-                      <div key={user.id} className="p-6 rounded-2xl glass-panel border border-white/10 flex flex-col gap-4">
-                        <div>
-                          <strong className="text-amber-100 block text-base mb-1">{user.fullName}</strong>
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300/60">{user.username}</span>
-                        </div>
-                        
-                        <div>
-                          <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Rol</label>
-                          <select value={user.role} onChange={async e => {
-                            const token = authService.getToken();
-                            if (!token) return;
-                            const newRole = e.target.value as 'superadmin' | 'admin' | 'user';
-                            try {
-                              await apiService.updateUserRole(token, user.id, newRole);
-                              setUsers(await apiService.listUsers(token));
-                            } catch {
-                              // ignore
-                            }
-                          }} className="w-full px-4 py-2 rounded-lg bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
-                            <option value="user">Usuario</option>
-                            <option value="admin">Admin</option>
-                            <option value="superadmin">Superadmin</option>
-                          </select>
-                        </div>
+              {/* Guest Table */}
+              <div className="rounded-3xl liquid-glass border border-white/15 overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs text-amber-100">
+                    <thead>
+                      <tr className="bg-white/5 border-b border-white/10 text-[10px] font-mono uppercase tracking-widest text-amber-300/80">
+                        <th className="p-4">Invitado / Familia</th>
+                        <th className="p-4">Categoría</th>
+                        <th className="p-4">Pases</th>
+                        <th className="p-4">Estado</th>
+                        <th className="p-4 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {filteredGuests.length > 0 ? filteredGuests.map(guest => (
+                        <tr key={guest.id} className="hover:bg-white/[0.03] transition-colors">
+                          <td className="p-4 font-medium"><strong className="text-amber-100 block text-sm">{guest.name}</strong><span className="text-[10px] text-amber-300/70 italic block">{guest.phone || 'Sin teléfono'}</span></td>
+                          <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-[10px]">{guest.category}</span></td>
+                          <td className="p-4 font-mono font-semibold text-amber-200">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
+                          <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>{guest.status}</span></td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer" title="Enviar enlace personalizado por WhatsApp">
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )) : (<tr><td colSpan={5} className="p-8 text-center text-amber-200/50 font-serif italic">No se encontraron invitados.</td></tr>)}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
-                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                          <button onClick={() => void openUserSettings(user.id)} className="p-2.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer" title="Configurar usuario"><UserCog className="w-4 h-4" /></button>
-                          <button onClick={() => deleteUser(user)} className="p-2.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer" title="Eliminar usuario"><Trash2 className="w-4 h-4" /></button>
+          {/* TAB 2: APARIENCIA & TEMAS DE COLOR */}
+          {activeTab === 'apariencia' && (
+            <div className="space-y-6">
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-4">
+                <div>
+                  <h2 className="font-cinzel text-2xl text-amber-100">Paletas Elegantes para Boda & Matrimonio</h2>
+                  <p className="text-xs text-amber-200/70 font-serif italic">
+                    Selecciona una paleta de colores de alta costura nupcial. La página se actualizará en tiempo real:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                  {ELEGANT_WEDDING_THEMES.map(theme => (
+                    <div
+                      key={theme.id}
+                      onClick={() => weddingConfigService.setTheme(theme.id)}
+                      className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 ${
+                        siteConfig.themeId === theme.id
+                          ? 'bg-white/10 border-amber-400 shadow-2xl ring-2 ring-amber-400/50'
+                          : 'glass-panel border-white/10 hover:border-white/25'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-cinzel text-lg text-amber-100 font-medium">{theme.name}</h3>
+                          {siteConfig.themeId === theme.id && (
+                            <span className="w-6 h-6 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-xs">✓</span>
+                          )}
                         </div>
+                        <p className="text-xs text-amber-100/70 font-serif italic leading-relaxed mb-4">
+                          {theme.description}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                  <button onClick={openCreateUser} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
+
+                      {/* Color Preview Dots */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                        <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewBg }} title="Color Fondo" />
+                        <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewGold }} title="Color Marfil/Oro" />
+                        <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewAccent }} title="Color Acento" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: EDITOR DE SECCIONES & CONTENIDO */}
+          {activeTab === 'secciones' && (
+            <div className="space-y-8">
+              {!canEditPage && (
+                <div className="p-4 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs flex items-center gap-3">
+                  <Lock className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span>Tu cuenta tiene restringidos los permisos de edición por el Superadmin. Contacta al Superadmin para solicitar permisos de edición de página.</span>
                 </div>
               )}
+
+              {/* 1. VISIBILIDAD DE SECCIONES PRINCIPALES */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div>
+                  <h2 className="font-cinzel text-2xl text-amber-100">Visibilidad de Secciones (Switch ON / OFF)</h2>
+                  <p className="text-xs text-amber-200/70 font-serif italic">
+                    Activa o desactiva con un switch las secciones principales que aparecerán en el sitio público:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {[
+                    { key: 'hero', name: 'Portada / Hero' },
+                    { key: 'story', name: 'Nuestra Historia' },
+                    { key: 'gallery', name: 'Galería de Fotos' },
+                    { key: 'video', name: 'Reel de Video' },
+                    { key: 'countdown', name: 'Cuenta Regresiva' },
+                    { key: 'eventDetails', name: 'Detalles & Lugares' },
+                    { key: 'dressCode', name: 'Código de Vestimenta' },
+                    { key: 'giftRegistry', name: 'Mesa de Regalos' },
+                    { key: 'rsvp', name: 'Confirmación RSVP' }
+                  ].map(sec => {
+                    const isVisible = siteConfig.sectionVisibility[sec.key as keyof WeddingSiteConfig['sectionVisibility']] !== false;
+                    return (
+                      <div
+                        key={sec.key}
+                        onClick={() => canEditPage && toggleSection(sec.key as keyof WeddingSiteConfig['sectionVisibility'])}
+                        className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+                          isVisible ? 'bg-amber-500/10 border-amber-400/40 text-amber-100' : 'glass-panel border-white/10 text-white/40'
+                        }`}
+                      >
+                        <span className="text-xs font-mono font-semibold">{sec.name}</span>
+                        {isVisible ? <ToggleRight className="w-6 h-6 text-amber-400" /> : <ToggleLeft className="w-6 h-6 text-white/40" />}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. AUDIO & MÚSICA EN BUCLE */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3">
+                  <Music className="w-6 h-6 text-amber-400" />
+                  <div>
+                    <h2 className="font-cinzel text-xl text-amber-100">Música de Fondo & Reproductor en Bucle</h2>
+                    <p className="text-xs text-amber-200/70 font-serif italic">Configura la canción de entrada, enlace MP3 y bucle infinito (`loop`).</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Título de la Canción</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.audio.title}
+                      onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, title: e.target.value } })}
+                      className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">URL / Enlace Directo Audio MP3</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.audio.url}
+                      onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, url: e.target.value } })}
+                      className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 pt-2">
+                  <label className="flex items-center gap-3 text-xs text-amber-100 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      disabled={!canEditPage}
+                      checked={siteConfig.audio.loop}
+                      onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, loop: e.target.checked } })}
+                    />
+                    <span>Bucle Infinito (`loop` continuo al terminar)</span>
+                  </label>
+                  <label className="flex items-center gap-3 text-xs text-amber-100 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      disabled={!canEditPage}
+                      checked={siteConfig.audio.autoPlay}
+                      onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, autoPlay: e.target.checked } })}
+                    />
+                    <span>Autoplay al ingresar al sitio</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* 3. HERO & NOVIOS EDITOR */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3">
+                  <Heart className="w-6 h-6 text-amber-400" />
+                  <h2 className="font-cinzel text-xl text-amber-100">Información Principal de la Boda & Novios</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Novio</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.groom} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, groom: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Novia</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.bride} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, bride: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Fecha Formateada</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.dateFormatted} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, dateFormatted: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Ciudad / País</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.city} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, city: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Frase / Cita Nupcial</label>
+                    <textarea rows={2} disabled={!canEditPage} value={siteConfig.hero.quote} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, quote: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">URL Foto de Portada (Hero Image)</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.coverImage} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, coverImage: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 font-mono" />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. MESA DE REGALOS (CUENTAS BANCARIAS DINÁMICAS) */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-6 h-6 text-amber-400" />
+                    <div>
+                      <h2 className="font-cinzel text-xl text-amber-100">Cuentas Bancarias & Mesa de Regalos</h2>
+                      <p className="text-xs text-amber-200/70 font-serif italic">Agrega, edita o desactiva tarjetas de cuentas bancarias según lo necesites.</p>
+                    </div>
+                  </div>
+                  {canEditPage && (
+                    <button onClick={openCreateBank} className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer">
+                      <Plus className="w-4 h-4" />
+                      <span>Nueva Cuenta</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {siteConfig.bankAccounts.map(b => (
+                    <div key={b.id} className={`p-4 rounded-2xl border flex items-center justify-between ${b.isVisible !== false ? 'glass-panel border-white/15' : 'bg-white/5 border-white/5 opacity-50'}`}>
+                      <div>
+                        <strong className="text-amber-100 block text-sm">{b.bankName}</strong>
+                        <span className="text-xs text-amber-200/70 font-mono">{b.accountType} • {b.accountNumber}</span>
+                        <span className="text-[10px] text-amber-300/60 block mt-0.5">{b.holderName}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => toggleBankVisibility(b.id)} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-amber-200" title={b.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
+                          {b.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                        </button>
+                        {canEditPage && (
+                          <>
+                            <button onClick={() => openEditBank(b)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => deleteBank(b.id, b.bankName)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. LUGARES DEL EVENTO (VENUES) */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-6 h-6 text-amber-400" />
+                    <div>
+                      <h2 className="font-cinzel text-xl text-amber-100">Lugares del Evento (Ceremonia & Recepción)</h2>
+                      <p className="text-xs text-amber-200/70 font-serif italic">Gestiona las tarjetas de lugares de la boda.</p>
+                    </div>
+                  </div>
+                  {canEditPage && (
+                    <button onClick={openCreateVenue} className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer">
+                      <Plus className="w-4 h-4" />
+                      <span>Nuevo Lugar</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {siteConfig.venues.map(v => (
+                    <div key={v.id} className={`p-4 rounded-2xl border flex items-center justify-between ${v.isVisible !== false ? 'glass-panel border-white/15' : 'bg-white/5 border-white/5 opacity-50'}`}>
+                      <div>
+                        <strong className="text-amber-100 block text-sm">{v.name} ({v.type.toUpperCase()})</strong>
+                        <span className="text-xs text-amber-200/70 font-mono">{v.time} • {v.address}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => toggleVenueVisibility(v.id)} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-amber-200" title={v.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
+                          {v.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                        </button>
+                        {canEditPage && (
+                          <>
+                            <button onClick={() => openEditVenue(v)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => deleteVenue(v.id, v.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 6. GALERÍA DE FOTOS Y ESTILO DE CARRUSEL */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Camera className="w-6 h-6 text-amber-400" />
+                    <div>
+                      <h2 className="font-cinzel text-xl text-amber-100">Modo de Visualización de Galería</h2>
+                      <p className="text-xs text-amber-200/70 font-serif italic">Selecciona entre Carrusel Slider o Grid Revista.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => weddingConfigService.updateConfig({ galleryConfig: { layoutStyle: 'grid' } })}
+                    className={`px-5 py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                      siteConfig.galleryConfig.layoutStyle === 'grid' ? 'bg-amber-500 text-white font-bold border-amber-400' : 'glass-panel border-white/15 text-amber-200/70'
+                    }`}
+                  >
+                    Grid Tipo Revista
+                  </button>
+                  <button
+                    onClick={() => weddingConfigService.updateConfig({ galleryConfig: { layoutStyle: 'carousel' } })}
+                    className={`px-5 py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                      siteConfig.galleryConfig.layoutStyle === 'carousel' ? 'bg-amber-500 text-white font-bold border-amber-400' : 'glass-panel border-white/15 text-amber-200/70'
+                    }`}
+                  >
+                    Carrusel Deslizable (Slider)
+                  </button>
+                </div>
+
+                {/* Photo Subida */}
+                <div className="pt-4 border-t border-white/10 space-y-4">
+                  <span className="text-xs text-amber-100 font-semibold block">Subir fotos a la galería</span>
+                  <select value={selectedAlbumId} onChange={e => setSelectedAlbumId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
+                    {albums.map(album => <option key={album.id} value={album.id}>{album.title} ({album.photoCount})</option>)}
+                  </select>
+                  <input type="file" multiple accept="image/*" onChange={e => setPhotoFiles(Array.from(e.target.files || []))} className="w-full text-xs text-amber-100" />
+                  <button onClick={() => void uploadPhotos()} disabled={isUploadingPhotos || photoFiles.length === 0} className="py-2.5 px-6 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    <span>{isUploadingPhotos ? 'Subiendo...' : 'Subir Fotos Seleccionadas'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* TAB 4: SUPERADMIN & USUARIOS */}
+          {activeTab === 'usuarios' && isSuperadmin && (
+            <div className="space-y-6">
+              <div className="p-6 rounded-3xl liquid-glass border border-amber-300/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Gobernanza de Plataforma</span>
+                    <h2 className="font-cinzel text-2xl text-amber-100">Administración de Usuarios (Admins / Novios)</h2>
+                  </div>
+                  <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-105 transition-all cursor-pointer">
+                    <UserPlus className="w-4 h-4 text-white" />
+                    <span>Crear Nuevo Admin</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {users.map(user => {
+                    const status = userStatusMap[user.id] || 'active';
+                    const canEdit = userEditPermissions[user.id] !== false;
+
+                    return (
+                      <div key={user.id} className="p-6 rounded-2xl glass-panel border border-white/10 flex flex-col justify-between gap-4">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <strong className="text-amber-100 block text-base">{user.fullName}</strong>
+                            <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase font-bold ${status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                              {status === 'active' ? 'Activo' : 'Deshabilitado'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-mono text-amber-300/60 block">Usuario: {user.username} · Rol: {user.role}</span>
+                        </div>
+
+                        <div className="space-y-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between text-xs text-amber-100">
+                            <span>Estado de Cuenta:</span>
+                            <button onClick={() => toggleUserStatus(user)} className={`px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${status === 'active' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'}`}>
+                              {status === 'active' ? 'Deshabilitar' : 'Habilitar'}
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs text-amber-100">
+                            <span>Permisos de Edición:</span>
+                            <button onClick={() => toggleUserEditPermission(user.id)} className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${canEdit ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-white/10 text-white/50'}`}>
+                              {canEdit ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                              <span>{canEdit ? 'Permitido' : 'Restringido'}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button onClick={() => deleteUserCascade(user)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer text-xs font-bold uppercase tracking-wider">
+                            <Trash2 className="w-4 h-4" />
+                            <span>Eliminar Admin (Cascada)</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-            STANDARDIZED MODALS — Using <Modal> base component
-            All modals now render via React Portal, centered in viewport,
-            with ESC close, click-outside close, scroll lock, focus trap
+            MODALS FOR GUEST, BANK, VENUE & USER
            ═══════════════════════════════════════════════════════════════ */}
 
-        {/* Guest Create/Edit Modal */}
+        {/* Guest Modal — Simplified form: NO manual code input needed! */}
         <Modal
           isOpen={isGuestModalOpen}
           onClose={() => setIsGuestModalOpen(false)}
@@ -635,102 +1109,157 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           footer={
             <div className="flex items-center justify-end gap-3">
               <button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
-              <button type="submit" form="guest-form" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button>
+              <button type="submit" form="guest-form" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button>
             </div>
           }
         >
           <form id="guest-form" onSubmit={e => void saveGuest(e)} className="space-y-4">
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Completo / Familia *</label><input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Categoría</label><select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="Familia">Familia</option><option value="Amigos">Amigos</option><option value="VIP">VIP</option><option value="Trabajo">Trabajo</option></select></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Pases Asignados</label><input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Teléfono / WhatsApp</label><input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Código URL Personalizado</label><input type="text" value={guestFormData.code} onChange={e => setGuestFormData({ ...guestFormData, code: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Notas Internas</label><textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Completo / Familia *</label>
+              <input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" placeholder="Ej. Familia Naranjo Viteri" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Categoría</label>
+                <select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
+                  <option value="Familia">Familia</option>
+                  <option value="Amigos">Amigos</option>
+                  <option value="VIP">VIP</option>
+                  <option value="Trabajo">Trabajo</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Pases Asignados</label>
+                <input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Teléfono / WhatsApp (para envío directo)</label>
+              <input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" placeholder="+593 99 876 5432" />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Notas Internas</label>
+              <textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" placeholder="Ej. Padrinos de boda..." />
+            </div>
           </form>
         </Modal>
 
-        {/* Section Create/Edit Modal */}
+        {/* Bank Account Modal */}
         <Modal
-          isOpen={isSectionModalOpen}
-          onClose={() => setIsSectionModalOpen(false)}
-          title={editingSection ? 'Editar Sección' : 'Crear Sección'}
-          size="lg"
+          isOpen={isBankModalOpen}
+          onClose={() => setIsBankModalOpen(false)}
+          title={editingBank ? 'Editar Cuenta Bancaria' : 'Agregar Cuenta Bancaria'}
+          size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsSectionModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
-              <button type="submit" form="section-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">{editingSection ? 'Actualizar sección' : 'Crear sección'}</button>
+              <button type="button" onClick={() => setIsBankModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="bank-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar Cuenta</button>
             </div>
           }
         >
-          <form id="section-form" onSubmit={e => void saveSection(e)} className="space-y-4">
-            {!editingSection && <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Clave de sección (sectionKey)</label><input type="text" required value={sectionFormData.sectionKey} onChange={e => setSectionFormData({ ...sectionFormData, sectionKey: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>}
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Título</label><input type="text" required value={sectionFormData.title} onChange={e => setSectionFormData({ ...sectionFormData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Subtítulo</label><input type="text" value={sectionFormData.subtitle} onChange={e => setSectionFormData({ ...sectionFormData, subtitle: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contenido</label><textarea rows={6} value={sectionFormData.body} onChange={e => setSectionFormData({ ...sectionFormData, body: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Orden</label><input type="number" value={sectionFormData.sortOrder} onChange={e => setSectionFormData({ ...sectionFormData, sortOrder: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Visible</label><select value={String(sectionFormData.isVisible)} onChange={e => setSectionFormData({ ...sectionFormData, isVisible: e.target.value === 'true' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="true">Visible</option><option value="false">Oculta</option></select></div></div>
+          <form id="bank-form" onSubmit={saveBank} className="space-y-4">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre del Banco *</label>
+              <input type="text" required value={bankFormData.bankName} onChange={e => setBankFormData({ ...bankFormData, bankName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="Ej. Banco Pichincha" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Tipo de Cuenta</label>
+                <input type="text" required value={bankFormData.accountType} onChange={e => setBankFormData({ ...bankFormData, accountType: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="Cuenta de Ahorros" />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Número de Cuenta *</label>
+                <input type="text" required value={bankFormData.accountNumber} onChange={e => setBankFormData({ ...bankFormData, accountNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 font-mono" placeholder="2205481904" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre del Titular</label>
+              <input type="text" value={bankFormData.holderName} onChange={e => setBankFormData({ ...bankFormData, holderName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">C.I. / RUC</label>
+                <input type="text" value={bankFormData.idNumber} onChange={e => setBankFormData({ ...bankFormData, idNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Email</label>
+                <input type="email" value={bankFormData.email} onChange={e => setBankFormData({ ...bankFormData, email: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+              </div>
+            </div>
           </form>
         </Modal>
 
-        {/* User Create Modal */}
+        {/* Venue Modal */}
+        <Modal
+          isOpen={isVenueModalOpen}
+          onClose={() => setIsVenueModalOpen(false)}
+          title={editingVenue ? 'Editar Lugar del Evento' : 'Agregar Lugar'}
+          size="lg"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setIsVenueModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="venue-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar Lugar</button>
+            </div>
+          }
+        >
+          <form id="venue-form" onSubmit={saveVenue} className="space-y-4">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre del Lugar *</label>
+              <input type="text" required value={venueFormData.name} onChange={e => setVenueFormData({ ...venueFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="Ej. Quinta Loren" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Tipo</label>
+                <select value={venueFormData.type} onChange={e => setVenueFormData({ ...venueFormData, type: e.target.value as 'ceremonia' | 'recepcion' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
+                  <option value="ceremonia">Ceremonia Religiosa</option>
+                  <option value="recepcion">Recepción & Fiesta</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Hora</label>
+                <input type="text" value={venueFormData.time} onChange={e => setVenueFormData({ ...venueFormData, time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="19:00 PM" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Dirección</label>
+              <input type="text" value={venueFormData.address} onChange={e => setVenueFormData({ ...venueFormData, address: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="Av. Los Guaytambos, Ficoa" />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">URL Google Maps</label>
+              <input type="text" value={venueFormData.googleMapsUrl} onChange={e => setVenueFormData({ ...venueFormData, googleMapsUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 font-mono" placeholder="https://maps.google.com/..." />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">URL Imagen de Fondo</label>
+              <input type="text" value={venueFormData.imageUrl} onChange={e => setVenueFormData({ ...venueFormData, imageUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 font-mono" />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Descripción</label>
+              <textarea rows={2} value={venueFormData.description} onChange={e => setVenueFormData({ ...venueFormData, description: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" />
+            </div>
+          </form>
+        </Modal>
+
+        {/* User Modal */}
         <Modal
           isOpen={isUserModalOpen && isSuperadmin}
           onClose={() => setIsUserModalOpen(false)}
-          title="Crear Usuario"
+          title="Crear Nuevo Admin"
           size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
               <button type="button" onClick={() => setIsUserModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
-              <button type="submit" form="user-form" disabled={isSavingUser} className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear usuario'}</button>
+              <button type="submit" form="user-form" disabled={isSavingUser} className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear Admin'}</button>
             </div>
           }
         >
           <form id="user-form" onSubmit={e => void saveUser(e)} className="space-y-4">
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre visible</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Novios / Nombres *</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="Ej. Mateo & Camila" /></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario / Subdominio *</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="mateoycamila" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña *</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100" placeholder="••••••••" /></div></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100"><option value="admin">Admin (Novios)</option><option value="superadmin">Superadmin</option></select></div>
           </form>
         </Modal>
 
-        {/* User Settings Modal */}
-        <Modal
-          isOpen={isUserSettingsModalOpen && isSuperadmin && !!activeUserSettingsId}
-          onClose={() => setIsUserSettingsModalOpen(false)}
-          title="Preferencias de usuario"
-          size="lg"
-          footer={
-            <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsUserSettingsModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
-              <button type="submit" form="user-settings-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar preferencias</button>
-            </div>
-          }
-        >
-          <form id="user-settings-form" onSubmit={async e => {
-            e.preventDefault();
-            const token = authService.getToken();
-            if (!token || !activeUserSettingsId) return;
-            await apiService.updateUserSettings(token, activeUserSettingsId, userSettingsForm);
-            setIsUserSettingsModalOpen(false);
-          }} className="space-y-4">
-            <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Secciones visibles</label>
-              <div className="grid gap-2">
-                {sections.map(sec => (
-                  <label key={sec.id} className="flex items-center gap-3 text-amber-100">
-                    <input type="checkbox" checked={Boolean(userSettingsForm.sections?.[sec.sectionKey])} onChange={e => setUserSettingsForm(s => ({ ...s, sections: { ...(s.sections || {}), [sec.sectionKey]: e.target.checked } }))} />
-                    <span className="text-sm">{sec.title} ({sec.sectionKey})</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Cuenta bancaria preferida</label>
-              <select value={userSettingsForm.bankAccountIndex ?? ''} onChange={e => setUserSettingsForm(s => ({ ...s, bankAccountIndex: e.target.value === '' ? null : Number(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
-                <option value="">Ninguna</option>
-                {BANK_DETAILS.map((b, idx) => <option key={b.accountNumber} value={idx}>{b.bankName} — {b.accountNumber}</option>)}
-              </select>
-            </div>
-          </form>
-        </Modal>
-
-        {/* Confirm Dialog — replaces all window.confirm() calls */}
+        {/* Confirm Dialog */}
         <ConfirmDialog
           isOpen={confirmDialog.isOpen}
           onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
@@ -738,7 +1267,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           title={confirmDialog.title}
           message={confirmDialog.message}
           variant={confirmDialog.variant}
-          confirmLabel="Eliminar"
+          confirmLabel="Proceder"
           cancelLabel="Cancelar"
         />
       </motion.div>
