@@ -22,9 +22,93 @@ export interface ThemePalette {
 
 export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
   {
-    id: 'champagne-obsidian',
-    name: 'Champagne & Noche Elegante',
-    description: 'Fondo oscuro cálido con reflejos oro champán brillante. El clásico lujo de alta noche.',
+    id: 'pearl-champagne',
+    name: 'Perla Marfil & Champán Nupcial (Luminoso)',
+    description: 'El clásico tono nupcial de gala: marfil cálido, encaje perla y reflejos en oro champán de ensueño.',
+    previewBg: '#fdfbf7',
+    previewGold: '#d4af37',
+    previewAccent: '#c5a059',
+    colors: {
+      bgBase: '#fdfbf7',
+      bgElevated: '#ffffff',
+      bgOverlay: 'rgba(30, 25, 20, 0.82)',
+      textPrimary: '#2c241d',
+      textMuted: 'rgba(60, 50, 40, 0.75)',
+      goldPrimary: '#d4af37',
+      goldLight: '#e6c875',
+      goldDark: '#8a6d2b',
+      accent: '#c5a059',
+      accentHover: '#b48f48',
+      borderGlass: 'rgba(212, 175, 55, 0.3)'
+    }
+  },
+  {
+    id: 'rose-gold-blush',
+    name: 'Rosa Gold & Romántico Marfil',
+    description: 'Tonos románticos y suaves de rosa cuarzo, marfil luminoso y destellos en oro rosa.',
+    previewBg: '#faf4f2',
+    previewGold: '#e0a996',
+    previewAccent: '#d6806e',
+    colors: {
+      bgBase: '#faf4f2',
+      bgElevated: '#ffffff',
+      bgOverlay: 'rgba(40, 20, 30, 0.82)',
+      textPrimary: '#382229',
+      textMuted: 'rgba(80, 50, 60, 0.75)',
+      goldPrimary: '#e0a996',
+      goldLight: '#f3cfc3',
+      goldDark: '#b87968',
+      accent: '#d6806e',
+      accentHover: '#c46d5b',
+      borderGlass: 'rgba(224, 169, 150, 0.35)'
+    }
+  },
+  {
+    id: 'emerald-ivory',
+    name: 'Esmeralda Jardín & Marfil',
+    description: 'Fondo marfil botánico fresco con detalles en verde esmeralda y toques de oro solar.',
+    previewBg: '#f4f8f5',
+    previewGold: '#c5a059',
+    previewAccent: '#059669',
+    colors: {
+      bgBase: '#f4f8f5',
+      bgElevated: '#ffffff',
+      bgOverlay: 'rgba(10, 40, 25, 0.85)',
+      textPrimary: '#1c3326',
+      textMuted: 'rgba(40, 75, 55, 0.75)',
+      goldPrimary: '#c5a059',
+      goldLight: '#e6c875',
+      goldDark: '#8a6d2b',
+      accent: '#059669',
+      accentHover: '#047857',
+      borderGlass: 'rgba(5, 150, 105, 0.3)'
+    }
+  },
+  {
+    id: 'sapphire-platinum',
+    name: 'Zafiro Real & Platino',
+    description: 'Elegancia cosmopolita en tonos platino luminoso y azul zafiro nupcial.',
+    previewBg: '#f6f8fa',
+    previewGold: '#94a3b8',
+    previewAccent: '#2563eb',
+    colors: {
+      bgBase: '#f6f8fa',
+      bgElevated: '#ffffff',
+      bgOverlay: 'rgba(15, 23, 42, 0.85)',
+      textPrimary: '#0f172a',
+      textMuted: 'rgba(51, 65, 85, 0.75)',
+      goldPrimary: '#94a3b8',
+      goldLight: '#cbd5e1',
+      goldDark: '#475569',
+      accent: '#2563eb',
+      accentHover: '#1d4ed8',
+      borderGlass: 'rgba(37, 99, 235, 0.25)'
+    }
+  },
+  {
+    id: 'midnight-gala',
+    name: 'Noche Encantada & Champán (Oscuro)',
+    description: 'Para bodas de gala nocturna: fondo negro aterciopelado con reflejos de oro brillante.',
     previewBg: '#0d0c0a',
     previewGold: '#d4af37',
     previewAccent: '#f97316',
@@ -40,90 +124,6 @@ export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
       accent: '#f97316',
       accentHover: '#ea580c',
       borderGlass: 'rgba(212, 175, 55, 0.25)'
-    }
-  },
-  {
-    id: 'rose-gold-velvet',
-    name: 'Rosa Gold & Marfil Nupcial',
-    description: 'Tonos románticos oro rosa con marfil suave y matices aterciopelados.',
-    previewBg: '#1a1016',
-    previewGold: '#e0a996',
-    previewAccent: '#e17055',
-    colors: {
-      bgBase: '#1a1016',
-      bgElevated: '#281722',
-      bgOverlay: 'rgba(20, 10, 18, 0.9)',
-      textPrimary: '#fdf7f4',
-      textMuted: 'rgba(242, 212, 204, 0.75)',
-      goldPrimary: '#e0a996',
-      goldLight: '#f3cfc3',
-      goldDark: '#b87968',
-      accent: '#e17055',
-      accentHover: '#d63031',
-      borderGlass: 'rgba(224, 169, 150, 0.25)'
-    }
-  },
-  {
-    id: 'emerald-luxury',
-    name: 'Esmeralda Imperial & Oro',
-    description: 'Inspirado en los valles andinos y jardines botánicos con oro puro y verde esmeralda profundo.',
-    previewBg: '#052e16',
-    previewGold: '#e6c875',
-    previewAccent: '#10b981',
-    colors: {
-      bgBase: '#052e16',
-      bgElevated: '#0a4220',
-      bgOverlay: 'rgba(2, 36, 16, 0.92)',
-      textPrimary: '#f0fdf4',
-      textMuted: 'rgba(209, 250, 229, 0.75)',
-      goldPrimary: '#e6c875',
-      goldLight: '#fef08a',
-      goldDark: '#a16207',
-      accent: '#10b981',
-      accentHover: '#059669',
-      borderGlass: 'rgba(230, 200, 117, 0.25)'
-    }
-  },
-  {
-    id: 'pearl-cream',
-    name: 'Perla Marfil & Dorado Solar',
-    description: 'Superficies marfil luminoso de ensueño con destellos de sol y elegancia campestre de día.',
-    previewBg: '#1f1d19',
-    previewGold: '#c5a059',
-    previewAccent: '#d97706',
-    colors: {
-      bgBase: '#1f1d19',
-      bgElevated: '#2e2a24',
-      bgOverlay: 'rgba(25, 23, 19, 0.88)',
-      textPrimary: '#fbf9f5',
-      textMuted: 'rgba(235, 225, 208, 0.75)',
-      goldPrimary: '#c5a059',
-      goldLight: '#e4c478',
-      goldDark: '#8c6d32',
-      accent: '#d97706',
-      accentHover: '#b45309',
-      borderGlass: 'rgba(197, 160, 89, 0.25)'
-    }
-  },
-  {
-    id: 'platinum-sapphire',
-    name: 'Platino & Zafiro Real',
-    description: 'Contraste moderno de plata estelar con azul zafiro medianoche y elegancia cosmopolita.',
-    previewBg: '#0b132b',
-    previewGold: '#cbd5e1',
-    previewAccent: '#3b82f6',
-    colors: {
-      bgBase: '#0b132b',
-      bgElevated: '#1c2541',
-      bgOverlay: 'rgba(10, 17, 40, 0.92)',
-      textPrimary: '#f8fafc',
-      textMuted: 'rgba(203, 213, 225, 0.75)',
-      goldPrimary: '#cbd5e1',
-      goldLight: '#f1f5f9',
-      goldDark: '#64748b',
-      accent: '#3b82f6',
-      accentHover: '#2563eb',
-      borderGlass: 'rgba(203, 213, 225, 0.25)'
     }
   }
 ];
