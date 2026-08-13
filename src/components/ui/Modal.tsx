@@ -9,17 +9,12 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  /** Optional icon element displayed next to the title */
   titleIcon?: React.ReactNode;
   size?: ModalSize;
   children: React.ReactNode;
-  /** Footer content (buttons, etc.) — rendered at the bottom separated by a border */
   footer?: React.ReactNode;
-  /** If true, clicking overlay won't close the modal */
   preventOverlayClose?: boolean;
-  /** If true, pressing ESC won't close the modal */
   preventEscClose?: boolean;
-  /** Additional className for the modal dialog container */
   className?: string;
 }
 
@@ -47,23 +42,20 @@ export const Modal: React.FC<ModalProps> = ({
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // --- ESC key handler ---
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !preventEscClose) {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-      }
-    },
-    [onClose, preventEscClose]
-  );
+  // Keep ref for onClose and preventEscClose so effect doesn't re-trigger on parent state changes
+  const onCloseRef = useRef(onClose);
+  const preventEscCloseRef = useRef(preventEscClose);
 
-  // --- Lock body scroll, manage focus, listen for ESC ---
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    preventEscCloseRef.current = preventEscClose;
+  });
+
+  // --- Lock body scroll, manage initial focus, listen for ESC ---
   useEffect(() => {
     if (!isOpen) return;
 
-    // Save currently focused element
+    // Save currently focused element ONLY on initial mount/open
     previousFocusRef.current = document.activeElement as HTMLElement | null;
 
     // Lock scroll
@@ -75,13 +67,16 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
-    // Listen for ESC
-    document.addEventListener('keydown', handleKeyDown);
+    // ESC Key listener
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !preventEscCloseRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        onCloseRef.current();
+      }
+    };
 
-    // Focus the dialog
-    requestAnimationFrame(() => {
-      dialogRef.current?.focus();
-    });
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       // Restore scroll
@@ -91,12 +86,12 @@ export const Modal: React.FC<ModalProps> = ({
       // Remove listener
       document.removeEventListener('keydown', handleKeyDown);
 
-      // Return focus
+      // Return focus to trigger element when closing
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
         previousFocusRef.current.focus();
       }
     };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen]); // ONLY re-run when isOpen changes, NOT on every parent render!
 
   // --- Focus trap ---
   const handleTabKey = useCallback((e: React.KeyboardEvent) => {
@@ -127,10 +122,10 @@ export const Modal: React.FC<ModalProps> = ({
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!preventOverlayClose && e.target === overlayRef.current) {
-        onClose();
+        onCloseRef.current();
       }
     },
-    [onClose, preventOverlayClose]
+    [preventOverlayClose]
   );
 
   const portalRoot = document.getElementById('modal-root');
