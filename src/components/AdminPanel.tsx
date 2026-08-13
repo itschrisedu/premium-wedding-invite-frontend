@@ -220,21 +220,51 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     const modalWidth = Math.min(width, window.innerWidth - 32);
     const modalHeight = Math.min(height, window.innerHeight - 32);
 
+    // Priorizar mostrar debajo del botón si hay espacio
+    let top: number;
+    if (rect.bottom + modalHeight + 18 <= window.innerHeight) {
+      top = rect.bottom + 18;
+    } else if (rect.top - modalHeight - 18 >= 0) {
+      // Si no hay espacio abajo, mostrar arriba
+      top = rect.top - modalHeight - 18;
+    } else {
+      // Si no hay espacio ni arriba ni abajo, centrar en viewport
+      top = Math.max(18, Math.min(window.innerHeight - modalHeight - 18, rect.top + rect.height / 2 - modalHeight / 2));
+    }
+
     const left = Math.min(Math.max(rect.left + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
-    const top = Math.min(Math.max(rect.bottom + 18, 18), window.innerHeight - modalHeight - 18);
 
     return { left, top };
+  };
+
+  const scrollModalIntoView = (position: { left: number; top: number }, modalHeight: number) => {
+    // Scroll para asegurar que el modal sea visible
+    const modalBottom = position.top + modalHeight;
+    if (modalBottom > window.innerHeight) {
+      const scrollNeeded = modalBottom - window.innerHeight + 40;
+      window.scrollBy({ top: scrollNeeded, behavior: 'smooth' });
+    } else if (position.top < 0) {
+      window.scrollBy({ top: position.top - 40, behavior: 'smooth' });
+    }
   };
 
   const openCreateGuest = (event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingGuest(null);
     setGuestFormData({ name: '', code: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
-    if (event) setGuestModalPosition(placeModalNearButton(event, 520, 640));
+    if (event) {
+      const position = placeModalNearButton(event, 520, 640);
+      setGuestModalPosition(position);
+      setTimeout(() => scrollModalIntoView(position, 640), 0);
+    }
     setIsGuestModalOpen(true);
   };
 
   const openCreateUser = (event?: React.MouseEvent<HTMLButtonElement>) => {
-    if (event) setUserModalPosition(placeModalNearButton(event, 480, 520));
+    if (event) {
+      const position = placeModalNearButton(event, 480, 520);
+      setUserModalPosition(position);
+      setTimeout(() => scrollModalIntoView(position, 520), 0);
+    }
     setIsUserModalOpen(true);
   };
 
@@ -249,7 +279,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       email: guest.email || '',
       notes: guest.notes || ''
     });
-    if (event) setGuestModalPosition(placeModalNearButton(event, 520, 640));
+    if (event) {
+      const position = placeModalNearButton(event, 520, 640);
+      setGuestModalPosition(position);
+      setTimeout(() => scrollModalIntoView(position, 640), 0);
+    }
     setIsGuestModalOpen(true);
   };
 
@@ -317,14 +351,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const openCreateSection = (event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingSection(null);
     setSectionFormData({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
-    if (event) setSectionModalPosition(placeModalNearButton(event, 640, 700));
+    if (event) {
+      const position = placeModalNearButton(event, 640, 700);
+      setSectionModalPosition(position);
+      setTimeout(() => scrollModalIntoView(position, 700), 0);
+    }
     setIsSectionModalOpen(true);
   };
 
   const openEditSection = (section: SiteSection, event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingSection(section);
     setSectionFormData({ sectionKey: section.sectionKey, title: section.title, subtitle: section.subtitle || '', body: section.body, sortOrder: section.sortOrder, isVisible: section.isVisible });
-    if (event) setSectionModalPosition(placeModalNearButton(event, 640, 700));
+    if (event) {
+      const position = placeModalNearButton(event, 640, 700);
+      setSectionModalPosition(position);
+      setTimeout(() => scrollModalIntoView(position, 700), 0);
+    }
     setIsSectionModalOpen(true);
   };
 
@@ -565,7 +607,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const res = await apiService.getUserSettings(token, user.id);
                               setActiveUserSettingsId(user.id);
                               setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
-                              setUserSettingsModalPosition(placeModalNearButton(event, 640, 700));
+                              const position = placeModalNearButton(event, 640, 700);
+                              setUserSettingsModalPosition(position);
+                              setTimeout(() => scrollModalIntoView(position, 700), 0);
                               setIsUserSettingsModalOpen(true);
                             } catch (err) {
                               // ignore
