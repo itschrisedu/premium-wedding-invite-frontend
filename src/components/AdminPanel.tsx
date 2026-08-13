@@ -28,6 +28,8 @@ import { authService } from '../services/authService';
 import { apiService, type AuthSession, type AdminUser, type GalleryAlbum, type SiteSection } from '../services/apiService';
 import { BANK_DETAILS } from '../data/weddingData';
 import { galleryService } from '../services/galleryService';
+import { Modal } from './ui/Modal';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -53,10 +55,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
-  const [guestModalPosition, setGuestModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [sectionModalPosition, setSectionModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [userModalPosition, setUserModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const [userSettingsModalPosition, setUserSettingsModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [guestFormData, setGuestFormData] = useState({
     name: '',
@@ -80,6 +78,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [sectionFormData, setSectionFormData] = useState({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
   const [activeUserSettingsId, setActiveUserSettingsId] = useState<string | null>(null);
   const [userSettingsForm, setUserSettingsForm] = useState<{ sections?: Record<string, boolean>; bankAccountIndex?: number | null }>({ sections: {}, bankAccountIndex: null });
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant: 'danger' | 'warning' | 'default';
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger' });
 
   const isSuperadmin = session?.user.role === 'superadmin';
 
@@ -133,6 +140,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       void loadData();
     }
   }, [session?.token]);
+
+  // --- ESC to close admin panel ---
+  useEffect(() => {
+    if (!isOpen || !session) return;
+    const hasNestedModal = isGuestModalOpen || isUserModalOpen || isSectionModalOpen || isUserSettingsModalOpen || confirmDialog.isOpen;
+    if (hasNestedModal) return;
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [isOpen, session, onClose, isGuestModalOpen, isUserModalOpen, isSectionModalOpen, isUserSettingsModalOpen, confirmDialog.isOpen]);
 
   const filteredGuests = useMemo(() => {
     return guests.filter(guest => {
@@ -213,75 +236,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const totalPassesAllowed = guests.reduce((acc, g) => acc + g.passesAllowed, 0);
   const confirmationPercentage = totalGuests > 0 ? Math.round((confirmedCount / totalGuests) * 100) : 0;
 
-  const placeModalNearButton = (event: React.MouseEvent<HTMLElement> | undefined, width: number, height: number) => {
-    if (!event) return { left: window.innerWidth / 2, top: window.scrollY + window.innerHeight / 2 };
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const modalWidth = Math.min(width, window.innerWidth - 32);
-    const modalHeight = Math.min(height, window.innerHeight - 32);
-
-    // Convertir posición del viewport a posición de página considerando el scroll
-    const scrollY = window.scrollY;
-    const buttonPageY = rect.top + scrollY;
-
-    // Priorizar mostrar debajo del botón si hay espacio en viewport
-    let pageY: number;
-    if (rect.bottom + modalHeight + 18 <= window.innerHeight) {
-      // Hay espacio abajo del botón en el viewport
-      pageY = buttonPageY + rect.height + 18;
-    } else if (rect.top - modalHeight - 18 >= scrollY) {
-      // Hay espacio arriba del botón
-      pageY = buttonPageY - modalHeight - 18;
-    } else {
-      // Mostrar centrado donde está el botón
-      pageY = buttonPageY + rect.height / 2 - modalHeight / 2;
-    }
-
-    // Centrar horizontalmente en la pantalla
-    const left = window.innerWidth / 2;
-
-    return { left, top: pageY };
-  };
-
-  const scrollModalIntoView = (position: { left: number; top: number }, modalHeight: number) => {
-    // Scroll para asegurar que el modal sea visible en el viewport
-    const viewportTop = window.scrollY;
-    const viewportBottom = window.scrollY + window.innerHeight;
-    const modalTop = position.top;
-    const modalBottom = position.top + modalHeight;
-
-    if (modalBottom > viewportBottom) {
-      // El modal está abajo del viewport, scroll hacia abajo
-      const scrollNeeded = modalBottom - viewportBottom + 40;
-      window.scrollBy({ top: scrollNeeded, behavior: 'smooth' });
-    } else if (modalTop < viewportTop) {
-      // El modal está arriba del viewport, scroll hacia arriba
-      const scrollNeeded = modalTop - viewportTop - 40;
-      window.scrollBy({ top: scrollNeeded, behavior: 'smooth' });
-    }
-  };
-
-  const openCreateGuest = (event?: React.MouseEvent<HTMLButtonElement>) => {
+  // --- Guest CRUD ---
+  const openCreateGuest = () => {
     setEditingGuest(null);
     setGuestFormData({ name: '', code: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
-    if (event) {
-      const position = placeModalNearButton(event, 520, 640);
-      setGuestModalPosition(position);
-      setTimeout(() => scrollModalIntoView(position, 640), 0);
-    }
     setIsGuestModalOpen(true);
   };
 
-  const openCreateUser = (event?: React.MouseEvent<HTMLButtonElement>) => {
-    if (event) {
-      const position = placeModalNearButton(event, 480, 520);
-      setUserModalPosition(position);
-      setTimeout(() => scrollModalIntoView(position, 520), 0);
-    }
-    setIsUserModalOpen(true);
-  };
-
-  const openEditGuest = (guest: Guest, event?: React.MouseEvent<HTMLButtonElement>) => {
+  const openEditGuest = (guest: Guest) => {
     setEditingGuest(guest);
     setGuestFormData({
       name: guest.name,
@@ -292,11 +254,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       email: guest.email || '',
       notes: guest.notes || ''
     });
-    if (event) {
-      const position = placeModalNearButton(event, 520, 640);
-      setGuestModalPosition(position);
-      setTimeout(() => scrollModalIntoView(position, 640), 0);
-    }
     setIsGuestModalOpen(true);
   };
 
@@ -341,9 +298,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
-  const deleteGuest = async (guestId: string, name: string) => {
-    if (!confirm(`¿Estás seguro de eliminar a "${name}" de la lista de invitados?`)) return;
-    await storageService.deleteGuest(guestId);
+  const deleteGuest = (guestId: string, name: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar invitado',
+      message: `¿Estás seguro de eliminar a "${name}" de la lista de invitados?`,
+      onConfirm: () => void storageService.deleteGuest(guestId),
+      variant: 'danger'
+    });
+  };
+
+  // --- User CRUD ---
+  const openCreateUser = () => {
+    setUserFormData({ username: '', password: '', fullName: '', role: 'user' });
+    setIsUserModalOpen(true);
   };
 
   const saveUser = async (e: React.FormEvent) => {
@@ -361,25 +329,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
-  const openCreateSection = (event?: React.MouseEvent<HTMLButtonElement>) => {
+  // --- Section CRUD ---
+  const openCreateSection = () => {
     setEditingSection(null);
     setSectionFormData({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
-    if (event) {
-      const position = placeModalNearButton(event, 640, 700);
-      setSectionModalPosition(position);
-      setTimeout(() => scrollModalIntoView(position, 700), 0);
-    }
     setIsSectionModalOpen(true);
   };
 
-  const openEditSection = (section: SiteSection, event?: React.MouseEvent<HTMLButtonElement>) => {
+  const openEditSection = (section: SiteSection) => {
     setEditingSection(section);
     setSectionFormData({ sectionKey: section.sectionKey, title: section.title, subtitle: section.subtitle || '', body: section.body, sortOrder: section.sortOrder, isVisible: section.isVisible });
-    if (event) {
-      const position = placeModalNearButton(event, 640, 700);
-      setSectionModalPosition(position);
-      setTimeout(() => scrollModalIntoView(position, 700), 0);
-    }
     setIsSectionModalOpen(true);
   };
 
@@ -412,14 +371,55 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     setIsSectionModalOpen(false);
   };
 
-  const removeSection = async (sectionId: string) => {
-    const token = authService.getToken();
-    if (!token) return;
-    if (!confirm('¿Eliminar sección? Esta acción es irreversible.')) return;
-    await apiService.deleteSection(token, sectionId);
-    setSections(s => s.filter(x => x.id !== sectionId));
+  const removeSection = (sectionId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar sección',
+      message: '¿Eliminar sección? Esta acción es irreversible.',
+      onConfirm: async () => {
+        const token = authService.getToken();
+        if (!token) return;
+        await apiService.deleteSection(token, sectionId);
+        setSections(s => s.filter(x => x.id !== sectionId));
+      },
+      variant: 'danger'
+    });
   };
 
+  // --- User Settings ---
+  const openUserSettings = async (userId: string) => {
+    const token = authService.getToken();
+    if (!token) return;
+    try {
+      const res = await apiService.getUserSettings(token, userId);
+      setActiveUserSettingsId(userId);
+      setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
+      setIsUserSettingsModalOpen(true);
+    } catch {
+      // ignore
+    }
+  };
+
+  const deleteUser = (user: AdminUser) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar usuario',
+      message: `¿Eliminar usuario ${user.username}? Esta acción es irreversible.`,
+      onConfirm: async () => {
+        const token = authService.getToken();
+        if (!token) return;
+        try {
+          await apiService.deleteUser(token, user.id);
+          setUsers(await apiService.listUsers(token));
+        } catch {
+          // ignore
+        }
+      },
+      variant: 'danger'
+    });
+  };
+
+  // --- Gallery ---
   const uploadPhotos = async () => {
     const token = authService.getToken();
     if (!token || !selectedAlbumId || photoFiles.length === 0) return;
@@ -464,12 +464,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <FileText className="w-4 h-4 text-amber-400" />
                 <span>Exportar PDF</span>
               </button>
-              <button onClick={(event) => openCreateGuest(event)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+              <button onClick={openCreateGuest} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                 <Plus className="w-4 h-4 text-white" />
                 <span>Nuevo Invitado</span>
               </button>
               {isSuperadmin && (
-                <button onClick={(event) => openCreateUser(event)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+                <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                   <UserPlus className="w-4 h-4 text-white" />
                   <span>Nuevo Usuario</span>
                 </button>
@@ -535,7 +535,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-[10px]">{guest.category}</span></td>
                         <td className="p-4 font-mono font-semibold text-amber-200">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
                         <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>{guest.status}</span></td>
-                        <td className="p-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"><Send className="w-3.5 h-3.5" /></button><button onClick={(event) => openEditGuest(guest, event)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => void deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
+                        <td className="p-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"><Send className="w-3.5 h-3.5" /></button><button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                       </tr>
                     )) : (<tr><td colSpan={5} className="p-8 text-center text-amber-200/50 font-serif italic">No se encontraron invitados con los criterios seleccionados.</td></tr>)}
                   </tbody>
@@ -566,13 +566,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             <span className="text-[10px] text-amber-300/70">{section.sectionKey} · {section.isVisible ? 'Visible' : 'Oculta'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={(event) => openEditSection(section, event)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => openEditSection(section)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
                             <button onClick={() => removeSection(section.id)} className="p-2 rounded-md bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <button onClick={(event) => openCreateSection(event)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
+                    <button onClick={openCreateSection} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
                   </div>
                 )}
 
@@ -607,141 +607,140 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         </div>
 
                         <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                          <button onClick={async (event) => {
-                            const token = authService.getToken();
-                            if (!token) return;
-                            try {
-                              const res = await apiService.getUserSettings(token, user.id);
-                              setActiveUserSettingsId(user.id);
-                              setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
-                              const position = placeModalNearButton(event, 640, 700);
-                              setUserSettingsModalPosition(position);
-                              setTimeout(() => scrollModalIntoView(position, 700), 0);
-                              setIsUserSettingsModalOpen(true);
-                            } catch (err) {
-                              // ignore
-                            }
-                          }} className="p-2.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer" title="Configurar usuario"><UserCog className="w-4 h-4" /></button>
-                          <button onClick={async () => {
-                            if (!confirm(`Eliminar usuario ${user.username}? Esta acción es irreversible.`)) return;
-                            const token = authService.getToken();
-                            if (!token) return;
-                            try {
-                              await apiService.deleteUser(token, user.id);
-                              setUsers(await apiService.listUsers(token));
-                            } catch (err) {
-                              // ignore
-                            }
-                          }} className="p-2.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer" title="Eliminar usuario"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => void openUserSettings(user.id)} className="p-2.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer" title="Configurar usuario"><UserCog className="w-4 h-4" /></button>
+                          <button onClick={() => deleteUser(user)} className="p-2.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer" title="Eliminar usuario"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <button onClick={(event) => openCreateUser(event)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
+                  <button onClick={openCreateUser} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <AnimatePresence>
-          {isGuestModalOpen && (
-            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.9, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 12 }} style={{ position: 'fixed', left: `${guestModalPosition.left}px`, top: `${guestModalPosition.top}px`, width: 'min(520px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">{editingGuest ? 'Editar Invitado' : 'Crear Nuevo Invitado'}</h3><button onClick={() => setIsGuestModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
-                <form onSubmit={e => void saveGuest(e)} className="space-y-4">
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Completo / Familia *</label><input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Categoría</label><select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="Familia">Familia</option><option value="Amigos">Amigos</option><option value="VIP">VIP</option><option value="Trabajo">Trabajo</option></select></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Pases Asignados</label><input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-                  <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Teléfono / WhatsApp</label><input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Código URL Personalizado</label><input type="text" value={guestFormData.code} onChange={e => setGuestFormData({ ...guestFormData, code: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Notas Internas</label><textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button></div>
-                </form>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {isSectionModalOpen && (
-            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 12 }} style={{ position: 'fixed', left: `${sectionModalPosition.left}px`, top: `${sectionModalPosition.top}px`, width: 'min(640px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">{editingSection ? 'Editar Sección' : 'Crear Sección'}</h3><button onClick={() => setIsSectionModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
-                <form onSubmit={e => void saveSection(e)} className="space-y-4">
-                  {!editingSection && <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Clave de sección (sectionKey)</label><input type="text" required value={sectionFormData.sectionKey} onChange={e => setSectionFormData({ ...sectionFormData, sectionKey: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>}
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Título</label><input type="text" required value={sectionFormData.title} onChange={e => setSectionFormData({ ...sectionFormData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Subtítulo</label><input type="text" value={sectionFormData.subtitle} onChange={e => setSectionFormData({ ...sectionFormData, subtitle: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contenido</label><textarea rows={6} value={sectionFormData.body} onChange={e => setSectionFormData({ ...sectionFormData, body: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Orden</label><input type="number" value={sectionFormData.sortOrder} onChange={e => setSectionFormData({ ...sectionFormData, sortOrder: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Visible</label><select value={String(sectionFormData.isVisible)} onChange={e => setSectionFormData({ ...sectionFormData, isVisible: e.target.value === 'true' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="true">Visible</option><option value="false">Oculta</option></select></div></div>
-                  <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsSectionModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform">{editingSection ? 'Actualizar sección' : 'Crear sección'}</button></div>
-                </form>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+        {/* ═══════════════════════════════════════════════════════════════
+            STANDARDIZED MODALS — Using <Modal> base component
+            All modals now render via React Portal, centered in viewport,
+            with ESC close, click-outside close, scroll lock, focus trap
+           ═══════════════════════════════════════════════════════════════ */}
 
-        <AnimatePresence>
-          {isUserModalOpen && isSuperadmin && (
-            <div className="fixed inset-0 z-[60] pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 12 }}
-                style={{
-                  position: 'fixed',
-                  left: `${userModalPosition.left}px`,
-                  top: `${userModalPosition.top}px`,
-                  width: 'min(480px, calc(100vw - 2rem))',
-                  pointerEvents: 'auto',
-                  transform: 'translateX(-50%)'
-                }}
-                className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6"
-              >
-                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">Crear Usuario</h3><button onClick={() => setIsUserModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
-                <form onSubmit={e => void saveUser(e)} className="space-y-4">
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre visible</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
-                  <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
-                  <button type="submit" disabled={isSavingUser} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear usuario'}</button>
-                </form>
-              </motion.div>
+        {/* Guest Create/Edit Modal */}
+        <Modal
+          isOpen={isGuestModalOpen}
+          onClose={() => setIsGuestModalOpen(false)}
+          title={editingGuest ? 'Editar Invitado' : 'Crear Nuevo Invitado'}
+          size="md"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="guest-form" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button>
             </div>
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {isUserSettingsModalOpen && isSuperadmin && activeUserSettingsId && (
-            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 12 }} style={{ position: 'fixed', left: `${userSettingsModalPosition.left}px`, top: `${userSettingsModalPosition.top}px`, width: 'min(640px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">Preferencias de usuario</h3><button onClick={() => setIsUserSettingsModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
-                <form onSubmit={async e => {
-                  e.preventDefault();
-                  const token = authService.getToken();
-                  if (!token || !activeUserSettingsId) return;
-                  await apiService.updateUserSettings(token, activeUserSettingsId, userSettingsForm);
-                  setIsUserSettingsModalOpen(false);
-                }} className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Secciones visibles</label>
-                    <div className="grid gap-2">
-                      {sections.map(sec => (
-                        <label key={sec.id} className="flex items-center gap-3 text-amber-100">
-                          <input type="checkbox" checked={Boolean(userSettingsForm.sections?.[sec.sectionKey])} onChange={e => setUserSettingsForm(s => ({ ...s, sections: { ...(s.sections || {}), [sec.sectionKey]: e.target.checked } }))} />
-                          <span className="text-sm">{sec.title} ({sec.sectionKey})</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Cuenta bancaria preferida</label>
-                    <select value={userSettingsForm.bankAccountIndex ?? ''} onChange={e => setUserSettingsForm(s => ({ ...s, bankAccountIndex: e.target.value === '' ? null : Number(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
-                      <option value="">Ninguna</option>
-                      {BANK_DETAILS.map((b, idx) => <option key={b.accountNumber} value={idx}>{b.bankName} — {b.accountNumber}</option>)}
-                    </select>
-                  </div>
-                  <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsUserSettingsModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform">Guardar preferencias</button></div>
-                </form>
-              </motion.div>
+          }
+        >
+          <form id="guest-form" onSubmit={e => void saveGuest(e)} className="space-y-4">
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Completo / Familia *</label><input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Categoría</label><select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="Familia">Familia</option><option value="Amigos">Amigos</option><option value="VIP">VIP</option><option value="Trabajo">Trabajo</option></select></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Pases Asignados</label><input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Teléfono / WhatsApp</label><input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Código URL Personalizado</label><input type="text" value={guestFormData.code} onChange={e => setGuestFormData({ ...guestFormData, code: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Notas Internas</label><textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+          </form>
+        </Modal>
+
+        {/* Section Create/Edit Modal */}
+        <Modal
+          isOpen={isSectionModalOpen}
+          onClose={() => setIsSectionModalOpen(false)}
+          title={editingSection ? 'Editar Sección' : 'Crear Sección'}
+          size="lg"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setIsSectionModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="section-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">{editingSection ? 'Actualizar sección' : 'Crear sección'}</button>
             </div>
-          )}
-        </AnimatePresence>
+          }
+        >
+          <form id="section-form" onSubmit={e => void saveSection(e)} className="space-y-4">
+            {!editingSection && <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Clave de sección (sectionKey)</label><input type="text" required value={sectionFormData.sectionKey} onChange={e => setSectionFormData({ ...sectionFormData, sectionKey: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>}
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Título</label><input type="text" required value={sectionFormData.title} onChange={e => setSectionFormData({ ...sectionFormData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Subtítulo</label><input type="text" value={sectionFormData.subtitle} onChange={e => setSectionFormData({ ...sectionFormData, subtitle: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contenido</label><textarea rows={6} value={sectionFormData.body} onChange={e => setSectionFormData({ ...sectionFormData, body: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Orden</label><input type="number" value={sectionFormData.sortOrder} onChange={e => setSectionFormData({ ...sectionFormData, sortOrder: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Visible</label><select value={String(sectionFormData.isVisible)} onChange={e => setSectionFormData({ ...sectionFormData, isVisible: e.target.value === 'true' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="true">Visible</option><option value="false">Oculta</option></select></div></div>
+          </form>
+        </Modal>
+
+        {/* User Create Modal */}
+        <Modal
+          isOpen={isUserModalOpen && isSuperadmin}
+          onClose={() => setIsUserModalOpen(false)}
+          title="Crear Usuario"
+          size="md"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setIsUserModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="user-form" disabled={isSavingUser} className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear usuario'}</button>
+            </div>
+          }
+        >
+          <form id="user-form" onSubmit={e => void saveUser(e)} className="space-y-4">
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre visible</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
+          </form>
+        </Modal>
+
+        {/* User Settings Modal */}
+        <Modal
+          isOpen={isUserSettingsModalOpen && isSuperadmin && !!activeUserSettingsId}
+          onClose={() => setIsUserSettingsModalOpen(false)}
+          title="Preferencias de usuario"
+          size="lg"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setIsUserSettingsModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" form="user-settings-form" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar preferencias</button>
+            </div>
+          }
+        >
+          <form id="user-settings-form" onSubmit={async e => {
+            e.preventDefault();
+            const token = authService.getToken();
+            if (!token || !activeUserSettingsId) return;
+            await apiService.updateUserSettings(token, activeUserSettingsId, userSettingsForm);
+            setIsUserSettingsModalOpen(false);
+          }} className="space-y-4">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Secciones visibles</label>
+              <div className="grid gap-2">
+                {sections.map(sec => (
+                  <label key={sec.id} className="flex items-center gap-3 text-amber-100">
+                    <input type="checkbox" checked={Boolean(userSettingsForm.sections?.[sec.sectionKey])} onChange={e => setUserSettingsForm(s => ({ ...s, sections: { ...(s.sections || {}), [sec.sectionKey]: e.target.checked } }))} />
+                    <span className="text-sm">{sec.title} ({sec.sectionKey})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Cuenta bancaria preferida</label>
+              <select value={userSettingsForm.bankAccountIndex ?? ''} onChange={e => setUserSettingsForm(s => ({ ...s, bankAccountIndex: e.target.value === '' ? null : Number(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
+                <option value="">Ninguna</option>
+                {BANK_DETAILS.map((b, idx) => <option key={b.accountNumber} value={idx}>{b.bankName} — {b.accountNumber}</option>)}
+              </select>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Confirm Dialog — replaces all window.confirm() calls */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+        />
       </motion.div>
     </AnimatePresence>
   );

@@ -5,6 +5,7 @@ import { GALLERY_IMAGES } from '../data/weddingData';
 import { GalleryImage } from '../types';
 import { galleryService } from '../services/galleryService';
 import { API_BASE_URL } from '../services/apiService';
+import { Modal } from './ui/Modal';
 
 type DisplayImage = GalleryImage & { backend?: boolean; contentUrl?: string };
 
@@ -131,29 +132,36 @@ export const GallerySection: React.FC = () => {
         ))}
       </div>
 
-      <AnimatePresence>
-        {selectedImage && galleryItems.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeLightbox}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl"
+
+      <Modal
+        isOpen={Boolean(selectedImage && galleryItems.length > 0)}
+        onClose={closeLightbox}
+        size="full"
+      >
+        <div className="relative flex items-center justify-center min-h-[60vh]">
+          <button
+            onClick={prevImage}
+            className="absolute left-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors cursor-pointer"
+            aria-label="Imagen anterior"
           >
-            <button onClick={closeLightbox} className="absolute top-6 right-6 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors">
-              <X className="w-6 h-6" />
-            </button>
+            <ChevronLeft className="w-6 h-6" />
+          </button>
 
-            <button onClick={prevImage} className="absolute left-6 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+          <button
+            onClick={nextImage}
+            className="absolute right-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors cursor-pointer"
+            aria-label="Imagen siguiente"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
 
-            <button onClick={nextImage} className="absolute right-6 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors">
-              <ChevronRight className="w-6 h-6" />
-            </button>
-
-            <div onClick={e => e.stopPropagation()} className="relative max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden liquid-glass border border-white/20 p-2">
-              <img src={selectedImage.url} alt={selectedImage.title} className="max-w-full max-h-[75vh] object-contain rounded-xl mx-auto" />
+          {selectedImage && (
+            <div className="relative max-w-4xl max-h-[80vh] rounded-2xl overflow-hidden liquid-glass border border-white/20 p-2">
+              <img
+                src={selectedImage.url}
+                alt={selectedImage.title}
+                className="max-w-full max-h-[65vh] object-contain rounded-xl mx-auto"
+              />
 
               <div className="p-4 text-center bg-[#0d0c0a]/80 backdrop-blur-md rounded-b-xl border-t border-white/10 mt-2">
                 <span className="text-xs font-mono text-amber-400 uppercase tracking-widest flex items-center justify-center gap-1 mb-1">
@@ -164,9 +172,9 @@ export const GallerySection: React.FC = () => {
                 <p className="text-xs text-amber-200/80 font-serif italic mt-1">"{selectedImage.caption}"</p>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </div>
+      </Modal>
     </section>
   );
 };

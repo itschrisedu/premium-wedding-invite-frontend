@@ -13,8 +13,22 @@ class StorageService {
     void this.refreshGuests();
   }
 
+  private readLocalCache(): Guest[] {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : INITIAL_GUESTS;
+    } catch {
+      return INITIAL_GUESTS;
+    }
+  }
+
   private persistCache(guests: Guest[]): void {
     this.cache = guests;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
+    } catch {
+      // ignore
+    }
     this.notify();
   }
 

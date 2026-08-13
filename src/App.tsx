@@ -12,6 +12,7 @@ import { GiftRegistrySection } from './components/GiftRegistrySection';
 import { RSVPSection } from './components/RSVPSection';
 import { AdminPanel } from './components/AdminPanel';
 import { AudioPlayer } from './components/AudioPlayer';
+import { Modal } from './components/ui/Modal';
 import { Guest } from './types';
 import { storageService } from './services/storageService';
 import { Heart, Sparkles, UserCheck, X } from 'lucide-react';
@@ -130,54 +131,44 @@ export default function App() {
         onClose={() => setIsAdminOpen(false)}
         appUrl={appUrl}
       />
-
       {/* GUEST SELECTOR MODAL DRAWER */}
-      {isGuestSelectorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md p-6 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2 text-amber-200">
-                <UserCheck className="w-4 h-4 text-amber-400" />
-                <h3 className="font-cinzel text-lg">Probar Invitación Personal</h3>
-              </div>
+      <Modal
+        isOpen={isGuestSelectorOpen}
+        onClose={() => setIsGuestSelectorOpen(false)}
+        title="Probar Invitación Personal"
+        titleIcon={<UserCheck className="w-4 h-4 text-amber-400" />}
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-amber-200/70 font-serif italic">
+            Selecciona un invitado para ver cómo luce su enlace personalizado:
+          </p>
+
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            {storageService.getGuests().map(g => (
               <button
-                onClick={() => setIsGuestSelectorOpen(false)}
-                className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"
+                key={g.id}
+                onClick={() => handleSelectGuest(g)}
+                className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+                  currentGuest?.id === g.id
+                    ? 'gold-gradient-bg text-amber-950 font-semibold border-amber-300'
+                    : 'glass-panel border-white/10 hover:border-white/20 text-amber-100'
+                }`}
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-amber-200/70 font-serif italic">
-              Selecciona un invitado para ver cómo luce su enlace personalizado:
-            </p>
-
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              {storageService.getGuests().map(g => (
-                <button
-                  key={g.id}
-                  onClick={() => handleSelectGuest(g)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
-                    currentGuest?.id === g.id
-                      ? 'gold-gradient-bg text-amber-950 font-semibold border-amber-300'
-                      : 'glass-panel border-white/10 hover:border-white/20 text-amber-100'
-                  }`}
-                >
-                  <div>
-                    <strong className="text-xs block">{g.name}</strong>
-                    <span className="text-[10px] opacity-80 font-mono">
-                      {g.category} • {g.passesAllowed} Pases
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/20">
-                    {g.status}
+                <div>
+                  <strong className="text-xs block">{g.name}</strong>
+                  <span className="text-[10px] opacity-80 font-mono">
+                    {g.category} • {g.passesAllowed} Pases
                   </span>
-                </button>
-              ))}
-            </div>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/20">
+                  {g.status}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Footer */}
       <footer className="py-12 px-6 text-center border-t border-white/10 bg-[#0a0908] text-xs text-amber-200/60 font-serif italic space-y-2">
