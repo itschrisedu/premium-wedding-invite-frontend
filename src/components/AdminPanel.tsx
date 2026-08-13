@@ -52,7 +52,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [guestModalPosition, setGuestModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  const [sectionModalPosition, setSectionModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [userModalPosition, setUserModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  const [userSettingsModalPosition, setUserSettingsModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [guestFormData, setGuestFormData] = useState({
     name: '',
@@ -74,7 +77,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
   const [sectionFormData, setSectionFormData] = useState({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
-  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
   const [activeUserSettingsId, setActiveUserSettingsId] = useState<string | null>(null);
   const [userSettingsForm, setUserSettingsForm] = useState<{ sections?: Record<string, boolean>; bankAccountIndex?: number | null }>({ sections: {}, bankAccountIndex: null });
 
@@ -210,25 +212,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const totalPassesAllowed = guests.reduce((acc, g) => acc + g.passesAllowed, 0);
   const confirmationPercentage = totalGuests > 0 ? Math.round((confirmedCount / totalGuests) * 100) : 0;
 
-  const openCreateGuest = () => {
+  const placeModalNearButton = (event: React.MouseEvent<HTMLElement> | undefined, width: number, height: number) => {
+    if (!event) return { left: window.innerWidth / 2, top: window.innerHeight / 2 };
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const modalWidth = Math.min(width, window.innerWidth - 32);
+    const modalHeight = Math.min(height, window.innerHeight - 32);
+
+    const left = Math.min(Math.max(rect.left + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
+    const top = Math.min(Math.max(rect.bottom + 18, 18), window.innerHeight - modalHeight - 18);
+
+    return { left, top };
+  };
+
+  const openCreateGuest = (event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingGuest(null);
     setGuestFormData({ name: '', code: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
+    if (event) setGuestModalPosition(placeModalNearButton(event, 520, 640));
     setIsGuestModalOpen(true);
   };
 
   const openCreateUser = (event?: React.MouseEvent<HTMLButtonElement>) => {
-    if (event) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const modalWidth = Math.min(480, window.innerWidth - 32);
-      const modalHeight = Math.min(520, window.innerHeight - 32);
-      const left = Math.min(Math.max(rect.left + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
-      const top = Math.min(Math.max(rect.bottom + 16, 16), window.innerHeight - modalHeight - 16);
-      setUserModalPosition({ left, top });
-    }
+    if (event) setUserModalPosition(placeModalNearButton(event, 480, 520));
     setIsUserModalOpen(true);
   };
 
-  const openEditGuest = (guest: Guest) => {
+  const openEditGuest = (guest: Guest, event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingGuest(guest);
     setGuestFormData({
       name: guest.name,
@@ -239,6 +248,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       email: guest.email || '',
       notes: guest.notes || ''
     });
+    if (event) setGuestModalPosition(placeModalNearButton(event, 520, 640));
     setIsGuestModalOpen(true);
   };
 
@@ -303,15 +313,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
-  const openCreateSection = () => {
+  const openCreateSection = (event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingSection(null);
     setSectionFormData({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
+    if (event) setSectionModalPosition(placeModalNearButton(event, 640, 700));
     setIsSectionModalOpen(true);
   };
 
-  const openEditSection = (section: SiteSection) => {
+  const openEditSection = (section: SiteSection, event?: React.MouseEvent<HTMLButtonElement>) => {
     setEditingSection(section);
     setSectionFormData({ sectionKey: section.sectionKey, title: section.title, subtitle: section.subtitle || '', body: section.body, sortOrder: section.sortOrder, isVisible: section.isVisible });
+    if (event) setSectionModalPosition(placeModalNearButton(event, 640, 700));
     setIsSectionModalOpen(true);
   };
 
@@ -396,12 +408,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <FileText className="w-4 h-4 text-amber-400" />
                 <span>Exportar PDF</span>
               </button>
-              <button onClick={openCreateGuest} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+              <button onClick={(event) => openCreateGuest(event)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                 <Plus className="w-4 h-4 text-white" />
                 <span>Nuevo Invitado</span>
               </button>
               {isSuperadmin && (
-                <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+                <button onClick={(event) => openCreateUser(event)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                   <UserPlus className="w-4 h-4 text-white" />
                   <span>Nuevo Usuario</span>
                 </button>
@@ -467,7 +479,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-[10px]">{guest.category}</span></td>
                         <td className="p-4 font-mono font-semibold text-amber-200">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
                         <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>{guest.status}</span></td>
-                        <td className="p-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"><Send className="w-3.5 h-3.5" /></button><button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => void deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
+                        <td className="p-4 text-right"><div className="flex items-center justify-end gap-2"><button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"><Send className="w-3.5 h-3.5" /></button><button onClick={(event) => openEditGuest(guest, event)} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button><button onClick={() => void deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                       </tr>
                     )) : (<tr><td colSpan={5} className="p-8 text-center text-amber-200/50 font-serif italic">No se encontraron invitados con los criterios seleccionados.</td></tr>)}
                   </tbody>
@@ -498,13 +510,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             <span className="text-[10px] text-amber-300/70">{section.sectionKey} · {section.isVisible ? 'Visible' : 'Oculta'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => openEditSection(section)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={(event) => openEditSection(section, event)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
                             <button onClick={() => removeSection(section.id)} className="p-2 rounded-md bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <button onClick={() => openCreateSection()} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
+                    <button onClick={(event) => openCreateSection(event)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
                   </div>
                 )}
 
@@ -545,13 +557,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               // ignore
                             }
                           }} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
-                          <button onClick={async () => {
+                          <button onClick={async (event) => {
                             const token = authService.getToken();
                             if (!token) return;
                             try {
                               const res = await apiService.getUserSettings(token, user.id);
                               setActiveUserSettingsId(user.id);
                               setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
+                              setUserSettingsModalPosition(placeModalNearButton(event, 640, 700));
                               setIsUserSettingsModalOpen(true);
                             } catch (err) {
                               // ignore
@@ -561,7 +574,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
                     ))}
                   </div>
-                  <button onClick={openCreateUser} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
+                  <button onClick={(event) => openCreateUser(event)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
                 </div>
               )}
             </div>
@@ -570,8 +583,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
         <AnimatePresence>
           {isGuestModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-lg p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
+              <motion.div initial={{ opacity: 0, scale: 0.9, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 12 }} style={{ position: 'fixed', left: `${guestModalPosition.left}px`, top: `${guestModalPosition.top}px`, width: 'min(520px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">{editingGuest ? 'Editar Invitado' : 'Crear Nuevo Invitado'}</h3><button onClick={() => setIsGuestModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
                 <form onSubmit={e => void saveGuest(e)} className="space-y-4">
                   <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre Completo / Familia *</label><input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
@@ -586,8 +599,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
         </AnimatePresence>
         <AnimatePresence>
           {isSectionModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-2xl p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 12 }} style={{ position: 'fixed', left: `${sectionModalPosition.left}px`, top: `${sectionModalPosition.top}px`, width: 'min(640px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">{editingSection ? 'Editar Sección' : 'Crear Sección'}</h3><button onClick={() => setIsSectionModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
                 <form onSubmit={e => void saveSection(e)} className="space-y-4">
                   {!editingSection && <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Clave de sección (sectionKey)</label><input type="text" required value={sectionFormData.sectionKey} onChange={e => setSectionFormData({ ...sectionFormData, sectionKey: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>}
@@ -632,8 +645,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
         </AnimatePresence>
         <AnimatePresence>
           {isUserSettingsModalOpen && isSuperadmin && activeUserSettingsId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-2xl p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+            <div className="fixed inset-0 z-50 pointer-events-none bg-black/80 backdrop-blur-md">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 12 }} style={{ position: 'fixed', left: `${userSettingsModalPosition.left}px`, top: `${userSettingsModalPosition.top}px`, width: 'min(640px, calc(100vw - 2rem))', pointerEvents: 'auto', transform: 'translateX(-50%)' }} className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">Preferencias de usuario</h3><button onClick={() => setIsUserSettingsModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
                 <form onSubmit={async e => {
                   e.preventDefault();
