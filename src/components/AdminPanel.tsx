@@ -52,6 +52,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
   const [guestModalPosition, setGuestModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [sectionModalPosition, setSectionModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [userModalPosition, setUserModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
