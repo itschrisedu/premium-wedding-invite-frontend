@@ -577,16 +577,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 )}
 
               {isSuperadmin && (
-                <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
+                <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-6 shadow-2xl">
                   <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Usuarios del sistema</span><h2 className="font-cinzel text-2xl text-amber-100">Control de accesos</h2></div><UserPlus className="w-5 h-5 text-amber-400" /></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {users.map(user => (
-                      <div key={user.id} className="p-4 rounded-2xl glass-panel border border-white/10 flex items-center justify-between gap-4">
+                      <div key={user.id} className="p-6 rounded-2xl glass-panel border border-white/10 flex flex-col gap-4">
                         <div>
-                          <strong className="text-amber-100 block text-sm">{user.fullName}</strong>
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300/60">{user.username} · {user.role}</span>
+                          <strong className="text-amber-100 block text-base mb-1">{user.fullName}</strong>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300/60">{user.username}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Rol</label>
                           <select value={user.role} onChange={async e => {
                             const token = authService.getToken();
                             if (!token) return;
@@ -597,22 +599,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             } catch {
                               // ignore
                             }
-                          }} className="px-3 py-1 rounded-md bg-[#181612] border border-white/10 text-xs text-amber-100">
+                          }} className="w-full px-4 py-2 rounded-lg bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300">
                             <option value="user">Usuario</option>
                             <option value="admin">Admin</option>
                             <option value="superadmin">Superadmin</option>
                           </select>
-                          <button onClick={async () => {
-                            if (!confirm(`Eliminar usuario ${user.username}? Esta acción es irreversible.`)) return;
-                            const token = authService.getToken();
-                            if (!token) return;
-                            try {
-                              await apiService.deleteUser(token, user.id);
-                              setUsers(await apiService.listUsers(token));
-                            } catch (err) {
-                              // ignore
-                            }
-                          }} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
                           <button onClick={async (event) => {
                             const token = authService.getToken();
                             if (!token) return;
@@ -627,7 +621,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             } catch (err) {
                               // ignore
                             }
-                          }} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><UserCog className="w-4 h-4" /></button>
+                          }} className="p-2.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer" title="Configurar usuario"><UserCog className="w-4 h-4" /></button>
+                          <button onClick={async () => {
+                            if (!confirm(`Eliminar usuario ${user.username}? Esta acción es irreversible.`)) return;
+                            const token = authService.getToken();
+                            if (!token) return;
+                            try {
+                              await apiService.deleteUser(token, user.id);
+                              setUsers(await apiService.listUsers(token));
+                            } catch (err) {
+                              // ignore
+                            }
+                          }} className="p-2.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer" title="Eliminar usuario"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
                     ))}
