@@ -74,9 +74,9 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-amber-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] text-[var(--color-gold-dark)] text-[10px] font-bold uppercase tracking-[0.4em] mb-3 shadow-sm"
         >
-          <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+          <UserCheck className="w-3.5 h-3.5 text-[var(--color-accent)]" />
           <span>Confirmación de Asistencia</span>
         </motion.div>
 
@@ -85,12 +85,12 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-white"
+          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]"
         >
-          Reserva Tu <span className="italic font-serif font-normal text-amber-200">Pase Personal</span>
+          Reserva Tu <span className="italic font-serif font-bold text-[var(--color-accent)]">Pase Personal</span>
         </motion.h2>
 
-        <p className="mt-3 text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase max-w-xl mx-auto">
+        <p className="mt-3 text-xs sm:text-sm text-[var(--color-text-muted)] font-bold tracking-wide uppercase max-w-xl mx-auto">
           Por favor confirma tu presencia antes del 15 de Octubre de 2026.
         </p>
       </div>
@@ -101,13 +101,13 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="rounded-3xl liquid-glass border border-amber-300/40 p-8 sm:p-10 shadow-2xl relative overflow-hidden"
+          className="rounded-3xl bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] p-8 sm:p-10 shadow-2xl relative overflow-hidden text-[var(--color-text-primary)]"
         >
           {/* Top Guest Info Ribbon */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[var(--color-gold)]/20 mb-8">
             <div>
-              <span className="text-[10px] font-mono text-amber-300/70 uppercase tracking-widest block">Pase Exclusivo</span>
-              <h3 className="font-cinzel text-2xl font-light text-amber-100">{currentGuest.name}</h3>
+              <span className="text-[10px] font-mono text-[var(--color-gold-dark)] font-bold uppercase tracking-widest block">Pase Exclusivo</span>
+              <h3 className="font-cinzel text-2xl font-bold text-[var(--color-text-primary)]">{currentGuest.name}</h3>
               <span className="text-xs text-amber-200/70 font-mono mt-0.5 block">Categoría: {currentGuest.category}</span>
             </div>
 
