@@ -137,7 +137,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     variant: 'danger' | 'warning' | 'default';
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger' });
 
-  const isSuperadmin = session?.user.role === 'superadmin';
+  const isSuperadmin = session?.user.role === 'superadmin' || session?.user.role === 'admin';
   const currentUserId = session?.user.id || '';
   const canEditPage = isSuperadmin || userEditPermissions[currentUserId] !== false;
 
@@ -574,6 +574,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {isSuperadmin && (
+                <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 transition-all cursor-pointer shadow-lg">
+                  <UserPlus className="w-4 h-4 text-white" />
+                  <span>+ Crear Nuevo Admin</span>
+                </button>
+              )}
               <button onClick={() => authService.logout()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 border border-white/15 text-white font-mono text-xs uppercase tracking-wider hover:bg-white/20 transition-all cursor-pointer">
                 <LogOut className="w-4 h-4 text-white" />
                 <span>Salir</span>
