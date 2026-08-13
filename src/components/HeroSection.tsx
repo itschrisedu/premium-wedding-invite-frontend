@@ -77,11 +77,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ currentGuest, onExplor
           className="select-none"
         >
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[110px] font-light leading-[0.88] tracking-tighter text-center uppercase">
-            <span className="block font-bold tracking-tight text-white">{heroConfig.groom.split(' ')[0]}</span>
-            <span className="block italic font-serif text-[var(--color-gold-light)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl -mt-2 sm:-mt-4">{heroConfig.groom.split(' ').slice(1).join(' ')}</span>
+            <span className="block font-bold tracking-tight text-[var(--color-text-primary)]">{heroConfig.groom.split(' ')[0]}</span>
+            <span className="block italic font-serif text-[var(--color-gold-dark)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl -mt-2 sm:-mt-4">{heroConfig.groom.split(' ').slice(1).join(' ')}</span>
             <span className="block text-[var(--color-accent)] font-serif text-4xl sm:text-6xl md:text-7xl my-1">&</span>
-            <span className="block font-bold tracking-tight text-white">{heroConfig.bride.split(' ')[0]}</span>
-            <span className="block italic font-serif text-[var(--color-gold-light)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl -mt-2 sm:-mt-4">{heroConfig.bride.split(' ').slice(1).join(' ')}</span>
+            <span className="block font-bold tracking-tight text-[var(--color-text-primary)]">{heroConfig.bride.split(' ')[0]}</span>
+            <span className="block italic font-serif text-[var(--color-gold-dark)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl -mt-2 sm:-mt-4">{heroConfig.bride.split(' ').slice(1).join(' ')}</span>
           </h1>
         </motion.div>
 
@@ -90,11 +90,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ currentGuest, onExplor
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="mt-8 sm:mt-10 flex items-center justify-center gap-8 opacity-90 uppercase tracking-[0.4em] text-xs font-semibold text-white/80"
+          className="mt-8 sm:mt-10 flex items-center justify-center gap-8 opacity-90 uppercase tracking-[0.4em] text-xs font-semibold text-[var(--color-text-muted)]"
         >
           <div className="flex flex-col items-center">
-            <span className="text-[10px] text-amber-300">Boda Nupcial</span>
-            <span className="text-xl font-bold mt-0.5 text-white">{heroConfig.dateFormatted}</span>
+            <span className="text-[10px] text-[var(--color-accent)] font-bold">Boda Nupcial</span>
+            <span className="text-xl font-bold mt-0.5 text-[var(--color-text-primary)]">{heroConfig.dateFormatted}</span>
           </div>
         </motion.div>
       </div>

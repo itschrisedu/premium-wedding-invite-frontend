@@ -53,12 +53,12 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1 }}
-            className="relative mb-8 p-6 rounded-full liquid-glass border border-amber-300/30 shadow-2xl flex items-center justify-center w-28 h-28"
+            className="relative mb-8 p-6 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] shadow-2xl flex items-center justify-center w-28 h-28"
           >
-            <span className="font-cinzel text-2xl font-light text-amber-100 tracking-wider">
-              {config.hero.groom.charAt(0)}<span className="text-amber-400 font-serif italic text-xl mx-0.5">&</span>{config.hero.bride.charAt(0)}
+            <span className="font-cinzel text-2xl font-bold text-[var(--color-gold-dark)] tracking-wider">
+              {config.hero.groom.charAt(0)}<span className="text-[var(--color-accent)] font-serif italic text-xl mx-0.5">&</span>{config.hero.bride.charAt(0)}
             </span>
-            <div className="absolute inset-0 rounded-full border border-amber-400/20 animate-ping opacity-20 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full border border-[var(--color-gold)] animate-ping opacity-20 pointer-events-none" />
           </motion.div>
 
           {/* Names */}
@@ -66,7 +66,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-bold text-3xl md:text-4xl tracking-tight text-white mb-2 uppercase"
+            className="font-bold text-3xl md:text-4xl tracking-tight text-[var(--color-text-primary)] mb-2 uppercase"
           >
             {config.loaderText || `${config.hero.groom} & ${config.hero.bride}`}
           </motion.h1>
@@ -75,7 +75,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.8 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-[10px] font-mono uppercase tracking-[0.4em] text-amber-200/80 mb-10 font-bold"
+            className="text-[11px] font-mono uppercase tracking-[0.35em] text-[var(--color-text-muted)] mb-10 font-bold"
           >
             {config.hero.city} • {config.hero.dateFormatted}
           </motion.p>
@@ -83,13 +83,13 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
           {/* Progress Bar & Counter */}
           {!isReady ? (
             <div className="w-full space-y-3">
-              <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10">
+              <div className="h-1.5 w-full bg-black/10 rounded-full overflow-hidden p-0.5 border border-black/10">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-[var(--color-accent)] via-amber-300 to-white rounded-full"
+                  className="h-full bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-gold)] to-[var(--color-gold-light)] rounded-full"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[11px] font-mono text-amber-200/80 tracking-wider">
+              <div className="flex items-center justify-between text-[11px] font-mono text-[var(--color-text-muted)] font-semibold tracking-wider">
                 <span>{config.loaderSubtitle || 'Cargando experiencia...'}</span>
                 <span>{progress}%</span>
               </div>
@@ -110,7 +110,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 <span>Entrar a la Experiencia</span>
                 <Heart className="w-4 h-4 text-white fill-white group-hover:scale-125 transition-transform" />
               </button>
-              <p className="text-[11px] text-white/60 italic font-serif">
+              <p className="text-[11px] text-[var(--color-text-muted)] italic font-serif">
                 Haz clic para activar el audio y la inmersión completa
               </p>
             </motion.div>
