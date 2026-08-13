@@ -26,6 +26,7 @@ import { Guest, GuestCategory } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { apiService, type AuthSession, type AdminUser, type GalleryAlbum, type SiteSection } from '../services/apiService';
+import { BANK_DETAILS } from '../data/weddingData';
 import { galleryService } from '../services/galleryService';
 
 interface AdminPanelProps {
@@ -72,6 +73,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
   const [sectionFormData, setSectionFormData] = useState({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
+  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
+  const [activeUserSettingsId, setActiveUserSettingsId] = useState<string | null>(null);
+  const [userSettingsForm, setUserSettingsForm] = useState<{ sections?: Record<string, boolean>; bankAccountIndex?: number | null }>({ sections: {}, bankAccountIndex: null });
 
   const isSuperadmin = session?.user.role === 'superadmin';
 
@@ -528,6 +532,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               // ignore
                             }
                           }} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={async () => {
+                            const token = authService.getToken();
+                            if (!token) return;
+                            try {
+                              const res = await apiService.getUserSettings(token, user.id);
+                              setActiveUserSettingsId(user.id);
+                              setUserSettingsForm({ sections: res.settings?.sections ?? {}, bankAccountIndex: typeof res.settings?.bankAccountIndex === 'number' ? res.settings.bankAccountIndex : null });
+                              setIsUserSettingsModalOpen(true);
+                            } catch (err) {
+                              // ignore
+                            }
+                          }} className="p-2 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"><UserCog className="w-4 h-4" /></button>
                         </div>
                       </div>
                     ))}
@@ -583,6 +599,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
                   <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
                   <button type="submit" disabled={isSavingUser} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear usuario'}</button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {isUserSettingsModalOpen && isSuperadmin && activeUserSettingsId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-2xl p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">Preferencias de usuario</h3><button onClick={() => setIsUserSettingsModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
+                <form onSubmit={async e => {
+                  e.preventDefault();
+                  const token = authService.getToken();
+                  if (!token || !activeUserSettingsId) return;
+                  await apiService.updateUserSettings(token, activeUserSettingsId, userSettingsForm);
+                  setIsUserSettingsModalOpen(false);
+                }} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Secciones visibles</label>
+                    <div className="grid gap-2">
+                      {sections.map(sec => (
+                        <label key={sec.id} className="flex items-center gap-3 text-amber-100">
+                          <input type="checkbox" checked={Boolean(userSettingsForm.sections?.[sec.sectionKey])} onChange={e => setUserSettingsForm(s => ({ ...s, sections: { ...(s.sections || {}), [sec.sectionKey]: e.target.checked } }))} />
+                          <span className="text-sm">{sec.title} ({sec.sectionKey})</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-2">Cuenta bancaria preferida</label>
+                    <select value={userSettingsForm.bankAccountIndex ?? ''} onChange={e => setUserSettingsForm(s => ({ ...s, bankAccountIndex: e.target.value === '' ? null : Number(e.target.value) }))} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100">
+                      <option value="">Ninguna</option>
+                      {BANK_DETAILS.map((b, idx) => <option key={b.accountNumber} value={idx}>{b.bankName} — {b.accountNumber}</option>)}
+                    </select>
+                  </div>
+                  <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsUserSettingsModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform">Guardar preferencias</button></div>
                 </form>
               </motion.div>
             </div>

@@ -190,4 +190,10 @@ export const apiService = {
 
   deleteSection: (token: string, sectionId: string) =>
     request<void>(`/site/sections/${encodeURIComponent(sectionId)}`, { method: 'DELETE' }, token),
+
+  getUserSettings: (token: string, userId: string) =>
+    request<{ userId: string; settings: any }>(`/users/${encodeURIComponent(userId)}/settings`, {}, token),
+
+  updateUserSettings: (token: string, userId: string, settings: any) =>
+    request<{ userId: string; settings: any }>(`/users/${encodeURIComponent(userId)}/settings`, { method: 'PUT', body: JSON.stringify({ settings }) }, token),
 };
