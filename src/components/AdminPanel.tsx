@@ -500,15 +500,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
-  const toggleUserStatus = (user: AdminUser) => {
+  const toggleUserStatus = async (user: AdminUser) => {
     const current = userStatusMap[user.id] || 'active';
     const next = current === 'active' ? 'disabled' : 'active';
     setUserStatusMap(prev => ({ ...prev, [user.id]: next }));
+
+    const token = authService.getToken();
+    if (token) {
+      try {
+        await apiService.updateUserSettings(token, user.id, { status: next });
+      } catch {
+        // ignore fallback
+      }
+    }
   };
 
-  const toggleUserEditPermission = (userId: string) => {
+  const toggleUserEditPermission = async (userId: string) => {
     const current = userEditPermissions[userId] !== false;
-    setUserEditPermissions(prev => ({ ...prev, [userId]: !current }));
+    const next = !current;
+    setUserEditPermissions(prev => ({ ...prev, [userId]: next }));
+
+    const token = authService.getToken();
+    if (token) {
+      try {
+        await apiService.updateUserSettings(token, userId, { canEdit: next });
+      } catch {
+        // ignore fallback
+      }
+    }
   };
 
   const deleteUserCascade = (user: AdminUser) => {
