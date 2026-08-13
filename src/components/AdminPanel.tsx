@@ -214,37 +214,50 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const confirmationPercentage = totalGuests > 0 ? Math.round((confirmedCount / totalGuests) * 100) : 0;
 
   const placeModalNearButton = (event: React.MouseEvent<HTMLElement> | undefined, width: number, height: number) => {
-    if (!event) return { left: window.innerWidth / 2, top: window.innerHeight / 2 };
+    if (!event) return { left: window.innerWidth / 2, top: window.scrollY + window.innerHeight / 2 };
 
     const rect = event.currentTarget.getBoundingClientRect();
     const modalWidth = Math.min(width, window.innerWidth - 32);
     const modalHeight = Math.min(height, window.innerHeight - 32);
 
-    // Priorizar mostrar debajo del botón si hay espacio
-    let top: number;
+    // Convertir posición del viewport a posición de página considerando el scroll
+    const scrollY = window.scrollY;
+    const buttonPageY = rect.top + scrollY;
+    const buttonPageX = rect.left;
+
+    // Priorizar mostrar debajo del botón si hay espacio en viewport
+    let pageY: number;
     if (rect.bottom + modalHeight + 18 <= window.innerHeight) {
-      top = rect.bottom + 18;
-    } else if (rect.top - modalHeight - 18 >= 0) {
-      // Si no hay espacio abajo, mostrar arriba
-      top = rect.top - modalHeight - 18;
+      // Hay espacio abajo del botón en el viewport
+      pageY = buttonPageY + rect.height + 18;
+    } else if (rect.top - modalHeight - 18 >= scrollY) {
+      // Hay espacio arriba del botón
+      pageY = buttonPageY - modalHeight - 18;
     } else {
-      // Si no hay espacio ni arriba ni abajo, centrar en viewport
-      top = Math.max(18, Math.min(window.innerHeight - modalHeight - 18, rect.top + rect.height / 2 - modalHeight / 2));
+      // Mostrar centrado donde está el botón
+      pageY = buttonPageY + rect.height / 2 - modalHeight / 2;
     }
 
-    const left = Math.min(Math.max(rect.left + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
+    const left = Math.min(Math.max(buttonPageX + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
 
-    return { left, top };
+    return { left, top: pageY };
   };
 
   const scrollModalIntoView = (position: { left: number; top: number }, modalHeight: number) => {
-    // Scroll para asegurar que el modal sea visible
+    // Scroll para asegurar que el modal sea visible en el viewport
+    const viewportTop = window.scrollY;
+    const viewportBottom = window.scrollY + window.innerHeight;
+    const modalTop = position.top;
     const modalBottom = position.top + modalHeight;
-    if (modalBottom > window.innerHeight) {
-      const scrollNeeded = modalBottom - window.innerHeight + 40;
+
+    if (modalBottom > viewportBottom) {
+      // El modal está abajo del viewport, scroll hacia abajo
+      const scrollNeeded = modalBottom - viewportBottom + 40;
       window.scrollBy({ top: scrollNeeded, behavior: 'smooth' });
-    } else if (position.top < 0) {
-      window.scrollBy({ top: position.top - 40, behavior: 'smooth' });
+    } else if (modalTop < viewportTop) {
+      // El modal está arriba del viewport, scroll hacia arriba
+      const scrollNeeded = modalTop - viewportTop - 40;
+      window.scrollBy({ top: scrollNeeded, behavior: 'smooth' });
     }
   };
 
