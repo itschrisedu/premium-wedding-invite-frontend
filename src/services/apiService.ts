@@ -2,7 +2,7 @@ import type { Guest, GuestCategory, GuestStatus } from '../types';
 
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '');
 
-export type AuthRole = 'superadmin' | 'user';
+export type AuthRole = 'superadmin' | 'admin' | 'user';
 
 export interface AuthUser {
   id: string;
@@ -100,6 +100,15 @@ export const apiService = {
       method: 'POST',
       body: JSON.stringify(guest)
     }, token),
+
+  updateUserRole: (token: string, userId: string, role: AuthRole) =>
+    request<AdminUser>(`/users/${encodeURIComponent(userId)}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role })
+    }, token),
+
+  deleteUser: (token: string, userId: string) =>
+    request<void>(`/users/${encodeURIComponent(userId)}`, { method: 'DELETE' }, token),
 
   updateGuest: (token: string, guest: Guest) =>
     request<Guest>(`/guests/${encodeURIComponent(guest.id)}`, {

@@ -65,7 +65,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     username: '',
     password: '',
     fullName: '',
-    role: 'user' as 'superadmin' | 'user'
+    role: 'user' as 'superadmin' | 'admin' | 'user'
   });
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
@@ -414,7 +414,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
                   <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Usuarios del sistema</span><h2 className="font-cinzel text-2xl text-amber-100">Control de accesos</h2></div><UserPlus className="w-5 h-5 text-amber-400" /></div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {users.map(user => <div key={user.id} className="p-4 rounded-2xl glass-panel border border-white/10 flex items-center justify-between gap-4"><div><strong className="text-amber-100 block text-sm">{user.fullName}</strong><span className="text-[10px] font-mono uppercase tracking-wider text-amber-300/60">{user.username} · {user.role}</span></div><span className="px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider bg-white/5 border border-white/10 text-amber-200">{user.role}</span></div>)}
+                    {users.map(user => (
+                      <div key={user.id} className="p-4 rounded-2xl glass-panel border border-white/10 flex items-center justify-between gap-4">
+                        <div>
+                          <strong className="text-amber-100 block text-sm">{user.fullName}</strong>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300/60">{user.username} · {user.role}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select value={user.role} onChange={async e => {
+                            const token = authService.getToken();
+                            if (!token) return;
+                            const newRole = e.target.value as 'superadmin' | 'admin' | 'user';
+                            try {
+                              await apiService.updateUserRole(token, user.id, newRole);
+                              setUsers(await apiService.listUsers(token));
+                            } catch {
+                              // ignore
+                            }
+                          }} className="px-3 py-1 rounded-md bg-[#181612] border border-white/10 text-xs text-amber-100">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Admin</option>
+                            <option value="superadmin">Superadmin</option>
+                          </select>
+                          <button onClick={async () => {
+                            if (!confirm(`Eliminar usuario ${user.username}? Esta acción es irreversible.`)) return;
+                            const token = authService.getToken();
+                            if (!token) return;
+                            try {
+                              await apiService.deleteUser(token, user.id);
+                              setUsers(await apiService.listUsers(token));
+                            } catch (err) {
+                              // ignore
+                            }
+                          }} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   <button onClick={() => setIsUserModalOpen(true)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
                 </div>
@@ -448,7 +483,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <form onSubmit={e => void saveUser(e)} className="space-y-4">
                   <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre visible</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
                   <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Usuario</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contraseña</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
-                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="superadmin">Superadmin</option></select></div>
+                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="user">Usuario</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div>
                   <button type="submit" disabled={isSavingUser} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear usuario'}</button>
                 </form>
               </motion.div>
