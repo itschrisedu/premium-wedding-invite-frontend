@@ -79,7 +79,7 @@ export const apiService = {
 
   me: (token: string) => request<AuthUser>('/auth/me', {}, token),
 
-  listGuests: () => request<Guest[]>('/guests'),
+  listGuests: (token?: string) => request<Guest[]>('/guests', {}, token),
 
   getGuestByCode: (code: string) => request<Guest>(`/guests/code/${encodeURIComponent(code)}`),
 

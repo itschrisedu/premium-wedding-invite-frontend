@@ -31,7 +31,8 @@ class StorageService {
 
   public async refreshGuests(): Promise<Guest[]> {
     try {
-      const guests = await apiService.listGuests();
+      const token = authService.getToken();
+      const guests = await apiService.listGuests(token);
       this.persistCache(guests);
       return guests;
     } catch {
