@@ -25,7 +25,7 @@ import {
 import { Guest, GuestCategory } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
-import { apiService, type AuthSession, type AdminUser, type GalleryAlbum } from '../services/apiService';
+import { apiService, type AuthSession, type AdminUser, type GalleryAlbum, type SiteSection } from '../services/apiService';
 import { galleryService } from '../services/galleryService';
 
 interface AdminPanelProps {
@@ -68,6 +68,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     role: 'user' as 'superadmin' | 'admin' | 'user'
   });
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [sections, setSections] = useState<SiteSection[]>([]);
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
+  const [sectionFormData, setSectionFormData] = useState({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
 
   const isSuperadmin = session?.user.role === 'superadmin';
 
@@ -85,6 +89,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     if (token && session) {
       const nextUsers = await apiService.listUsers(token);
       setUsers(nextUsers);
+      try {
+        const nextSections = await apiService.listSections(token);
+        setSections(nextSections);
+      } catch {
+        setSections([]);
+      }
     }
   };
 
@@ -276,6 +286,55 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
+  const openCreateSection = () => {
+    setEditingSection(null);
+    setSectionFormData({ sectionKey: '', title: '', subtitle: '', body: '', sortOrder: 0, isVisible: true });
+    setIsSectionModalOpen(true);
+  };
+
+  const openEditSection = (section: SiteSection) => {
+    setEditingSection(section);
+    setSectionFormData({ sectionKey: section.sectionKey, title: section.title, subtitle: section.subtitle || '', body: section.body, sortOrder: section.sortOrder, isVisible: section.isVisible });
+    setIsSectionModalOpen(true);
+  };
+
+  const saveSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = authService.getToken();
+    if (!token) return;
+
+    if (editingSection) {
+      const updated = await apiService.updateSection(token, editingSection.id, {
+        title: sectionFormData.title,
+        subtitle: sectionFormData.subtitle || null,
+        body: sectionFormData.body,
+        sortOrder: Number(sectionFormData.sortOrder),
+        isVisible: Boolean(sectionFormData.isVisible)
+      });
+      setSections(s => s.map(sx => sx.id === updated.id ? updated : sx));
+    } else {
+      const created = await apiService.createSection(token, {
+        sectionKey: sectionFormData.sectionKey,
+        title: sectionFormData.title,
+        subtitle: sectionFormData.subtitle || null,
+        body: sectionFormData.body,
+        sortOrder: Number(sectionFormData.sortOrder),
+        isVisible: Boolean(sectionFormData.isVisible)
+      });
+      setSections(s => [created, ...s]);
+    }
+
+    setIsSectionModalOpen(false);
+  };
+
+  const removeSection = async (sectionId: string) => {
+    const token = authService.getToken();
+    if (!token) return;
+    if (!confirm('¿Eliminar sección? Esta acción es irreversible.')) return;
+    await apiService.deleteSection(token, sectionId);
+    setSections(s => s.filter(x => x.id !== sectionId));
+  };
+
   const uploadPhotos = async () => {
     const token = authService.getToken();
     if (!token || !selectedAlbumId || photoFiles.length === 0) return;
@@ -410,6 +469,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <button onClick={() => void uploadPhotos()} disabled={isUploadingPhotos || !isSendingEnabled} className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"><Upload className="w-4 h-4" />{isUploadingPhotos ? 'Subiendo...' : 'Subir fotos'}</button>
               </div>
 
+                {(session.user.role === 'admin' || session.user.role === 'superadmin') && (
+                  <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
+                    <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Secciones del Sitio</span><h2 className="font-cinzel text-2xl text-amber-100">Contenido del sitio</h2></div><Plus className="w-5 h-5 text-amber-400" /></div>
+                    <div className="grid gap-3">
+                      {sections.length === 0 && <div className="p-4 text-amber-200/60 italic">No hay secciones aún.</div>}
+                      {sections.map(section => (
+                        <div key={section.id} className="p-3 rounded-lg glass-panel border border-white/10 flex items-center justify-between">
+                          <div>
+                            <strong className="text-amber-100 block text-sm">{section.title}</strong>
+                            <span className="text-[10px] text-amber-300/70">{section.sectionKey} · {section.isVisible ? 'Visible' : 'Oculta'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => openEditSection(section)} className="p-2 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => removeSection(section.id)} className="p-2 rounded-md bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => openCreateSection()} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4 text-amber-400" />Crear sección</button>
+                  </div>
+                )}
+
               {isSuperadmin && (
                 <div className="rounded-3xl liquid-glass border border-amber-300/15 p-6 space-y-4 shadow-2xl">
                   <div className="flex items-center justify-between gap-4"><div><span className="text-[10px] font-mono uppercase tracking-widest text-amber-300/70 block">Usuarios del sistema</span><h2 className="font-cinzel text-2xl text-amber-100">Control de accesos</h2></div><UserPlus className="w-5 h-5 text-amber-400" /></div>
@@ -469,6 +550,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Teléfono / WhatsApp</label><input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Código URL Personalizado</label><input type="text" value={guestFormData.code} onChange={e => setGuestFormData({ ...guestFormData, code: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div></div>
                   <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Notas Internas</label><textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
                   <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button></div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {isSectionModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-2xl p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">{editingSection ? 'Editar Sección' : 'Crear Sección'}</h3><button onClick={() => setIsSectionModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
+                <form onSubmit={e => void saveSection(e)} className="space-y-4">
+                  {!editingSection && <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Clave de sección (sectionKey)</label><input type="text" required value={sectionFormData.sectionKey} onChange={e => setSectionFormData({ ...sectionFormData, sectionKey: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>}
+                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Título</label><input type="text" required value={sectionFormData.title} onChange={e => setSectionFormData({ ...sectionFormData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Subtítulo</label><input type="text" value={sectionFormData.subtitle} onChange={e => setSectionFormData({ ...sectionFormData, subtitle: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+                  <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Contenido</label><textarea rows={6} value={sectionFormData.body} onChange={e => setSectionFormData({ ...sectionFormData, body: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
+                  <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Orden</label><input type="number" value={sectionFormData.sortOrder} onChange={e => setSectionFormData({ ...sectionFormData, sortOrder: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Visible</label><select value={String(sectionFormData.isVisible)} onChange={e => setSectionFormData({ ...sectionFormData, isVisible: e.target.value === 'true' })} className="w-full px-4 py-2.5 rounded-xl bg-[#181612] border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300"><option value="true">Visible</option><option value="false">Oculta</option></select></div></div>
+                  <div className="pt-4 flex items-center justify-end gap-3"><button type="button" onClick={() => setIsSectionModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors">Cancelar</button><button type="submit" className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-102 transition-transform">{editingSection ? 'Actualizar sección' : 'Crear sección'}</button></div>
                 </form>
               </motion.div>
             </div>

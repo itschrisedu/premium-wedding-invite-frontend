@@ -47,6 +47,19 @@ export interface GalleryPhoto {
   updatedAt: string;
 }
 
+export interface SiteSection {
+  id: string;
+  ownerUserId: string;
+  sectionKey: string;
+  title: string;
+  subtitle: string | null;
+  body: string;
+  sortOrder: number;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const request = async <T>(path: string, init: RequestInit = {}, token?: string): Promise<T> => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -158,4 +171,23 @@ export const apiService = {
 
     return response.json() as Promise<GalleryPhoto[]>;
   }
+
+  ,
+
+  listSections: (token?: string) => request<SiteSection[]>('/site/sections', {}, token),
+
+  createSection: (token: string, payload: { sectionKey: string; title: string; subtitle?: string | null; body: string; sortOrder?: number; isVisible?: boolean }) =>
+    request<SiteSection>('/site/sections', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }, token),
+
+  updateSection: (token: string, sectionId: string, payload: { title?: string; subtitle?: string | null; body?: string; sortOrder?: number; isVisible?: boolean }) =>
+    request<SiteSection>(`/site/sections/${encodeURIComponent(sectionId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    }, token),
+
+  deleteSection: (token: string, sectionId: string) =>
+    request<void>(`/site/sections/${encodeURIComponent(sectionId)}`, { method: 'DELETE' }, token),
 };
