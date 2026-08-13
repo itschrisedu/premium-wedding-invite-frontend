@@ -223,7 +223,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     // Convertir posición del viewport a posición de página considerando el scroll
     const scrollY = window.scrollY;
     const buttonPageY = rect.top + scrollY;
-    const buttonPageX = rect.left;
 
     // Priorizar mostrar debajo del botón si hay espacio en viewport
     let pageY: number;
@@ -238,7 +237,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       pageY = buttonPageY + rect.height / 2 - modalHeight / 2;
     }
 
-    const left = Math.min(Math.max(buttonPageX + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
+    // Centrar horizontalmente en la pantalla
+    const left = window.innerWidth / 2;
 
     return { left, top: pageY };
   };
