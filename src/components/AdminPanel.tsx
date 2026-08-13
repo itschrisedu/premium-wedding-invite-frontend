@@ -52,6 +52,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [userModalPosition, setUserModalPosition] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [guestFormData, setGuestFormData] = useState({
     name: '',
@@ -213,6 +214,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     setEditingGuest(null);
     setGuestFormData({ name: '', code: '', category: 'Familia', passesAllowed: 2, phone: '', email: '', notes: '' });
     setIsGuestModalOpen(true);
+  };
+
+  const openCreateUser = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    if (event) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const modalWidth = Math.min(480, window.innerWidth - 32);
+      const modalHeight = Math.min(520, window.innerHeight - 32);
+      const left = Math.min(Math.max(rect.left + rect.width / 2, modalWidth / 2 + 16), window.innerWidth - modalWidth / 2 - 16);
+      const top = Math.min(Math.max(rect.bottom + 16, 16), window.innerHeight - modalHeight - 16);
+      setUserModalPosition({ left, top });
+    }
+    setIsUserModalOpen(true);
   };
 
   const openEditGuest = (guest: Guest) => {
@@ -388,7 +401,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <span>Nuevo Invitado</span>
               </button>
               {isSuperadmin && (
-                <button onClick={() => setIsUserModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
+                <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                   <UserPlus className="w-4 h-4 text-white" />
                   <span>Nuevo Usuario</span>
                 </button>
@@ -548,7 +561,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => setIsUserModalOpen(true)} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
+                  <button onClick={openCreateUser} className="w-full py-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs uppercase tracking-wider hover:bg-amber-500/30 transition-all flex items-center justify-center gap-2"><UserPlus className="w-4 h-4 text-amber-400" />Crear usuario</button>
                 </div>
               )}
             </div>
@@ -591,8 +604,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
         <AnimatePresence>
           {isUserModalOpen && isSuperadmin && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-lg p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6">
+            <div className="fixed inset-0 z-[60] pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 12 }}
+                style={{
+                  position: 'fixed',
+                  left: `${userModalPosition.left}px`,
+                  top: `${userModalPosition.top}px`,
+                  width: 'min(480px, calc(100vw - 2rem))',
+                  pointerEvents: 'auto',
+                  transform: 'translateX(-50%)'
+                }}
+                className="p-8 rounded-3xl liquid-glass border border-white/20 shadow-2xl space-y-6"
+              >
                 <div className="flex items-center justify-between pb-4 border-b border-white/10"><h3 className="font-cinzel text-xl text-amber-100">Crear Usuario</h3><button onClick={() => setIsUserModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-amber-200 transition-colors"><X className="w-5 h-5" /></button></div>
                 <form onSubmit={e => void saveUser(e)} className="space-y-4">
                   <div><label className="text-[10px] font-mono uppercase tracking-widest text-amber-200/80 block mb-1">Nombre visible</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 focus:outline-none focus:border-amber-300" /></div>
