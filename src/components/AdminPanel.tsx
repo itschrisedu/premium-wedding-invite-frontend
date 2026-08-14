@@ -286,19 +286,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   // User Passwords Map (Stores the exact raw password set for each user so Superadmin sees the REAL password)
   const [userPasswordsMap, setUserPasswordsMap] = useState<Record<string, string>>(() => {
+    const defaults: Record<string, string> = {
+      'superadmin': 'superadmin',
+      'novios1': 'novios123',
+      'edwin&cristina': 'edwin2026',
+      '1': 'superadmin',
+      '2': 'novios123'
+    };
     try {
       const stored = localStorage.getItem('mateo_camila_user_passwords_v1');
-      return stored ? JSON.parse(stored) : { 'superadmin': 'superadmin', 'novios1': 'novios123' };
-    } catch {
-      return { 'superadmin': 'superadmin', 'novios1': 'novios123' };
-    }
+      if (stored) {
+        return { ...defaults, ...JSON.parse(stored) };
+      }
+    } catch {}
+    return defaults;
   });
 
   const getUserRealPassword = (user: AdminUser) => {
     const fromMap = userPasswordsMap[user.username] || userPasswordsMap[user.id];
     if (fromMap) return fromMap;
     const directPass = (user as unknown as { password?: string }).password;
-    if (directPass && directPass !== 'mateo2026') return directPass;
+    if (directPass) return directPass;
     if (user.username === 'superadmin') return 'superadmin';
     if (user.username === 'novios1') return 'novios123';
     return user.username;
@@ -677,6 +685,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   // --- Guest Report Export Handlers ---
   const exportGuestsCSV = () => {
+    const groomName = (siteConfig.hero.groom || 'Mateo').trim();
+    const brideName = (siteConfig.hero.bride || 'Camila').trim();
+    const groomInitial = groomName.charAt(0).toUpperCase();
+    const brideInitial = brideName.charAt(0).toUpperCase();
+    const initialsMonogram = `${groomInitial} & ${brideInitial}`;
+    const coupleFullName = `${groomName} & ${brideName}`;
+
+    const titleRow = [`SELLO NUPCIAL [${initialsMonogram}] - BODA ${coupleFullName.toUpperCase()}`];
     const header = ['Nombre', 'Código', 'Categoría', 'Pases Asignados', 'Pases Confirmados', 'Estado', 'Teléfono', 'Email', 'Notas', 'Restricciones Alimentarias', 'Última Actualización'];
     const rows = filteredGuests.map(g => [
       g.name,
@@ -692,7 +708,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       g.updatedAt ? new Date(g.updatedAt).toLocaleString('es-EC') : ''
     ]);
 
-    const csvContent = '\uFEFF' + [header, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csvContent = '\uFEFF' + [titleRow, [], header, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -703,6 +719,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   };
 
   const exportGuestsPDF = () => {
+    const groomName = (siteConfig.hero.groom || 'Mateo').trim();
+    const brideName = (siteConfig.hero.bride || 'Camila').trim();
+    const groomInitial = groomName.charAt(0).toUpperCase();
+    const brideInitial = brideName.charAt(0).toUpperCase();
+    const initialsMonogram = `${groomInitial} & ${brideInitial}`;
+    const coupleFullName = `${groomName} & ${brideName}`;
+
+    const currentTheme = ELEGANT_WEDDING_THEMES[siteConfig.themeId];
+    const themePrimary = siteConfig.customThemeColors?.bgElevated || currentTheme?.colors?.bgElevated || '#2D3B2A';
+    const themeGold = siteConfig.customThemeColors?.goldPrimary || currentTheme?.colors?.goldPrimary || '#c9a96e';
+
     const totalInvitaciones = filteredGuests.length;
     const confirmados = filteredGuests.filter(g => g.status === 'confirmado').length;
     const pendientes = filteredGuests.filter(g => g.status === 'pendiente').length;
@@ -728,36 +755,60 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       </tr>`;
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reporte de Invitados</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reporte de Invitados - ${coupleFullName}</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
       * { margin:0; padding:0; box-sizing:border-box; }
       body { font-family:'Inter',sans-serif; background:#fff; color:#333; padding:40px; }
-      .header { text-align:center; margin-bottom:32px; padding-bottom:24px; border-bottom:2px solid #c9a96e; }
-      .header h1 { font-family:'Cinzel',serif; font-size:28px; color:#2D3B2A; letter-spacing:3px; margin-bottom:4px; }
-      .header p { font-size:12px; color:#8A9D76; letter-spacing:1px; }
-      .stats { display:flex; justify-content:center; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
-      .stat { text-align:center; padding:14px 22px; border-radius:12px; border:1px solid #e5e2d9; min-width:130px; }
-      .stat .number { font-family:'Cinzel',serif; font-size:26px; font-weight:700; display:block; }
-      .stat .label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:#8A9D76; margin-top:2px; }
+      .header { text-align:center; margin-bottom:32px; padding-bottom:24px; border-bottom:2px solid ${themeGold}; }
+      .seal-wrapper { display:flex; justify-content:center; margin-bottom:12px; }
+      .wax-seal {
+        width:74px;
+        height:74px;
+        border-radius:50%;
+        background:${themePrimary};
+        border:3px double ${themeGold};
+        box-shadow:0 4px 14px rgba(0,0,0,0.18);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:${themeGold};
+        font-family:'Cinzel',serif;
+        font-size:20px;
+        font-weight:700;
+        letter-spacing:2px;
+      }
+      .couple-title { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:${themePrimary}; letter-spacing:3.5px; margin-bottom:4px; text-transform:uppercase; }
+      .header h1 { font-family:'Cinzel',serif; font-size:24px; color:${themeGold}; letter-spacing:2px; margin-bottom:4px; }
+      .header p { font-size:11px; color:#8A9D76; letter-spacing:1px; }
+      .stats { display:flex; justify-content:center; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+      .stat { text-align:center; padding:12px 18px; border-radius:12px; border:1px solid #e5e2d9; min-width:120px; }
+      .stat .number { font-family:'Cinzel',serif; font-size:24px; font-weight:700; display:block; }
+      .stat .label { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#8A9D76; margin-top:2px; }
       table { width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; border:1px solid #e5e2d9; }
-      thead tr { background:#2D3B2A; }
-      thead th { padding:10px 12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#c9a96e; text-align:left; }
+      thead tr { background:${themePrimary}; }
+      thead th { padding:10px 12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:${themeGold}; text-align:left; }
       .footer { text-align:center; margin-top:24px; font-size:10px; color:#aaa; letter-spacing:1px; }
       @media print { body { padding:20px; } .stat { padding:10px 14px; } }
     </style></head><body>
     <div class="header">
+      <div class="seal-wrapper">
+        <div class="wax-seal">
+          <span>${initialsMonogram}</span>
+        </div>
+      </div>
+      <h2 class="couple-title">${coupleFullName}</h2>
       <h1>✦ REPORTE DE INVITADOS ✦</h1>
       <p>Generado: ${dateStr}</p>
     </div>
     <div class="stats">
-      <div class="stat"><span class="number" style="color:#2D3B2A">${totalInvitaciones}</span><span class="label">Invitaciones</span></div>
+      <div class="stat"><span class="number" style="color:${themePrimary}">${totalInvitaciones}</span><span class="label">Invitaciones</span></div>
       <div class="stat"><span class="number" style="color:#16a34a">${confirmados}</span><span class="label">Confirmados</span></div>
       <div class="stat"><span class="number" style="color:#d97706">${pendientes}</span><span class="label">Pendientes</span></div>
       <div class="stat"><span class="number" style="color:#e11d48">${declinados}</span><span class="label">Declinados</span></div>
-      <div class="stat"><span class="number" style="color:#2D3B2A">${totalPasesAsignados}</span><span class="label">Pases Asignados</span></div>
+      <div class="stat"><span class="number" style="color:${themePrimary}">${totalPasesAsignados}</span><span class="label">Pases Asignados</span></div>
       <div class="stat"><span class="number" style="color:#16a34a">${totalPasesConfirmados}</span><span class="label">Pases Confirmados</span></div>
-      <div class="stat"><span class="number" style="color:#c9a96e">${pctConfirmado}%</span><span class="label">% Confirmación</span></div>
+      <div class="stat"><span class="number" style="color:${themeGold}">${pctConfirmado}%</span><span class="label">% Confirmación</span></div>
     </div>
     <table>
       <thead><tr>
@@ -765,7 +816,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       </tr></thead>
       <tbody>${tableRows}</tbody>
     </table>
-    <p class="footer">Reporte generado automáticamente · Total: ${totalInvitaciones} invitaciones · ${totalPasesConfirmados} de ${totalPasesAsignados} pases confirmados</p>
+    <p class="footer">Reporte oficial generado automáticamente · Boda de ${coupleFullName} · Total: ${totalInvitaciones} invitaciones · ${totalPasesConfirmados} de ${totalPasesAsignados} pases confirmados</p>
     <script>window.onload=function(){window.print()}</script>
     </body></html>`;
 
