@@ -99,7 +99,7 @@ export interface WeddingSiteConfig {
 const CONFIG_STORAGE_KEY = 'mateo_camila_wedding_config_v2';
 
 const DEFAULT_CONFIG: WeddingSiteConfig = {
-  themeId: 'pearl-champagne',
+  themeId: 'pastel-olive-sage',
   audio: {
     url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=wedding-vals-gentle-piano-112190.mp3',
     title: 'Vals Nupcial en Piano',

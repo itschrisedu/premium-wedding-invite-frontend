@@ -143,6 +143,12 @@ export const apiService = {
       body: JSON.stringify(payload)
     }, token),
 
+  updateUserPassword: (token: string, userId: string, password: string) =>
+    request<AdminUser>(`/users/${encodeURIComponent(userId)}/password`, {
+      method: 'PUT',
+      body: JSON.stringify({ password })
+    }, token),
+
   listAlbums: () => request<GalleryAlbum[]>('/gallery/albums'),
 
   createAlbum: (token: string, payload: { slug: string; title: string; description?: string }) =>

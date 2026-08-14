@@ -22,8 +22,29 @@ export interface ThemePalette {
 
 export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
   {
+    id: 'pastel-olive-sage',
+    name: 'Verde Oliva Pastel & Salvia Botánico (Luxury)',
+    description: 'Estética editorial botánica, orgánica y sofisticada con fondo marfil/verde suave y acentos en verde oliva pastel y salvia.',
+    previewBg: '#F3F5F1',
+    previewGold: '#6B7F5A',
+    previewAccent: '#556B2F',
+    colors: {
+      bgBase: '#F3F5F1',
+      bgElevated: '#FAFCF9',
+      bgOverlay: 'rgba(42, 56, 40, 0.85)',
+      textPrimary: '#2A3828',
+      textMuted: '#627559',
+      goldPrimary: '#6B7F5A',
+      goldLight: '#8A9D76',
+      goldDark: '#556B2F',
+      accent: '#6B7F5A',
+      accentHover: '#4D5E3F',
+      borderGlass: '#B1C2A5'
+    }
+  },
+  {
     id: 'pearl-champagne',
-    name: 'Perla Marfil & Champán Nupcial (Luminoso)',
+    name: 'Perla Marfil & Champán Nupcial',
     description: 'El clásico tono nupcial de gala: marfil cálido, encaje perla y reflejos en oro champán de ensueño.',
     previewBg: '#fdfbf7',
     previewGold: '#d4af37',
@@ -33,13 +54,13 @@ export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
       bgElevated: '#ffffff',
       bgOverlay: 'rgba(30, 25, 20, 0.82)',
       textPrimary: '#2c241d',
-      textMuted: 'rgba(60, 50, 40, 0.75)',
+      textMuted: '#6c5a4b',
       goldPrimary: '#d4af37',
       goldLight: '#e6c875',
       goldDark: '#8a6d2b',
       accent: '#c5a059',
       accentHover: '#b48f48',
-      borderGlass: 'rgba(212, 175, 55, 0.3)'
+      borderGlass: '#d4af37'
     }
   },
   {
@@ -54,34 +75,13 @@ export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
       bgElevated: '#ffffff',
       bgOverlay: 'rgba(40, 20, 30, 0.82)',
       textPrimary: '#382229',
-      textMuted: 'rgba(80, 50, 60, 0.75)',
+      textMuted: '#704854',
       goldPrimary: '#e0a996',
       goldLight: '#f3cfc3',
       goldDark: '#b87968',
       accent: '#d6806e',
       accentHover: '#c46d5b',
-      borderGlass: 'rgba(224, 169, 150, 0.35)'
-    }
-  },
-  {
-    id: 'emerald-ivory',
-    name: 'Esmeralda Jardín & Marfil',
-    description: 'Fondo marfil botánico fresco con detalles en verde esmeralda y toques de oro solar.',
-    previewBg: '#f4f8f5',
-    previewGold: '#c5a059',
-    previewAccent: '#059669',
-    colors: {
-      bgBase: '#f4f8f5',
-      bgElevated: '#ffffff',
-      bgOverlay: 'rgba(10, 40, 25, 0.85)',
-      textPrimary: '#1c3326',
-      textMuted: 'rgba(40, 75, 55, 0.75)',
-      goldPrimary: '#c5a059',
-      goldLight: '#e6c875',
-      goldDark: '#8a6d2b',
-      accent: '#059669',
-      accentHover: '#047857',
-      borderGlass: 'rgba(5, 150, 105, 0.3)'
+      borderGlass: '#e0a996'
     }
   },
   {
@@ -96,13 +96,13 @@ export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
       bgElevated: '#ffffff',
       bgOverlay: 'rgba(15, 23, 42, 0.85)',
       textPrimary: '#0f172a',
-      textMuted: 'rgba(51, 65, 85, 0.75)',
+      textMuted: '#475569',
       goldPrimary: '#94a3b8',
       goldLight: '#cbd5e1',
-      goldDark: '#475569',
+      goldDark: '#334155',
       accent: '#2563eb',
       accentHover: '#1d4ed8',
-      borderGlass: 'rgba(37, 99, 235, 0.25)'
+      borderGlass: '#94a3b8'
     }
   },
   {
@@ -123,10 +123,45 @@ export const ELEGANT_WEDDING_THEMES: ThemePalette[] = [
       goldDark: '#9e7b37',
       accent: '#f97316',
       accentHover: '#ea580c',
-      borderGlass: 'rgba(212, 175, 55, 0.25)'
+      borderGlass: 'rgba(212, 175, 55, 0.4)'
     }
   }
 ];
+
+/**
+ * Generates a full matching ThemePalette from a single HEX primary color.
+ * Maintains white/ivory base background by default unless custom bg is supplied.
+ */
+export function generatePaletteFromHex(hexColor: string, isWhiteBg = true): ThemePalette['colors'] {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2) || '6B', 16);
+  const g = parseInt(hex.substring(2, 4) || '7F', 16);
+  const b = parseInt(hex.substring(4, 6) || '5A', 16);
+
+  // Darkened version for hover
+  const darkR = Math.max(0, Math.floor(r * 0.8));
+  const darkG = Math.max(0, Math.floor(g * 0.8));
+  const darkB = Math.max(0, Math.floor(b * 0.8));
+  const hoverHex = `#${darkR.toString(16).padStart(2, '0')}${darkG.toString(16).padStart(2, '0')}${darkB.toString(16).padStart(2, '0')}`;
+
+  // Dark text color calculated from contrast
+  const isLightAccent = (r * 299 + g * 587 + b * 114) / 1000 > 150;
+  const darkText = isLightAccent ? '#1C261A' : '#2A3828';
+
+  return {
+    bgBase: isWhiteBg ? '#FAFCF9' : '#F3F5F1',
+    bgElevated: '#FFFFFF',
+    bgOverlay: `rgba(${r}, ${g}, ${b}, 0.85)`,
+    textPrimary: darkText,
+    textMuted: `rgb(${Math.floor(r * 0.9)}, ${Math.floor(g * 0.9)}, ${Math.floor(b * 0.9)})`,
+    goldPrimary: hexColor,
+    goldLight: `rgba(${r}, ${g}, ${b}, 0.6)`,
+    goldDark: hoverHex,
+    accent: hexColor,
+    accentHover: hoverHex,
+    borderGlass: `rgba(${r}, ${g}, ${b}, 0.35)`
+  };
+}
 
 export function applyTheme(theme: ThemePalette['colors']) {
   if (typeof document === 'undefined') return;

@@ -12,23 +12,23 @@
     --font-cormorant: 'Cormorant Garamond', serif;
     --font-sans: 'Plus Jakarta Sans', sans-serif;
 
-    /* ── Color Palette (Perla Marfil & Champán Default) ── */
-    --color-bg-base: #fdfbf7;
-    --color-bg-elevated: #ffffff;
-    --color-bg-overlay: rgba(30, 25, 20, 0.82);
+    /* ── Color Palette (Pastel Olive & Sage Luxury Default) ── */
+    --color-bg-base: #F3F5F1;
+    --color-bg-elevated: #FAFCF9;
+    --color-bg-overlay: rgba(42, 56, 40, 0.85);
 
-    --color-text-primary: #2c241d;
-    --color-text-muted: rgba(60, 50, 40, 0.75);
-    --color-text-label: rgba(197, 160, 89, 0.9);
+    --color-text-primary: #2A3828;
+    --color-text-muted: #627559;
+    --color-text-label: #556B2F;
 
-    --color-gold: #d4af37;
-    --color-gold-light: #e6c875;
-    --color-gold-dark: #8a6d2b;
+    --color-gold: #6B7F5A;
+    --color-gold-light: #8A9D76;
+    --color-gold-dark: #556B2F;
 
-    --color-accent: #c5a059;
-    --color-accent-hover: #b48f48;
-    --color-accent-secondary: #f59e0b;
-    --color-accent-secondary-hover: #d97706;
+    --color-accent: #6B7F5A;
+    --color-accent-hover: #4D5E3F;
+    --color-accent-secondary: #556B2F;
+    --color-accent-secondary-hover: #4D5E3F;
 
     --color-success: #10b981;
     --color-danger: #f43f5e;
