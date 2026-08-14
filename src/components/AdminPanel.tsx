@@ -43,6 +43,33 @@ import {
   ExternalLink,
   SlidersHorizontal
 } from 'lucide-react';
+
+async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
+  if (!url) return null;
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|watch\?.+&v=))([\w-]{11})/);
+  if (!ytMatch || !ytMatch[1]) return null;
+
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytMatch[1]}&format=json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const rawTitle: string = data.title || '';
+
+    // Clean up typical YouTube tags & noise: (Official Video), [Audio], (Video Oficial), [4K], etc.
+    let clean = rawTitle
+      .replace(/[\(\[\{]\s*(official\s*)?(music\s*)?(video|audio|lyric|lyrics|video\s*oficial|audio\s*oficial|letra|4k|hd|remastered|vevo|clip|hd\s*video|4k\s*video)[\)\]\}]/gi, '')
+      .replace(/\b(official video|official audio|music video|video oficial|audio oficial|lyric video)\b/gi, '')
+      .replace(/[\(\[\{]\s*[\)\]\}]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    clean = clean.replace(/^[\s\-–|]+|[\s\-–|]+$/g, '').trim();
+
+    return clean || rawTitle;
+  } catch {
+    return null;
+  }
+}
 import { Guest, GuestCategory } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -1220,7 +1247,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título de la Canción & Artista</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5]">Título de la Canción & Artista</label>
+                      <button
+                        type="button"
+                        disabled={!canEditPage || !siteConfig.audio.url}
+                        onClick={async () => {
+                          const cleaned = await fetchAndCleanYouTubeTitle(siteConfig.audio.url);
+                          if (cleaned) {
+                            weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, title: cleaned } });
+                          }
+                        }}
+                        className="text-[10px] font-mono text-[var(--color-gold-light)] hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        title="Extraer y limpiar automáticamente el título de YouTube"
+                      >
+                        ✨ Detectar título
+                      </button>
+                    </div>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -1236,7 +1279,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       type="text"
                       disabled={!canEditPage}
                       value={siteConfig.audio.url}
-                      onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, url: e.target.value } })}
+                      onChange={async (e) => {
+                        const newUrl = e.target.value;
+                        weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, url: newUrl } });
+                        // Auto-detect clean title when pasting YouTube link
+                        const cleaned = await fetchAndCleanYouTubeTitle(newUrl);
+                        if (cleaned) {
+                          weddingConfigService.updateConfig({ audio: { ...weddingConfigService.getConfig().audio, title: cleaned } });
+                        }
+                      }}
                       placeholder="https://www.youtube.com/watch?v=2Vv-BfVoq4g"
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
                     />
