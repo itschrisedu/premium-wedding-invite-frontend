@@ -62,21 +62,21 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[var(--color-gold-light)]/10 rounded-full blur-[140px] pointer-events-none" />
 
         {/* 3D WEDDING ENVELOPE WRAPPER */}
-        <div className="relative w-full max-w-lg perspective-[1200px] z-10 flex flex-col items-center">
+        <div className="relative w-full max-w-2xl sm:max-w-3xl perspective-[1200px] z-10 flex flex-col items-center px-2">
           {/* ENVELOPE BODY */}
           <motion.div
             initial={{ scale: 0.92, opacity: 0, y: 25 }}
             animate={{
-              scale: isOpening ? 1.08 : 1,
+              scale: isOpening ? 1.05 : 1,
               opacity: 1,
               y: isOpening ? -30 : 0
             }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="relative w-full min-h-[440px] sm:min-h-[480px] rounded-3xl bg-[#FAFCF9] border-2 border-[var(--color-gold)]/40 shadow-[0_30px_70px_rgba(42,56,40,0.18)] flex flex-col items-center justify-center p-6 sm:p-10 text-center overflow-hidden"
+            className="relative w-full min-h-[380px] sm:min-h-[420px] rounded-3xl bg-[#FAFCF9] border-2 border-[var(--color-gold)]/40 shadow-[0_30px_70px_rgba(42,56,40,0.18)] flex flex-col items-center justify-center p-6 sm:p-12 text-center overflow-hidden"
           >
             {/* Horizontal Twine / Ribbon Cord Effect */}
-            <div className="absolute top-[48%] left-0 right-0 h-[3px] bg-gradient-to-r from-[#556B2F]/30 via-[#6B7F5A]/60 to-[#556B2F]/30 z-10 pointer-events-none shadow-sm" />
-            <div className="absolute top-[48%] left-0 right-0 h-[1px] -mt-[4px] bg-gradient-to-r from-amber-700/20 via-amber-800/40 to-amber-700/20 z-10 pointer-events-none" />
+            <div className="absolute top-[42%] left-0 right-0 h-[3px] bg-gradient-to-r from-[#556B2F]/30 via-[#6B7F5A]/60 to-[#556B2F]/30 z-10 pointer-events-none shadow-sm" />
+            <div className="absolute top-[42%] left-0 right-0 h-[1px] -mt-[4px] bg-gradient-to-r from-amber-700/20 via-amber-800/40 to-amber-700/20 z-10 pointer-events-none" />
 
             {/* TOP TRIANGULAR ENVELOPE FLAP WITH 3D ROTATION */}
             <motion.div
@@ -85,11 +85,11 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 zIndex: isOpening ? 0 : 30
               }}
               transition={{ duration: 0.8, ease: 'easeInOut' }}
-              className="absolute top-0 left-0 right-0 h-44 sm:h-52 origin-top z-30 pointer-events-none"
+              className="absolute top-0 left-0 right-0 h-36 sm:h-44 origin-top z-30 pointer-events-none"
               style={{ transformStyle: 'preserve-3d' }}
             >
-              <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-md">
-                <polygon points="0,0 50,48 100,0" fill="#ECF0EA" stroke="#B1C2A5" strokeWidth="0.7" />
+              <svg viewBox="0 0 100 45" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-md">
+                <polygon points="0,0 50,44 100,0" fill="#ECF0EA" stroke="#B1C2A5" strokeWidth="0.7" />
               </svg>
             </motion.div>
 
@@ -102,13 +102,13 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
               }}
               transition={{ duration: 0.5 }}
               onClick={isReady ? handleOpenEnvelope : undefined}
-              className={`absolute top-[48%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
+              className={`absolute top-[42%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
                 isReady ? 'hover:scale-110 active:scale-95 animate-pulse' : ''
               }`}
               title="Sello de Lacre Nupcial"
             >
               {/* Seal Inner Ring & Monogram */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-white/40 flex flex-col items-center justify-center bg-black/10">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-white/40 flex flex-col items-center justify-center bg-black/10 shadow-inner">
                 <span className="font-cinzel text-base sm:text-lg font-bold tracking-wider text-white">
                   {groomInit}<span className="font-serif italic text-xs mx-0.5 text-emerald-200">&</span>{brideInit}
                 </span>
@@ -123,17 +123,10 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 scale: isOpening ? 1.04 : 1
               }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="relative z-20 flex flex-col items-center w-full pt-10"
+              className="relative z-20 flex flex-col items-center w-full pt-12 sm:pt-14"
             >
-              {/* Circular Badge Icon */}
-              <div className="relative mb-4 p-5 rounded-full bg-white border border-[var(--color-gold)] shadow-sm flex items-center justify-center w-20 h-20">
-                <span className="font-cinzel text-xl font-bold text-[var(--color-text-primary)]">
-                  {groomInit}<span className="text-[var(--color-accent)] font-serif italic text-base mx-0.5">&</span>{brideInit}
-                </span>
-              </div>
-
               {/* Names */}
-              <h1 className="font-cinzel font-bold text-2xl sm:text-3xl tracking-tight text-[var(--color-text-primary)] mb-1 uppercase">
+              <h1 className="font-cinzel font-bold text-2xl sm:text-4xl tracking-tight text-[var(--color-text-primary)] mb-1.5 uppercase">
                 {config.loaderText || `${config.hero.groom} & ${config.hero.bride}`}
               </h1>
 
