@@ -3,29 +3,56 @@ import { INITIAL_GUESTS } from '../data/weddingData';
 import { apiService } from './apiService';
 import { authService } from './authService';
 
-const STORAGE_KEY = 'mateo_camila_wedding_guests_v1';
+const STORAGE_KEY_PREFIX = 'mateo_camila_wedding_guests_';
 
 class StorageService {
   private listeners: Array<() => void> = [];
-  private cache: Guest[] = INITIAL_GUESTS;
+  private cache: Guest[] = [];
+  private currentUserId: string | null = null;
 
   constructor() {
-    void this.refreshGuests();
+    // Listen for auth changes to scope data per user
+    authService.subscribe(session => {
+      const newUserId = session?.user?.id ?? null;
+      if (newUserId !== this.currentUserId) {
+        this.currentUserId = newUserId;
+        void this.refreshGuests();
+      }
+    });
+  }
+
+  /** Build a localStorage key scoped to the active admin user */
+  private storageKey(): string {
+    const userId = this.currentUserId || 'public';
+    return `${STORAGE_KEY_PREFIX}${userId}_v1`;
+  }
+
+  private getDefaultGuests(): Guest[] {
+    // Only superadmin (id '1') gets the demo dataset.
+    // Every other admin starts with an EMPTY guest list (total isolation).
+    if (this.currentUserId === '1') {
+      return INITIAL_GUESTS;
+    }
+    return [];
   }
 
   private readLocalCache(): Guest[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_GUESTS;
+      const stored = localStorage.getItem(this.storageKey());
+      if (stored) {
+        const parsed = JSON.parse(stored) as Guest[];
+        return Array.isArray(parsed) ? parsed : this.getDefaultGuests();
+      }
+      return this.getDefaultGuests();
     } catch {
-      return INITIAL_GUESTS;
+      return this.getDefaultGuests();
     }
   }
 
   private persistCache(guests: Guest[]): void {
     this.cache = guests;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
+      localStorage.setItem(this.storageKey(), JSON.stringify(guests));
     } catch {
       // ignore
     }
@@ -51,6 +78,7 @@ class StorageService {
       return guests;
     } catch {
       this.cache = this.readLocalCache();
+      this.notify();
       return this.cache;
     }
   }

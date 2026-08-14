@@ -41,7 +41,8 @@ import {
   AlertTriangle,
   KeyRound,
   ExternalLink,
-  SlidersHorizontal
+  SlidersHorizontal,
+  BookOpen
 } from 'lucide-react';
 
 async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
@@ -1348,6 +1349,147 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL Foto de Portada (Hero Image)</label>
                     <input type="text" disabled={!canEditPage} value={siteConfig.hero.coverImage} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, coverImage: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" />
                   </div>
+                </div>
+              </div>
+
+              {/* 2. NUESTRA HISTORIA (CAPÍTULOS DE AMOR - MÁXIMO 5 TARJETAS) */}
+              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="w-6 h-6 text-[var(--color-gold-light)]" />
+                    <div>
+                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Nuestra Historia (Capítulos de Amor)</h2>
+                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                        Edita los capítulos de tu historia ({siteConfig.loveStory.length} de máx. 5 tarjetas habilitadas).
+                      </p>
+                    </div>
+                  </div>
+
+                  {canEditPage && siteConfig.loveStory.length < 5 && (
+                    <button
+                      onClick={() => {
+                        const newId = `story-${Date.now()}`;
+                        const newChapter = {
+                          id: newId,
+                          year: `${new Date().getFullYear()}`,
+                          title: 'Nuevo Capítulo',
+                          location: 'Ambato, Ecuador',
+                          content: 'Escribe aquí los detalles inolvidables de este momento...',
+                          isVisible: true
+                        };
+                        weddingConfigService.updateConfig({
+                          loveStory: [...siteConfig.loveStory, newChapter]
+                        });
+                      }}
+                      className="px-4 py-2 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg hover:scale-105 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Agregar Capítulo (Máx. 5)</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {siteConfig.loveStory.map((chapter, idx) => (
+                    <div key={chapter.id || idx} className="p-5 rounded-2xl bg-black/40 border border-white/15 space-y-4">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[var(--color-gold-light)] font-mono font-bold text-xs flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          <strong className="text-sm font-cinzel text-[#EAF0E6]">{chapter.title || `Capítulo ${idx + 1}`}</strong>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, isVisible: !c.isVisible } : c);
+                              weddingConfigService.updateConfig({ loveStory: updated });
+                            }}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#B1C2A5]"
+                            title={chapter.isVisible !== false ? "Visible" : "Oculto"}
+                          >
+                            {chapter.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                          </button>
+                          {canEditPage && siteConfig.loveStory.length > 1 && (
+                            <button
+                              onClick={() => {
+                                const updated = siteConfig.loveStory.filter((_, i) => i !== idx);
+                                weddingConfigService.updateConfig({ loveStory: updated });
+                              }}
+                              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"
+                              title="Eliminar este capítulo"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Año / Fecha</label>
+                          <input
+                            type="text"
+                            disabled={!canEditPage}
+                            value={chapter.year}
+                            onChange={e => {
+                              const val = e.target.value;
+                              const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, year: val } : c);
+                              weddingConfigService.updateConfig({ loveStory: updated });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                            placeholder="Ej. 2021"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título del Capítulo</label>
+                          <input
+                            type="text"
+                            disabled={!canEditPage}
+                            value={chapter.title}
+                            onChange={e => {
+                              const val = e.target.value;
+                              const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, title: val } : c);
+                              weddingConfigService.updateConfig({ loveStory: updated });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            placeholder="Ej. El Encuentro en Ficoa"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Lugar / Ubicación</label>
+                          <input
+                            type="text"
+                            disabled={!canEditPage}
+                            value={chapter.location}
+                            onChange={e => {
+                              const val = e.target.value;
+                              const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, location: val } : c);
+                              weddingConfigService.updateConfig({ loveStory: updated });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            placeholder="Ej. Ficoa, Ambato"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Contenido / Historia</label>
+                        <textarea
+                          rows={2}
+                          disabled={!canEditPage}
+                          value={chapter.content}
+                          onChange={e => {
+                            const val = e.target.value;
+                            const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, content: val } : c);
+                            weddingConfigService.updateConfig({ loveStory: updated });
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                          placeholder="Escribe los detalles de este capítulo..."
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

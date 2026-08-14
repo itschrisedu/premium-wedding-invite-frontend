@@ -55,10 +55,19 @@ export interface DressCodeCard {
   isVisible: boolean;
 }
 
+export interface VideoSectionConfig {
+  mode: 'video' | 'slideshow';
+  videoUrl: string;
+  videoTitle: string;
+  posterUrl: string;
+  quote: string;
+}
+
 export interface WeddingSiteConfig {
   themeId: string;
   customThemeColors?: ThemePalette['colors'];
   audio: AudioConfig;
+  videoConfig: VideoSectionConfig;
   loaderText?: string;
   loaderSubtitle?: string;
   hero: {
@@ -107,6 +116,13 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
     artist: 'Ed Sheeran',
     autoPlay: true,
     loop: true
+  },
+  videoConfig: {
+    mode: 'slideshow',
+    videoUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1200',
+    videoTitle: 'MATEO & CAMILA — CINEMATIC PRE-WEDDING',
+    posterUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1200',
+    quote: '"El amor no se mira con los ojos, sino con el corazón."'
   },
   loaderText: 'Mateo & Camila',
   loaderSubtitle: 'Cargando experiencia nupcial exclusiva...',
@@ -219,18 +235,39 @@ export function updateDynamicFavicon(groomName: string, brideName: string) {
   document.title = `${groomName || 'Mateo'} & ${brideName || 'Camila'} — Boda Nupcial`;
 }
 
+import { authService } from './authService';
+
+const CONFIG_STORAGE_KEY_PREFIX = 'mateo_camila_wedding_config_';
+
 class WeddingConfigService {
   private config: WeddingSiteConfig = DEFAULT_CONFIG;
   private listeners: Array<() => void> = [];
+  private currentUserId: string | null = null;
 
   constructor() {
     this.loadFromStorage();
+
+    // Listen for auth changes to scope config per admin user
+    authService.subscribe(session => {
+      const newUserId = session?.user?.id ?? null;
+      if (newUserId !== this.currentUserId) {
+        this.currentUserId = newUserId;
+        this.loadFromStorage();
+        this.listeners.forEach(cb => cb());
+      }
+    });
+  }
+
+  /** Build a localStorage key scoped to the active admin user */
+  private storageKey(): string {
+    const userId = this.currentUserId || 'public';
+    return `${CONFIG_STORAGE_KEY_PREFIX}${userId}_v2`;
   }
 
   private loadFromStorage(): void {
     if (typeof window === 'undefined') return;
     try {
-      const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
+      const stored = localStorage.getItem(this.storageKey());
       if (stored) {
         const parsed = JSON.parse(stored);
         this.config = {
@@ -239,12 +276,15 @@ class WeddingConfigService {
           sectionVisibility: { ...DEFAULT_CONFIG.sectionVisibility, ...(parsed.sectionVisibility || {}) },
           hero: { ...DEFAULT_CONFIG.hero, ...(parsed.hero || {}) },
           audio: { ...DEFAULT_CONFIG.audio, ...(parsed.audio || {}) },
+          videoConfig: { ...DEFAULT_CONFIG.videoConfig, ...(parsed.videoConfig || {}) },
           dressCode: { ...DEFAULT_CONFIG.dressCode, ...(parsed.dressCode || {}) },
           honeymoon: { ...DEFAULT_CONFIG.honeymoon, ...(parsed.honeymoon || {}) }
         };
+      } else {
+        this.config = { ...DEFAULT_CONFIG };
       }
     } catch {
-      this.config = DEFAULT_CONFIG;
+      this.config = { ...DEFAULT_CONFIG };
     }
     this.applyActiveTheme();
     updateDynamicFavicon(this.config.hero.groom, this.config.hero.bride);
@@ -294,7 +334,7 @@ class WeddingConfigService {
   private saveAndNotify(): void {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(this.config));
+        localStorage.setItem(this.storageKey(), JSON.stringify(this.config));
       } catch {
         // ignore
       }
