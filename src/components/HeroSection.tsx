@@ -21,14 +21,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ currentGuest, onExplor
 
   return (
     <section id="hero" className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-primary)] pt-24 pb-12">
-      {/* Background Photography with Soft Gradient Overlay */}
+      {/* Background Photography with Soft Translucent Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroConfig.coverImage}
           alt={`${heroConfig.groom} & ${heroConfig.bride}`}
-          className="w-full h-full object-cover object-center filter contrast-[1.08] opacity-25 transition-transform duration-[20s] hover:scale-105"
+          className="w-full h-full object-cover object-center filter contrast-[1.05] brightness-[0.95] opacity-85 transition-transform duration-[20s] hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-bg-base)] via-[var(--color-bg-base)]/80 to-[var(--color-bg-base)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-bg-base)]/50 via-white/30 to-[var(--color-bg-base)]/70 backdrop-blur-[2px]" />
       </div>
 
       {/* Top Meta Bar */}
