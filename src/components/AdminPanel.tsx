@@ -214,7 +214,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [editingVenue, setEditingVenue] = useState<DynamicVenue | null>(null);
   const [venueFormData, setVenueFormData] = useState({
     name: '',
-    type: 'recepcion' as 'civil' | 'eclesiastico' | 'ceremonia' | 'recepcion',
+    type: 'recepcion' as 'civil' | 'eclesiastico' | 'ceremonia' | 'recepcion' | 'recepcion_civil' | 'recepcion_eclesiastico',
     time: '19:00 PM',
     address: '',
     city: 'Ambato, Ecuador',
@@ -2359,14 +2359,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]"
                     >
                       {activePerms.civil !== false && (
-                        <option value="civil">Matrimonio Civil (Ceremonia Civil)</option>
+                        <>
+                          <option value="civil">Matrimonio Civil (Ceremonia Civil)</option>
+                          <option value="recepcion_civil">Recepción / Brindis del Matrimonio Civil</option>
+                        </>
                       )}
                       {activePerms.eclesiastico !== false && (
-                        <option value="eclesiastico">Matrimonio Eclesiástico (Ceremonia Religiosa)</option>
+                        <>
+                          <option value="eclesiastico">Matrimonio Eclesiástico (Ceremonia Religiosa)</option>
+                          <option value="recepcion_eclesiastico">Recepción / Fiesta del Matrimonio Eclesiástico</option>
+                        </>
                       )}
                       <option value="ceremonia">Ceremonia Nupcial General</option>
                       {activePerms.recepcion !== false && (
-                        <option value="recepcion">Recepción & Fiesta de Bodas</option>
+                        <option value="recepcion">Recepción & Gran Fiesta General (Para Ambos)</option>
                       )}
                     </select>
                   );

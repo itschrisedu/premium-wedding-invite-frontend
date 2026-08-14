@@ -78,9 +78,13 @@ export const EventDetailsSection: React.FC = () => {
                     ? 'Matrimonio Civil'
                     : venue.type === 'eclesiastico'
                     ? 'Matrimonio Eclesiástico'
+                    : venue.type === 'recepcion_civil'
+                    ? 'Recepción Matrimonio Civil'
+                    : venue.type === 'recepcion_eclesiastico'
+                    ? 'Recepción Matrimonio Eclesiástico'
                     : venue.type === 'ceremonia'
                     ? 'Ceremonia Nupcial'
-                    : 'Recepción & Fiesta'}
+                    : 'Recepción & Fiesta General'}
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-[var(--color-accent)]">
                   <Clock className="w-3.5 h-3.5 text-[var(--color-accent)]" />
