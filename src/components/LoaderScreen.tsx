@@ -102,7 +102,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
               }}
               transition={{ duration: 0.5 }}
               onClick={isReady ? handleOpenEnvelope : undefined}
-              className={`absolute top-[42%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
+              className={`absolute top-[36%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
                 isReady ? 'hover:scale-110 active:scale-95 animate-pulse' : ''
               }`}
               title="Sello de Lacre Nupcial"
