@@ -634,8 +634,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           {/* Header Panel */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)] shadow-2xl text-[#f5f0e6]">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent)]/20 border border-[var(--color-gold)] flex items-center justify-center text-[var(--color-accent)]">
-                <Shield className="w-6 h-6 text-[var(--color-accent)]" />
+              {/* Couple's Initials Circular Monogram Badge */}
+              <div className="w-12 h-12 rounded-full bg-white border-2 border-[var(--color-gold)] flex items-center justify-center text-[#2A3828] font-cinzel font-bold text-sm shadow-md shrink-0">
+                {(siteConfig.hero.groom || 'M').trim().charAt(0)}<span className="text-[var(--color-accent)] font-serif italic text-xs mx-0.5">&</span>{(siteConfig.hero.bride || 'C').trim().charAt(0)}
               </div>
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-gold-light)] block">

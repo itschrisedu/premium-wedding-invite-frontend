@@ -59,8 +59,8 @@ export interface WeddingSiteConfig {
   themeId: string;
   customThemeColors?: ThemePalette['colors'];
   audio: AudioConfig;
-  loaderText: string;
-  loaderSubtitle: string;
+  loaderText?: string;
+  loaderSubtitle?: string;
   hero: {
     groom: string;
     bride: string;
@@ -70,23 +70,24 @@ export interface WeddingSiteConfig {
     quote: string;
     hashtag: string;
     coverImage: string;
-    secondaryImage: string;
+    secondaryImage?: string;
   };
   loveStory: DynamicLoveStoryChapter[];
   timeline: DynamicTimelineEvent[];
   venues: DynamicVenue[];
+  bankAccounts: DynamicBankAccount[];
   dressCode: {
     title: string;
     subtitle: string;
     styleType: string;
     description: string;
-    rulesNotice: string;
+    rulesNotice?: string;
     cards: DressCodeCard[];
   };
-  bankAccounts: DynamicBankAccount[];
   honeymoon: {
     title: string;
     description: string;
+    bankReference: string;
     imageUrl: string;
     isVisible: boolean;
   };
@@ -138,24 +139,24 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
   dressCode: {
     title: 'Código de Vestimenta',
     subtitle: 'Rigurosa Etiqueta Nupcial',
-    styleType: 'Formal Gala / Black Tie Option',
-    description: 'Agradecemos vestir trajes de gala y vestidos largos formales para honrar la solemnidad de nuestro día.',
-    rulesNotice: 'Sugerimos paleta de colores tierra y marfil cálido. Reservamos el color blanco absoluto para la novia.',
+    styleType: 'Formal Elegante',
+    description: 'Agradecemos a nuestros estimados invitados vestir con la máxima elegancia nupcial para honrar esta gran celebración.',
+    rulesNotice: 'Reservado el color blanco y marfil exclusivamente para la novia.',
     cards: [
       {
         id: 'dc-1',
-        title: 'Caballeros',
-        gender: 'Hombres',
-        description: 'Traje de gala, terno oscuro (Negro, Azul Noche o Gris Marengo) con corbata de seda o corbatín.',
-        items: ['Terno completo oscuro', 'Camisa blanca formal', 'Corbata / Corbatín', 'Zapatos de vestir lustrados'],
+        title: 'Traje Formal de Gala',
+        gender: 'Caballeros',
+        description: 'Terno completo en tonos oscuros (Negro, Azul Noche o Marengo) con corbata o pajarita elegante y zapatos de cuero.',
+        items: ['Terno Completo', 'Camisa Blanca', 'Corbata / Pajarita'],
         isVisible: true
       },
       {
         id: 'dc-2',
-        title: 'Damas',
-        gender: 'Mujeres',
-        description: 'Vestido largo de noche o gala de alta costura.',
-        items: ['Vestido largo de noche', 'Accesorios de gala', 'Calzado elegante de fiesta', 'Evitar color blanco estricto'],
+        title: 'Vestido Largo de Fiesta',
+        gender: 'Damas',
+        description: 'Vestido largo de noche o cóctel sofisticado. Se sugiere evitar tonos blancos, marfil o crema.',
+        items: ['Vestido Largo', 'Tonos Joya / Pastel', 'Accesorios Elegantes'],
         isVisible: true
       }
     ]
@@ -166,13 +167,14 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
     isVisible: true
   })),
   honeymoon: {
-    title: 'Luna de Miel en las Islas Galápagos & Italia',
-    description: '"Si prefieres aportar a las experiencias de nuestro primer viaje como esposos, tu aporte nos acompañará a crear recuerdos inolvidables."',
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200',
+    title: 'Fondo de Luna de Miel',
+    description: 'Tu mejor regalo es compartir este momento con nosotros. Si deseas hacernos un detalle para nuestro viaje de bodas, te lo agradeceremos de corazón.',
+    bankReference: 'Luna de Miel Mateo & Camila',
+    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     isVisible: true
   },
   galleryConfig: {
-    layoutStyle: 'grid'
+    layoutStyle: 'carousel'
   },
   sectionVisibility: {
     hero: true,
@@ -186,6 +188,36 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
     rsvp: true
   }
 };
+
+/**
+ * Generates dynamic SVG favicon with the couple's initials and sets browser document title
+ */
+export function updateDynamicFavicon(groomName: string, brideName: string) {
+  if (typeof document === 'undefined') return;
+
+  const groomInit = (groomName || 'M').trim().charAt(0).toUpperCase();
+  const brideInit = (brideName || 'C').trim().charAt(0).toUpperCase();
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="#FAFCF9" stroke="#6B7F5A" stroke-width="4"/>
+    <text x="50" y="60" font-family="Cinzel, Georgia, serif" font-size="34" font-weight="700" fill="#2A3828" text-anchor="middle" letter-spacing="-1">
+      ${groomInit}<tspan fill="#6B7F5A" font-size="28" font-style="italic"> &amp; </tspan>${brideInit}
+    </text>
+  </svg>`;
+
+  const encodedSvg = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+  let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  }
+  link.type = 'image/svg+xml';
+  link.href = encodedSvg;
+
+  document.title = `${groomName || 'Mateo'} & ${brideName || 'Camila'} — Boda Nupcial`;
+}
 
 class WeddingConfigService {
   private config: WeddingSiteConfig = DEFAULT_CONFIG;
@@ -215,6 +247,7 @@ class WeddingConfigService {
       this.config = DEFAULT_CONFIG;
     }
     this.applyActiveTheme();
+    updateDynamicFavicon(this.config.hero.groom, this.config.hero.bride);
   }
 
   public getConfig(): WeddingSiteConfig {
@@ -267,6 +300,7 @@ class WeddingConfigService {
       }
     }
     this.applyActiveTheme();
+    updateDynamicFavicon(this.config.hero.groom, this.config.hero.bride);
     this.listeners.forEach(cb => cb());
   }
 }
