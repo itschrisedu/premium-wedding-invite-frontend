@@ -162,8 +162,8 @@ export const Modal: React.FC<ModalProps> = ({
             {title && (
               <div className="modal-header">
                 <div className="flex items-center gap-3">
-                  {titleIcon && <span className="text-amber-400">{titleIcon}</span>}
-                  <h3 id="modal-title" className="font-cinzel text-xl text-amber-100">
+                  {titleIcon && <span className="text-[var(--color-gold-light)]">{titleIcon}</span>}
+                  <h3 id="modal-title" className="font-cinzel text-xl text-[#EAF0E6]">
                     {title}
                   </h3>
                 </div>

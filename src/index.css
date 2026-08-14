@@ -34,6 +34,14 @@
     --color-danger: #f43f5e;
     --color-warning: #f59e0b;
 
+    /* ── Container & Badge Backgrounds ── */
+    --color-container-bg: #EAF0E6;
+    --color-container-bg-alt: #E2EAE0;
+
+    /* ── Border & Separators ── */
+    --color-border-soft: #B1C2A5;
+    --color-border-light: #D2DCD0;
+
     /* ── Border Radius ── */
     --radius-sm: 0.5rem;
     --radius-md: 0.75rem;
@@ -43,8 +51,8 @@
     --radius-full: 9999px;
 
     /* ── Shadows ── */
-    --shadow-elevated: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+    --shadow-elevated: 0 8px 32px 0 rgba(42, 56, 40, 0.12);
+    --shadow-modal: 0 20px 60px rgba(42, 56, 40, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
 
     /* ── Transitions ── */
     --transition-fast: 150ms ease;
@@ -78,10 +86,10 @@
    ========================================================================= */
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(250, 252, 249, 0.6);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border-light);
   box-shadow: var(--shadow-elevated);
 }
 
@@ -90,27 +98,27 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px 0 rgba(197, 160, 89, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(107, 127, 90, 0.08);
 }
 
 .glass-panel-gold {
-  background: rgba(212, 175, 55, 0.06);
+  background: rgba(107, 127, 90, 0.06);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(107, 127, 90, 0.2);
+  box-shadow: 0 10px 40px -10px rgba(107, 127, 90, 0.15);
 }
 
 .liquid-glass {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    rgba(212, 175, 55, 0.08) 100%
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(107, 127, 90, 0.08) 100%
   );
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: var(--shadow-modal);
 }
 
@@ -119,13 +127,13 @@
    ========================================================================= */
 
 .gold-gradient-text {
-  background: linear-gradient(135deg, #fff7d6 0%, #e6c875 35%, #c5a059 70%, #9e7b37 100%);
+  background: linear-gradient(135deg, #EAF0E6 0%, #8A9D76 35%, #6B7F5A 70%, #4D5E3F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-gradient-bg {
-  background: linear-gradient(135deg, #d4af37 0%, #c5a059 50%, #8a6d2b 100%);
+  background: linear-gradient(135deg, #6B7F5A 0%, #556B2F 50%, #4D5E3F 100%);
 }
 
 /* =========================================================================
@@ -161,7 +169,7 @@
 
 /* =========================================================================
    MODAL SYSTEM — Global Standardized Modal Styles
-   Reference: "Nuevo Invitado" modal visual standard
+   Using the Pastel Olive & Sage palette
    ========================================================================= */
 
 .modal-overlay {
@@ -172,7 +180,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(42, 56, 40, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -184,12 +192,12 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-2xl);
-  border: 1px solid var(--color-gold);
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--color-border-soft);
+  box-shadow: 0 25px 60px -15px rgba(42, 56, 40, 0.4), 0 0 30px rgba(107, 127, 90, 0.1);
 
-  /* Solid opaque background - no transparent bleed */
-  background: #181612;
-  color: #f5f0e6;
+  /* Solid opaque background — sage green elegant */
+  background: #2D3B2A;
+  color: #EAF0E6;
 
   outline: none;
 }
@@ -199,7 +207,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(138, 157, 118, 0.2);
   flex-shrink: 0;
 }
 
@@ -210,7 +218,7 @@
 
   /* Ensure nice scrollbar inside modal */
   scrollbar-width: thin;
-  scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+  scrollbar-color: rgba(107, 127, 90, 0.4) transparent;
 }
 
 .modal-body::-webkit-scrollbar {
@@ -220,20 +228,20 @@
   background: transparent;
 }
 .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.25);
+  background: rgba(107, 127, 90, 0.35);
   border-radius: 3px;
 }
 
 .modal-footer {
   padding: 1rem 2rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(138, 157, 118, 0.2);
   flex-shrink: 0;
 }
 
 .modal-close-btn {
   padding: 0.5rem;
   border-radius: var(--radius-full);
-  color: rgba(251, 211, 141, 0.8);
+  color: rgba(138, 157, 118, 0.8);
   transition: background var(--transition-fast);
   cursor: pointer;
   display: flex;
@@ -271,7 +279,7 @@
 }
 
 /* =========================================================================
-   CUSTOM GOLD SCROLLBAR
+   CUSTOM SAGE SCROLLBAR
    ========================================================================= */
 
 ::-webkit-scrollbar {
@@ -281,9 +289,9 @@
   background: var(--color-bg-base);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.3);
+  background: rgba(107, 127, 90, 0.3);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.6);
+  background: rgba(107, 127, 90, 0.55);
 }

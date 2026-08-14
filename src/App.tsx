@@ -145,15 +145,15 @@ export default function App() {
       />
 
       {/* GUEST SELECTOR MODAL DRAWER (para pruebas admin) */}
-      <Modal
+        <Modal
         isOpen={isGuestSelectorOpen}
         onClose={() => setIsGuestSelectorOpen(false)}
         title="Probar Invitación Personal"
-        titleIcon={<UserCheck className="w-4 h-4 text-amber-400" />}
+        titleIcon={<UserCheck className="w-4 h-4 text-[var(--color-gold-light)]" />}
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-xs text-amber-200/70 font-serif italic">
+          <p className="text-xs text-[#EAF0E6]/70 font-serif italic">
             Selecciona un invitado para probar su enlace personalizado:
           </p>
 
@@ -164,8 +164,8 @@ export default function App() {
                 onClick={() => handleSelectGuest(g)}
                 className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
                   currentGuest?.id === g.id
-                    ? 'gold-gradient-bg text-amber-950 font-semibold border-amber-300'
-                    : 'glass-panel border-white/10 hover:border-white/20 text-amber-100'
+                    ? 'gold-gradient-bg text-white font-semibold border-[var(--color-gold)]'
+                    : 'bg-[#3A4B37] border-[var(--color-border-soft)]/30 hover:border-[var(--color-gold-light)]/40 text-[#EAF0E6]'
                 }`}
               >
                 <div>
@@ -184,13 +184,13 @@ export default function App() {
       </Modal>
 
       {/* Footer */}
-      <footer className="py-12 px-6 text-center border-t border-white/10 bg-[#0a0908] text-xs text-amber-200/60 font-serif italic space-y-2">
+      <footer className="py-12 px-6 text-center border-t border-[var(--color-border-soft)]/20 bg-[var(--color-bg-elevated)] text-xs text-[var(--color-text-muted)] font-serif italic space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Heart className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="font-cinzel text-amber-100 text-sm">{config.hero.groom} & {config.hero.bride}</span>
+          <Heart className="w-4 h-4 text-[var(--color-accent)] fill-[var(--color-accent)]" />
+          <span className="font-cinzel text-[var(--color-text-primary)] text-sm">{config.hero.groom} & {config.hero.bride}</span>
         </div>
         <p>{config.hero.dateFormatted} • {config.hero.city}</p>
-        <p className="text-[10px] font-mono uppercase tracking-widest text-amber-400/50 pt-2">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-gold-dark)]/50 pt-2">
           Experiencia Nupcial Exclusiva Multitenant
         </p>
       </footer>

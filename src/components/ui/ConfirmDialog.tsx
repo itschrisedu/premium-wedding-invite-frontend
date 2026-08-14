@@ -20,8 +20,8 @@ interface ConfirmDialogProps {
 
 const variantClasses: Record<string, string> = {
   danger: 'bg-rose-500 hover:bg-rose-600',
-  warning: 'bg-amber-500 hover:bg-amber-600',
-  default: 'bg-orange-500 hover:bg-orange-600',
+  warning: 'bg-[var(--color-gold-dark)] hover:bg-[var(--color-accent-hover)]',
+  default: 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)]',
 };
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -52,7 +52,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-amber-100 hover:bg-white/20 transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer"
           >
             {cancelLabel}
           </button>
@@ -67,7 +67,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
       }
     >
-      <p className="text-sm text-amber-100/90 font-sans leading-relaxed">{message}</p>
+      <p className="text-sm text-[#EAF0E6]/90 font-sans leading-relaxed">{message}</p>
     </Modal>
   );
 };

@@ -102,8 +102,8 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
   themeId: 'pastel-olive-sage',
   audio: {
     url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=wedding-vals-gentle-piano-112190.mp3',
-    title: 'Vals Nupcial en Piano',
-    artist: 'Música de Entrada Especial',
+    title: 'Perfect',
+    artist: 'Ed Sheeran',
     autoPlay: true,
     loop: true
   },

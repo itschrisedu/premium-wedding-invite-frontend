@@ -44,8 +44,8 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
         className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden"
       >
         {/* Ambient background blur elements */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-amber-600/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-amber-400/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[var(--color-gold)]/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[var(--color-gold-light)]/10 rounded-full blur-[140px] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col items-center max-w-md px-6 text-center">
           {/* Monogram Badge */}

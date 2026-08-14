@@ -117,7 +117,7 @@ export const GallerySection: React.FC = () => {
       {/* CAROUSEL MODE */}
       {galleryConfig.layoutStyle === 'carousel' ? (
         <div className="relative max-w-4xl mx-auto">
-          <div className="overflow-hidden rounded-3xl liquid-glass border border-white/20 p-4 shadow-2xl relative">
+          <div className="overflow-hidden rounded-3xl liquid-glass border border-[var(--color-border-light)] p-4 shadow-2xl relative">
             {galleryItems.length > 0 && (
               <div className="relative aspect-[16/10] overflow-hidden rounded-2xl">
                 <img
@@ -126,25 +126,25 @@ export const GallerySection: React.FC = () => {
                   className="w-full h-full object-cover transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 flex flex-col justify-end">
-                  <span className="text-xs font-mono text-amber-300 uppercase tracking-widest flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-xs font-mono text-[var(--color-gold-light)] uppercase tracking-widest flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-[var(--color-gold-light)]" />
                     {galleryItems[carouselIndex].locationTag}
                   </span>
                   <h3 className="font-cinzel text-2xl text-white font-medium">{galleryItems[carouselIndex].title}</h3>
-                  <p className="text-xs text-amber-100/80 font-serif italic">{galleryItems[carouselIndex].caption}</p>
+                  <p className="text-xs text-white/80 font-serif italic">{galleryItems[carouselIndex].caption}</p>
                 </div>
               </div>
             )}
 
             <button
               onClick={prevCarousel}
-              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors"
+              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-[var(--color-gold-light)] transition-colors"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={nextCarousel}
-              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors"
+              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-[var(--color-gold-light)] transition-colors"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -156,7 +156,7 @@ export const GallerySection: React.FC = () => {
                 key={idx}
                 onClick={() => setCarouselIndex(idx)}
                 className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
-                  carouselIndex === idx ? 'bg-amber-400 w-8' : 'bg-white/30 hover:bg-white/60'
+                  carouselIndex === idx ? 'bg-[var(--color-accent)] w-8' : 'bg-[var(--color-gold)]/30 hover:bg-[var(--color-gold)]/60'
                 }`}
               />
             ))}
@@ -173,7 +173,7 @@ export const GallerySection: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.05 }}
               onClick={() => openLightbox(img, idx)}
-              className="group relative cursor-pointer overflow-hidden rounded-2xl glass-panel border border-white/10 hover:border-amber-300/40 transition-all duration-500 shadow-xl"
+              className="group relative cursor-pointer overflow-hidden rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border-light)] hover:border-[var(--color-gold)] transition-all duration-500 shadow-xl"
             >
               <div className="aspect-[4/5] overflow-hidden">
                 <img
@@ -183,16 +183,16 @@ export const GallerySection: React.FC = () => {
                 />
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0c0a]/90 via-[#0d0c0a]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-end">
-                <div className="flex items-center justify-between text-amber-300 text-xs font-mono mb-1">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2A3828]/90 via-[#2A3828]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6 flex flex-col justify-end">
+                <div className="flex items-center justify-between text-[var(--color-gold-light)] text-xs font-mono mb-1">
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-amber-400" />
+                    <MapPin className="w-3 h-3 text-[var(--color-gold-light)]" />
                     {img.locationTag}
                   </span>
-                  <Maximize2 className="w-4 h-4 text-amber-200" />
+                  <Maximize2 className="w-4 h-4 text-white/80" />
                 </div>
-                <h3 className="font-cinzel text-lg text-amber-100 font-medium">{img.title}</h3>
-                <p className="text-xs text-amber-100/80 font-serif italic mt-1 line-clamp-2">
+                <h3 className="font-cinzel text-lg text-white font-medium">{img.title}</h3>
+                <p className="text-xs text-white/80 font-serif italic mt-1 line-clamp-2">
                   {img.caption}
                 </p>
               </div>
@@ -209,7 +209,7 @@ export const GallerySection: React.FC = () => {
         <div className="relative flex items-center justify-center min-h-[60vh]">
           <button
             onClick={prevImage}
-            className="absolute left-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors cursor-pointer"
+            className="absolute left-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-[var(--color-gold-light)] transition-colors cursor-pointer"
             aria-label="Imagen anterior"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -217,7 +217,7 @@ export const GallerySection: React.FC = () => {
 
           <button
             onClick={nextImage}
-            className="absolute right-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-amber-300 transition-colors cursor-pointer"
+            className="absolute right-2 z-50 p-3 rounded-full liquid-glass border border-white/20 text-white hover:text-[var(--color-gold-light)] transition-colors cursor-pointer"
             aria-label="Imagen siguiente"
           >
             <ChevronRight className="w-6 h-6" />
@@ -231,13 +231,13 @@ export const GallerySection: React.FC = () => {
                 className="max-w-full max-h-[65vh] object-contain rounded-xl mx-auto"
               />
 
-              <div className="p-4 text-center bg-[#0d0c0a]/80 backdrop-blur-md rounded-b-xl border-t border-white/10 mt-2">
-                <span className="text-xs font-mono text-amber-400 uppercase tracking-widest flex items-center justify-center gap-1 mb-1">
+              <div className="p-4 text-center bg-[#2A3828]/80 backdrop-blur-md rounded-b-xl border-t border-white/10 mt-2">
+                <span className="text-xs font-mono text-[var(--color-gold-light)] uppercase tracking-widest flex items-center justify-center gap-1 mb-1">
                   <MapPin className="w-3.5 h-3.5" />
                   {selectedImage.locationTag}
                 </span>
-                <h3 className="font-cinzel text-xl text-amber-100 font-medium">{selectedImage.title}</h3>
-                <p className="text-xs text-amber-200/80 font-serif italic mt-1">"{selectedImage.caption}"</p>
+                <h3 className="font-cinzel text-xl text-white font-medium">{selectedImage.title}</h3>
+                <p className="text-xs text-white/80 font-serif italic mt-1">"{selectedImage.caption}"</p>
               </div>
             </div>
           )}

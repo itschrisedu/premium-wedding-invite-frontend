@@ -147,32 +147,32 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
       <button
         onClick={toggleMusic}
         id="btn-toggle-music"
-        className="group relative flex items-center gap-3 px-4 py-2.5 rounded-full backdrop-blur-xl bg-black/70 border border-white/20 hover:bg-white/10 transition-all duration-300 shadow-2xl text-white cursor-pointer hover:scale-105 active:scale-95"
+        className="group relative flex items-center gap-3 px-4 py-2.5 rounded-full backdrop-blur-xl bg-[var(--color-bg-overlay)] border border-[var(--color-border-soft)] hover:bg-[var(--color-gold)]/20 transition-all duration-300 shadow-2xl text-white cursor-pointer hover:scale-105 active:scale-95"
         title={isPlaying ? "Silenciar música de fondo" : "Activar música de fondo"}
       >
-        <div className="relative flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300">
+        <div className="relative flex items-center justify-center w-7 h-7 rounded-full bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[var(--color-gold-light)]">
           {isPlaying ? (
-            <Volume2 className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+            <Volume2 className="w-3.5 h-3.5 text-[var(--color-gold-light)] animate-pulse" />
           ) : (
             <VolumeX className="w-3.5 h-3.5 text-white/70" />
           )}
         </div>
 
         <div className="flex flex-col text-left pr-1">
-          <span className="text-[9px] font-mono uppercase tracking-[0.2em] font-bold text-amber-300">
+          <span className="text-[9px] font-mono uppercase tracking-[0.2em] font-bold text-[var(--color-gold-light)]">
             {isPlaying ? (audioConfig.loop ? "Bucle Activo • On Air" : "Reproduciendo") : "Música"}
           </span>
           <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5 max-w-[160px] truncate">
-            <Music className="w-3 h-3 text-amber-400 shrink-0" />
+            <Music className="w-3 h-3 text-[var(--color-gold-light)] shrink-0" />
             {audioConfig.title || "Vals Nupcial"}
           </span>
         </div>
 
         {isPlaying && (
           <div className="flex items-center gap-0.5 h-3 ml-1">
-            <span className="w-0.5 h-full bg-amber-400 animate-bounce rounded-full" style={{ animationDelay: '0ms' }} />
-            <span className="w-0.5 h-3/4 bg-amber-400 animate-bounce rounded-full" style={{ animationDelay: '150ms' }} />
-            <span className="w-0.5 h-full bg-amber-400 animate-bounce rounded-full" style={{ animationDelay: '300ms' }} />
+            <span className="w-0.5 h-full bg-[var(--color-gold-light)] animate-bounce rounded-full" style={{ animationDelay: '0ms' }} />
+            <span className="w-0.5 h-3/4 bg-[var(--color-gold-light)] animate-bounce rounded-full" style={{ animationDelay: '150ms' }} />
+            <span className="w-0.5 h-full bg-[var(--color-gold-light)] animate-bounce rounded-full" style={{ animationDelay: '300ms' }} />
           </div>
         )}
       </button>

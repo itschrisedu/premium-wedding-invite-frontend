@@ -50,7 +50,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           particleCount: 120,
           spread: 80,
           origin: { y: 0.6 },
-          colors: ['#d4af37', '#e6c875', '#ffffff', '#065f46']
+          colors: ['#6B7F5A', '#8A9D76', '#ffffff', '#556B2F']
         });
 
         onSelectGuest(resolved);
@@ -65,7 +65,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
   return (
     <section id="confirmacion" className="relative py-24 px-6 max-w-4xl mx-auto">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--color-gold)]/10 rounded-full blur-[160px] pointer-events-none" />
 
       {/* Section Header */}
       <div className="text-center mb-12">
@@ -253,7 +253,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
             </button>
 
             {isSubmitted && (
-              <p className="text-center text-xs text-emerald-300 font-serif italic flex items-center justify-center gap-1">
+              <p className="text-center text-xs text-emerald-600 font-serif italic flex items-center justify-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 ¡Tu respuesta está sincronizada en tiempo real! Gracias por acompañarnos.
               </p>
@@ -261,10 +261,10 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           </form>
         </motion.div>
       ) : (
-        <div className="p-10 rounded-3xl glass-panel border border-amber-300/30 text-center max-w-lg mx-auto">
-          <UserCheck className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-          <h3 className="font-cinzel text-xl text-amber-100 mb-2">Invitación Personal Exclusiva</h3>
-          <p className="text-xs text-amber-200/80 font-serif italic leading-relaxed">
+        <div className="p-10 rounded-3xl bg-[var(--color-bg-elevated)] border border-[var(--color-gold)]/30 text-center max-w-lg mx-auto shadow-xl">
+          <UserCheck className="w-8 h-8 text-[var(--color-accent)] mx-auto mb-3" />
+          <h3 className="font-cinzel text-xl text-[var(--color-text-primary)] mb-2">Invitación Personal Exclusiva</h3>
+          <p className="text-xs text-[var(--color-text-muted)] font-serif italic leading-relaxed">
             Ingresa a través del enlace personalizado enviado a tu WhatsApp para acceder a tu pase de asistencia de forma privada.
           </p>
         </div>
