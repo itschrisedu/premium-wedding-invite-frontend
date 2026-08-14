@@ -31,6 +31,8 @@ import {
   Heart,
   Calendar,
   Check,
+  Copy,
+  Share2,
   ToggleLeft,
   ToggleRight,
   Sparkles,
@@ -100,6 +102,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   });
   const [hasAcceptedTermsCheckbox, setHasAcceptedTermsCheckbox] = useState(false);
   const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
+
+  // Failed Login Attempts Security Lock Map with 24-hour automatic reset timer
+  const [lockoutMap, setLockoutMap] = useState<Record<string, { count: number; lockedUntil?: string }>>(() => {
+    try {
+      const stored = localStorage.getItem('mateo_camila_lockout_map_v2');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Share Credentials & Domain Link Modal
+  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
+  const [shareCredentialsData, setShareCredentialsData] = useState({ fullName: '', username: '', password: '' });
+  const [copiedCredentialsToast, setCopiedCredentialsToast] = useState(false);
 
   // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
@@ -275,12 +292,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 className="space-y-4"
                 onSubmit={async e => {
                   e.preventDefault();
+                  const targetUser = loginData.username.trim();
+                  const userLock = lockoutMap[targetUser] || { count: 0 };
+                  const now = new Date().getTime();
+
+                  let is24hLocked = false;
+                  let hoursRemaining = 24;
+
+                  if (userLock.count >= 3 && userLock.lockedUntil) {
+                    const lockUntilMs = new Date(userLock.lockedUntil).getTime();
+                    if (now < lockUntilMs) {
+                      is24hLocked = true;
+                      hoursRemaining = Math.max(1, Math.ceil((lockUntilMs - now) / (1000 * 60 * 60)));
+                    } else {
+                      // 24 hours have passed! Automatically reset and unlock account!
+                      is24hLocked = false;
+                    }
+                  }
+
+                  const isManualDisabled = userStatusMap[targetUser] === 'disabled';
+
+                  if (is24hLocked) {
+                    setLoginError(`⏳ Tu cuenta está bloqueada por 3 intentos fallidos. Podrás intentar nuevamente en approx. ${hoursRemaining} hora(s) (o solicita al Superadministrador que la desbloquee de inmediato).`);
+                    return;
+                  }
+
+                  if (isManualDisabled) {
+                    setLoginError("🚨 Tu cuenta ha sido DESHABILITADA por el Superadministrador. Por favor contacta para reactivarla.");
+                    return;
+                  }
+
                   setIsLoggingIn(true);
                   setLoginError('');
                   try {
-                    await authService.login(loginData.username, loginData.password);
-                  } catch (error) {
-                    setLoginError(error instanceof Error ? error.message : 'Error al iniciar sesión');
+                    await authService.login(targetUser, loginData.password);
+                    // Reset lockout count on successful login
+                    setLockoutMap(prev => {
+                      const next = { ...prev, [targetUser]: { count: 0 } };
+                      try { localStorage.setItem('mateo_camila_lockout_map_v2', JSON.stringify(next)); } catch {}
+                      return next;
+                    });
+                  } catch {
+                    const nextCount = (is24hLocked ? 0 : userLock.count || 0) + 1;
+                    const lockUntilIso = nextCount >= 3 ? new Date(now + 24 * 60 * 60 * 1000).toISOString() : undefined;
+
+                    setLockoutMap(prev => {
+                      const next = { ...prev, [targetUser]: { count: nextCount, lockedUntil: lockUntilIso } };
+                      try { localStorage.setItem('mateo_camila_lockout_map_v2', JSON.stringify(next)); } catch {}
+                      return next;
+                    });
+
+                    if (nextCount >= 3) {
+                      setLoginError("🚨 Tu cuenta ha sido bloqueada temporalmente por 24 HORAS debido a 3 intentos fallidos consecutivos. Podrás intentar nuevamente mañana o solicitar al Superadministrador que la desbloquee de inmediato.");
+                    } else {
+                      setLoginError(`❌ Credenciales incorrectas. Intento ${nextCount} de 3. (Al 3º intento fallido la cuenta se bloqueará por 24 horas).`);
+                    }
                   } finally {
                     setIsLoggingIn(false);
                   }
@@ -567,15 +633,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       await apiService.createUser(token, userFormData);
       setUsers(await apiService.listUsers(token));
       setIsUserModalOpen(false);
+
+      // Open Share Credentials & Domain Link Modal
+      setShareCredentialsData({
+        fullName: userFormData.fullName,
+        username: userFormData.username,
+        password: userFormData.password
+      });
+      setIsCredentialsModalOpen(true);
     } finally {
       setIsSavingUser(false);
     }
+  };
+
+  const openShareCredentialsModal = (user: AdminUser) => {
+    const userPass = (user as unknown as { password?: string }).password || (user.username === 'superadmin' ? 'superadmin' : 'mateo2026');
+    setShareCredentialsData({
+      fullName: user.fullName,
+      username: user.username,
+      password: userPass
+    });
+    setIsCredentialsModalOpen(true);
   };
 
   const toggleUserStatus = async (user: AdminUser) => {
     const current = userStatusMap[user.id] || 'active';
     const next = current === 'active' ? 'disabled' : 'active';
     setUserStatusMap(prev => ({ ...prev, [user.id]: next }));
+
+    // Reset failed login attempts and 24h lockout when Superadmin enables account
+    if (next === 'active') {
+      setLockoutMap(prev => {
+        const updated = { ...prev, [user.username]: { count: 0 } };
+        try { localStorage.setItem('mateo_camila_lockout_map_v2', JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+    }
 
     const token = authService.getToken();
     if (token) {
@@ -1370,14 +1463,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         </div>
 
                         <div className="space-y-3 pt-3 border-t border-white/10">
-                          {/* Impersonation / Direct Site Management */}
-                          <button
-                            onClick={() => impersonateAdminSite(user)}
-                            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--color-gold)]/20 hover:bg-[var(--color-gold)]/30 border border-[var(--color-gold)]/40 text-[#B1C2A5] text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>⚙️ Administrar & Editar Sitio de este Admin</span>
-                          </button>
+                          {/* Impersonation & Credentials Share */}
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => impersonateAdminSite(user)}
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--color-gold)]/20 hover:bg-[var(--color-gold)]/30 border border-[var(--color-gold)]/40 text-[#B1C2A5] text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>⚙️ Administrar & Editar Sitio de este Admin</span>
+                            </button>
+
+                            <button
+                              onClick={() => openShareCredentialsModal(user)}
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                              <span>📋 Copiar Credenciales & Link de Acceso</span>
+                            </button>
+                          </div>
 
                           <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
                             <span>Estado de Cuenta:</span>
@@ -1634,6 +1737,89 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               />
             </div>
           </form>
+        </Modal>
+
+        {/* Share Credentials & Domain Link Modal */}
+        <Modal
+          isOpen={isCredentialsModalOpen && isSuperadmin}
+          onClose={() => setIsCredentialsModalOpen(false)}
+          title={`Ficha de Accesos: ${shareCredentialsData.fullName}`}
+          size="md"
+          footer={
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsCredentialsModalOpen(false)}
+                className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-5 text-[#EAF0E6]">
+            <p className="text-xs text-[#8A9D76]/80 leading-relaxed font-sans">
+              Aquí tienes el enlace del subdominio/sitio asignado a este administrador junto con su usuario y contraseña para enviarle directamente por WhatsApp o correo.
+            </p>
+
+            <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-3 font-mono text-xs">
+              <div>
+                <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">🌐 Enlace Directo al Sitio del Admin:</span>
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}${window.location.pathname}?admin=${encodeURIComponent(shareCredentialsData.username)}`}
+                  className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-emerald-300 font-mono font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">👤 Usuario:</span>
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareCredentialsData.username}
+                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">🔑 Contraseña:</span>
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareCredentialsData.password}
+                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick WhatsApp Copy Button */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const siteUrl = `${window.location.origin}${window.location.pathname}?admin=${encodeURIComponent(shareCredentialsData.username)}`;
+                  const textToCopy = `💍 ¡Hola ${shareCredentialsData.fullName}! Bienvenidos a su Plataforma Nupcial.\n\n🌐 Enlace de su Sitio: ${siteUrl}\n👤 Usuario de Acceso: ${shareCredentialsData.username}\n🔑 Contraseña: ${shareCredentialsData.password}\n\nPor favor ingresen al enlace para revisar su invitación y aceptar los Términos de Servicio. ¡Felicidades!`;
+
+                  navigator.clipboard.writeText(textToCopy);
+                  setCopiedCredentialsToast(true);
+                  setTimeout(() => setCopiedCredentialsToast(false), 3500);
+                }}
+                className="w-full py-3.5 px-6 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Copy className="w-4 h-4 text-white" />
+                <span>Copiar Ficha Completa para WhatsApp</span>
+              </button>
+
+              {copiedCredentialsToast && (
+                <p className="text-center text-xs font-mono text-emerald-300 font-bold animate-pulse">
+                  ✅ ¡Ficha de accesos y link copiados al portapapeles con éxito!
+                </p>
+              )}
+            </div>
+          </div>
         </Modal>
 
         {/* Confirm Dialog */}
