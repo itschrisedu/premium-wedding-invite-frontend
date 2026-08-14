@@ -1890,6 +1890,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
                     />
                   </div>
+
+                  {/* Video Poster Image Dual Input (URL Link or File Upload) */}
+                  <div className="md:col-span-2 p-4 rounded-2xl bg-black/50 border border-white/15 space-y-3">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
+                      📷 Foto de Portada / Poster del Video (Thumbnail)
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                        <input
+                          type="text"
+                          disabled={!canEditPage}
+                          value={siteConfig.videoConfig?.posterUrl || ''}
+                          onChange={e => weddingConfigService.updateConfig({ videoConfig: { ...siteConfig.videoConfig, posterUrl: e.target.value } })}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                        />
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={!canEditPage}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => {
+                              if (ev.target?.result) {
+                                weddingConfigService.updateConfig({ videoConfig: { ...siteConfig.videoConfig, posterUrl: ev.target.result as string } });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full text-xs text-[#EAF0E6]"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -2043,6 +2083,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Honeymoon Card Image Dual Input */}
+                <div className="pt-4 border-t border-white/10 space-y-3">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#B1C2A5] block">
+                    📷 Foto de Fondo de Luna de Miel & Regalos
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                      <input
+                        type="text"
+                        disabled={!canEditPage}
+                        value={siteConfig.honeymoon?.imageUrl || ''}
+                        onChange={e => weddingConfigService.updateConfig({ honeymoon: { ...siteConfig.honeymoon, imageUrl: e.target.value } })}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                      />
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={!canEditPage}
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = ev => {
+                            if (ev.target?.result) {
+                              weddingConfigService.updateConfig({ honeymoon: { ...siteConfig.honeymoon, imageUrl: ev.target.result as string } });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full text-xs text-[#EAF0E6]"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -2391,9 +2471,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL Google Maps</label>
               <input type="text" value={venueFormData.googleMapsUrl} onChange={e => setVenueFormData({ ...venueFormData, googleMapsUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" placeholder="https://maps.google.com/..." />
             </div>
-            <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL Imagen de Fondo</label>
-              <input type="text" value={venueFormData.imageUrl} onChange={e => setVenueFormData({ ...venueFormData, imageUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" />
+            {/* Venue Image Dual Input */}
+            <div className="p-3.5 rounded-2xl bg-black/50 border border-white/15 space-y-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
+                📷 Foto / Imagen de Fondo del Lugar
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo</label>
+                  <input
+                    type="text"
+                    value={venueFormData.imageUrl}
+                    onChange={e => setVenueFormData({ ...venueFormData, imageUrl: e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        if (ev.target?.result) {
+                          setVenueFormData({ ...venueFormData, imageUrl: ev.target.result as string });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="w-full text-xs text-[#EAF0E6]"
+                  />
+                </div>
+              </div>
             </div>
             <div>
               <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Descripción</label>
