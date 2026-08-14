@@ -123,7 +123,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 scale: isOpening ? 1.04 : 1
               }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="relative z-20 flex flex-col items-center w-full pt-28 sm:pt-32"
+              className="relative z-20 flex flex-col items-center w-full pt-40 sm:pt-44"
             >
               {/* Names */}
               <h1 className="font-cinzel font-bold text-2xl sm:text-4xl tracking-tight text-[var(--color-text-primary)] mb-1.5 uppercase">
