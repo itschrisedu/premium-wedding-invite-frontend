@@ -172,6 +172,9 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
             placeholder="https://images.unsplash.com/photo-..."
             className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
           />
+          <span className="text-[9px] font-mono text-emerald-400 block pt-1">
+            ⚡ Se guarda automáticamente al escribir o pegar el enlace.
+          </span>
         </div>
 
         {/* Option B: Direct File Upload */}
@@ -196,6 +199,9 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
             }}
             className="w-full text-xs text-[#EAF0E6]"
           />
+          <span className="text-[9px] font-mono text-emerald-400 block pt-1">
+            ⚡ Se agrega y guarda automáticamente al seleccionar la foto.
+          </span>
         </div>
       </div>
     </div>
