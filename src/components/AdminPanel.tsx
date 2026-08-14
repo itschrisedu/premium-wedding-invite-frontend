@@ -278,6 +278,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   });
 
+  // User Passwords Map (Stores the exact raw password set for each user so Superadmin sees the REAL password)
+  const [userPasswordsMap, setUserPasswordsMap] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('mateo_camila_user_passwords_v1');
+      return stored ? JSON.parse(stored) : { 'superadmin': 'superadmin', 'novios1': 'novios123' };
+    } catch {
+      return { 'superadmin': 'superadmin', 'novios1': 'novios123' };
+    }
+  });
+
+  const getUserRealPassword = (user: AdminUser) => {
+    const fromMap = userPasswordsMap[user.username] || userPasswordsMap[user.id];
+    if (fromMap) return fromMap;
+    const directPass = (user as unknown as { password?: string }).password;
+    if (directPass && directPass !== 'mateo2026') return directPass;
+    if (user.username === 'superadmin') return 'superadmin';
+    if (user.username === 'novios1') return 'novios123';
+    return user.username;
+  };
+
+  // Real-time synchronization of security lockout map, user status map & password map
+  useEffect(() => {
+    const syncSecurityState = () => {
+      try {
+        const storedLockout = localStorage.getItem('mateo_camila_lockout_map_v2');
+        if (storedLockout) {
+          setLockoutMap(JSON.parse(storedLockout));
+        }
+        const storedStatus = localStorage.getItem('mateo_camila_user_status_map_v1');
+        if (storedStatus) {
+          setUserStatusMap(JSON.parse(storedStatus));
+        }
+        const storedPasswords = localStorage.getItem('mateo_camila_user_passwords_v1');
+        if (storedPasswords) {
+          setUserPasswordsMap(JSON.parse(storedPasswords));
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('storage', syncSecurityState);
+    const interval = setInterval(syncSecurityState, 1000);
+
+    return () => {
+      window.removeEventListener('storage', syncSecurityState);
+      clearInterval(interval);
+    };
+  }, []);
+
   const toggleUserCeremonyPerm = (userId: string, key: 'civil' | 'eclesiastico' | 'recepcion') => {
     const current = userCeremonyMap[userId] || { civil: true, eclesiastico: true, recepcion: true };
     const updatedUserPerms = { ...current, [key]: !current[key] };
@@ -858,7 +908,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   const openEditPasswordModal = (user: AdminUser) => {
     setEditingUserForPassword(user);
-    const initialPass = (user as unknown as { password?: string }).password || (user.username === 'superadmin' ? 'superadmin' : 'mateo2026');
+    const initialPass = getUserRealPassword(user);
     setNewPasswordInput(initialPass);
     setShowPasswordText(true);
     setIsPasswordModalOpen(true);
@@ -901,6 +951,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       }
       setUsers(prev => prev.map(u => u.id === editingUserForPassword.id ? { ...u, password: newPasswordInput } as AdminUser : u));
 
+      // Save exact new password in userPasswordsMap
+      setUserPasswordsMap(prev => {
+        const nextMap = {
+          ...prev,
+          [editingUserForPassword.username]: newPasswordInput,
+          [editingUserForPassword.id]: newPasswordInput
+        };
+        try { localStorage.setItem('mateo_camila_user_passwords_v1', JSON.stringify(nextMap)); } catch {}
+        return nextMap;
+      });
+
       // Reset lockout & reactivate user upon password update
       unlockUserAccount(editingUserForPassword.username, editingUserForPassword.id);
 
@@ -927,6 +988,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       setUsers(await apiService.listUsers(token));
       setIsUserModalOpen(false);
 
+      // Save exact created password in userPasswordsMap
+      setUserPasswordsMap(prev => {
+        const nextMap = {
+          ...prev,
+          [userFormData.username.trim()]: userFormData.password,
+          [created.id]: userFormData.password
+        };
+        try { localStorage.setItem('mateo_camila_user_passwords_v1', JSON.stringify(nextMap)); } catch {}
+        return nextMap;
+      });
+
       // Reset lockout & activate user upon creation
       unlockUserAccount(created.username || userFormData.username.trim(), created.id);
 
@@ -943,7 +1015,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   };
 
   const openShareCredentialsModal = (user: AdminUser) => {
-    const userPass = (user as unknown as { password?: string }).password || (user.username === 'superadmin' ? 'superadmin' : 'mateo2026');
+    const userPass = getUserRealPassword(user);
     setShareCredentialsData({
       fullName: user.fullName,
       username: user.username,
