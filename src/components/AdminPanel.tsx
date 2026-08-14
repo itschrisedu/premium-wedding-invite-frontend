@@ -975,28 +975,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <Music className="w-6 h-6 text-[var(--color-gold-light)]" />
                   <div>
                     <h2 className="font-cinzel text-xl text-[#EAF0E6]">Música de Fondo & Reproductor en Bucle</h2>
-                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">Configura la canción de entrada, enlace MP3 y bucle infinito (`loop`).</p>
+                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                      Soporta enlaces de <strong>YouTube</strong> (ej. <code>https://www.youtube.com/watch?v=...</code>), <strong>Google Drive</strong> o URLs directas de MP3. Solo se reproducirá el audio en segundo plano sin mostrar video.
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título de la Canción</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título de la Canción & Artista</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
                       value={siteConfig.audio.title}
                       onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, title: e.target.value } })}
+                      placeholder="Ej. Perfect - Ed Sheeran"
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL / Enlace Directo Audio MP3</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Enlace del Audio (YouTube / Drive / MP3)</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
                       value={siteConfig.audio.url}
                       onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, url: e.target.value } })}
+                      placeholder="https://www.youtube.com/watch?v=2Vv-BfVoq4g"
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
                     />
                   </div>

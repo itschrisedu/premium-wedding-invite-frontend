@@ -6,37 +6,33 @@ interface AudioPlayerProps {
   autoPlayTriggered?: boolean;
 }
 
-// Utility: Extract YouTube Video ID from any format
-function extractYouTubeId(url: string): string | null {
-  if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return match && match[2].length === 11 ? match[2] : null;
-}
+// Parse input URL to support YouTube, Google Drive, and direct MP3 links
+function parseAudioSource(rawUrl: string): { type: 'youtube' | 'direct'; url: string; videoId?: string } {
+  if (!rawUrl) return { type: 'direct', url: '' };
 
-// Utility: Normalize Drive / Dropbox / Direct URLs
-function normalizeAudioUrl(url: string): { type: 'youtube' | 'direct'; url: string; ytId?: string } {
-  if (!url) return { type: 'direct', url: '' };
+  const trimmed = rawUrl.trim();
 
-  const ytId = extractYouTubeId(url);
-  if (ytId) {
-    return { type: 'youtube', url: `https://www.youtube.com/embed/${ytId}?enablejsapi=1&autoplay=1&loop=1&playlist=${ytId}&controls=0`, ytId };
+  // 1. Google Drive link detection
+  const driveMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch && driveMatch[1]) {
+    return {
+      type: 'direct',
+      url: `https://docs.google.com/uc?export=download&id=${driveMatch[1]}`
+    };
   }
 
-  // Google Drive conversion
-  if (url.includes('drive.google.com')) {
-    const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (driveMatch && driveMatch[1]) {
-      return { type: 'direct', url: `https://docs.google.com/uc?export=download&id=${driveMatch[1]}` };
-    }
+  // 2. YouTube link detection (watch?v=, youtu.be/, embed/, Shorts)
+  const ytMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|watch\?.+&v=))([\w-]{11})/);
+  if (ytMatch && ytMatch[1]) {
+    return {
+      type: 'youtube',
+      url: trimmed,
+      videoId: ytMatch[1]
+    };
   }
 
-  // Dropbox conversion
-  if (url.includes('dropbox.com')) {
-    return { type: 'direct', url: url.replace('dl=0', 'raw=1').replace('dl=1', 'raw=1') };
-  }
-
-  return { type: 'direct', url };
+  // 3. Direct audio URL (MP3, WAV, OGG, etc.)
+  return { type: 'direct', url: trimmed };
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) => {
@@ -47,28 +43,21 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
   const audioCtxRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
 
-  const parsedAudio = normalizeAudioUrl(audioConfig.url);
+  const parsedSource = parseAudioSource(audioConfig.url);
 
+  // Subscribe to config changes
   useEffect(() => {
     const unsub = weddingConfigService.subscribe(() => {
       const next = weddingConfigService.getConfig().audio;
       setAudioConfig(next);
-      const parsedNext = normalizeAudioUrl(next.url);
-      if (parsedNext.type === 'direct' && audioRef.current && audioRef.current.src !== parsedNext.url) {
-        audioRef.current.src = parsedNext.url;
-        audioRef.current.loop = next.loop;
-        if (isPlaying) {
-          audioRef.current.play().catch(() => {});
-        }
-      }
     });
     return unsub;
-  }, [isPlaying]);
+  }, []);
 
-  // Direct Audio Element Setup
+  // HTML5 Audio setup for direct links
   useEffect(() => {
-    if (typeof window !== 'undefined' && parsedAudio.type === 'direct' && parsedAudio.url) {
-      const audio = new Audio(parsedAudio.url);
+    if (parsedSource.type === 'direct' && parsedSource.url) {
+      const audio = new Audio(parsedSource.url);
       audio.loop = audioConfig.loop;
       audioRef.current = audio;
 
@@ -77,9 +66,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
         audioRef.current = null;
       };
     }
-  }, [parsedAudio.url, parsedAudio.type]);
+  }, [parsedSource.type, parsedSource.url, audioConfig.loop]);
 
-  // Ambient synth fallback if audio file cannot play
+  // Ambient synth fallback (in case audio source fails or blocked by browser)
   const startRomanticSynth = () => {
     if (!audioCtxRef.current) {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -141,14 +130,25 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
     }
   };
 
+  const postYouTubeCommand = (command: 'playVideo' | 'pauseVideo') => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: command, args: '' }),
+        '*'
+      );
+    }
+  };
+
   const playMusic = () => {
-    if (parsedAudio.type === 'youtube') {
+    if (parsedSource.type === 'youtube' && parsedSource.videoId) {
+      postYouTubeCommand('playVideo');
       setIsPlaying(true);
-    } else if (audioRef.current && parsedAudio.url) {
+    } else if (audioRef.current && parsedSource.url) {
       audioRef.current.loop = audioConfig.loop;
       audioRef.current.play().then(() => {
         setIsPlaying(true);
       }).catch(() => {
+        // Fallback to synth if direct audio play fails
         startRomanticSynth();
         setIsPlaying(true);
       });
@@ -159,6 +159,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
   };
 
   const stopMusic = () => {
+    if (parsedSource.type === 'youtube') {
+      postYouTubeCommand('pauseVideo');
+    }
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -182,14 +185,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Hidden YouTube Iframe Embed when YouTube URL is provided */}
-      {parsedAudio.type === 'youtube' && isPlaying && (
+      {/* Hidden YouTube Iframe Audio Engine (No video shown, audio only) */}
+      {parsedSource.type === 'youtube' && parsedSource.videoId && (
         <iframe
           ref={iframeRef}
-          src={`${parsedAudio.url}&autoplay=1`}
-          title="Fondo Musical YouTube"
-          className="sr-only pointer-events-none w-0 h-0 absolute opacity-0"
+          id="yt-audio-engine"
+          src={`https://www.youtube-nocookie.com/embed/${parsedSource.videoId}?enablejsapi=1&autoplay=1&loop=${audioConfig.loop ? 1 : 0}&playlist=${parsedSource.videoId}&controls=0`}
           allow="autoplay"
+          title="Background Audio Engine"
+          className="sr-only opacity-0 pointer-events-none w-0 h-0 border-0 fixed -top-[9999px]"
         />
       )}
 
