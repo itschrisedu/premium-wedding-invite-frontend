@@ -45,7 +45,8 @@ import {
   BookOpen,
   Shirt,
   Video,
-  Film
+  Film,
+  Download
 } from 'lucide-react';
 
 async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
@@ -499,6 +500,107 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       onConfirm: () => void storageService.deleteGuest(guestId),
       variant: 'danger'
     });
+  };
+
+  // --- Guest Report Export Handlers ---
+  const exportGuestsCSV = () => {
+    const header = ['Nombre', 'Código', 'Categoría', 'Pases Asignados', 'Pases Confirmados', 'Estado', 'Teléfono', 'Email', 'Notas', 'Restricciones Alimentarias', 'Última Actualización'];
+    const rows = filteredGuests.map(g => [
+      g.name,
+      g.code,
+      g.category,
+      String(g.passesAllowed),
+      String(g.passesConfirmed),
+      g.status,
+      g.phone || '',
+      g.email || '',
+      (g.notes || '').replace(/[\n\r]+/g, ' '),
+      (g.dietaryRestrictions || '').replace(/[\n\r]+/g, ' '),
+      g.updatedAt ? new Date(g.updatedAt).toLocaleString('es-EC') : ''
+    ]);
+
+    const csvContent = '\uFEFF' + [header, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte-invitados-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportGuestsPDF = () => {
+    const totalInvitaciones = filteredGuests.length;
+    const confirmados = filteredGuests.filter(g => g.status === 'confirmado').length;
+    const pendientes = filteredGuests.filter(g => g.status === 'pendiente').length;
+    const declinados = filteredGuests.filter(g => g.status === 'declinado').length;
+    const totalPasesAsignados = filteredGuests.reduce((s, g) => s + g.passesAllowed, 0);
+    const totalPasesConfirmados = filteredGuests.reduce((s, g) => s + g.passesConfirmed, 0);
+    const pctConfirmado = totalInvitaciones > 0 ? Math.round((confirmados / totalInvitaciones) * 100) : 0;
+
+    const dateStr = new Date().toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    let tableRows = '';
+    filteredGuests.forEach((g, i) => {
+      const statusColor = g.status === 'confirmado' ? '#16a34a' : g.status === 'declinado' ? '#e11d48' : '#d97706';
+      const statusLabel = g.status.charAt(0).toUpperCase() + g.status.slice(1);
+      const bgColor = i % 2 === 0 ? '#ffffff' : '#f8f7f2';
+      tableRows += `<tr style="background:${bgColor}">
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e2d9;font-size:11px;font-weight:600">${g.name}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e5e2d9;font-size:11px;text-align:center">${g.category}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e5e2d9;font-size:11px;text-align:center">${g.passesAllowed}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e5e2d9;font-size:11px;text-align:center;font-weight:700">${g.passesConfirmed}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e5e2d9;font-size:11px;text-align:center"><span style="background:${statusColor}22;color:${statusColor};padding:3px 10px;border-radius:12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px">${statusLabel}</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e5e2d9;font-size:10px;color:#888">${g.phone || '—'}</td>
+      </tr>`;
+    });
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reporte de Invitados</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:'Inter',sans-serif; background:#fff; color:#333; padding:40px; }
+      .header { text-align:center; margin-bottom:32px; padding-bottom:24px; border-bottom:2px solid #c9a96e; }
+      .header h1 { font-family:'Cinzel',serif; font-size:28px; color:#2D3B2A; letter-spacing:3px; margin-bottom:4px; }
+      .header p { font-size:12px; color:#8A9D76; letter-spacing:1px; }
+      .stats { display:flex; justify-content:center; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
+      .stat { text-align:center; padding:14px 22px; border-radius:12px; border:1px solid #e5e2d9; min-width:130px; }
+      .stat .number { font-family:'Cinzel',serif; font-size:26px; font-weight:700; display:block; }
+      .stat .label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:#8A9D76; margin-top:2px; }
+      table { width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; border:1px solid #e5e2d9; }
+      thead tr { background:#2D3B2A; }
+      thead th { padding:10px 12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#c9a96e; text-align:left; }
+      .footer { text-align:center; margin-top:24px; font-size:10px; color:#aaa; letter-spacing:1px; }
+      @media print { body { padding:20px; } .stat { padding:10px 14px; } }
+    </style></head><body>
+    <div class="header">
+      <h1>✦ REPORTE DE INVITADOS ✦</h1>
+      <p>Generado: ${dateStr}</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="number" style="color:#2D3B2A">${totalInvitaciones}</span><span class="label">Invitaciones</span></div>
+      <div class="stat"><span class="number" style="color:#16a34a">${confirmados}</span><span class="label">Confirmados</span></div>
+      <div class="stat"><span class="number" style="color:#d97706">${pendientes}</span><span class="label">Pendientes</span></div>
+      <div class="stat"><span class="number" style="color:#e11d48">${declinados}</span><span class="label">Declinados</span></div>
+      <div class="stat"><span class="number" style="color:#2D3B2A">${totalPasesAsignados}</span><span class="label">Pases Asignados</span></div>
+      <div class="stat"><span class="number" style="color:#16a34a">${totalPasesConfirmados}</span><span class="label">Pases Confirmados</span></div>
+      <div class="stat"><span class="number" style="color:#c9a96e">${pctConfirmado}%</span><span class="label">% Confirmación</span></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Invitado / Familia</th><th style="text-align:center">Categoría</th><th style="text-align:center">Pases</th><th style="text-align:center">Confirmados</th><th style="text-align:center">Estado</th><th>Teléfono</th>
+      </tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+    <p class="footer">Reporte generado automáticamente · Total: ${totalInvitaciones} invitaciones · ${totalPasesConfirmados} de ${totalPasesAsignados} pases confirmados</p>
+    <script>window.onload=function(){window.print()}</script>
+    </body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (win) win.focus();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   };
 
   // --- Bank Account Handlers ---
@@ -1092,6 +1194,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <button onClick={openCreateGuest} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg">
                   <Plus className="w-4 h-4 text-white" />
                   <span>Nuevo Invitado</span>
+                </button>
+                <button onClick={exportGuestsCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar reporte en formato Excel / CSV">
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Excel</span>
+                  <Download className="w-3 h-3 opacity-60" />
+                </button>
+                <button onClick={exportGuestsPDF} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar / Imprimir reporte en formato PDF">
+                  <FileText className="w-4 h-4" />
+                  <span>PDF</span>
+                  <Download className="w-3 h-3 opacity-60" />
                 </button>
               </div>
 
