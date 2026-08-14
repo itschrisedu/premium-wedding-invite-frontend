@@ -285,31 +285,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   });
 
   // User Passwords Map (Stores the exact raw password set for each user so Superadmin sees the REAL password)
+  // ONLY contains passwords that were saved during createUser or updateUserPassword — NO hardcoded defaults.
   const [userPasswordsMap, setUserPasswordsMap] = useState<Record<string, string>>(() => {
-    const defaults: Record<string, string> = {
-      'superadmin': 'superadmin',
-      'novios1': 'novios123',
-      'edwin&cristina': 'edwin2026',
-      '1': 'superadmin',
-      '2': 'novios123'
-    };
     try {
       const stored = localStorage.getItem('mateo_camila_user_passwords_v1');
-      if (stored) {
-        return { ...defaults, ...JSON.parse(stored) };
-      }
+      if (stored) return JSON.parse(stored);
     } catch {}
-    return defaults;
+    return {};
   });
 
   const getUserRealPassword = (user: AdminUser) => {
+    // 1. Check password map by username or id (saved at creation or password change)
     const fromMap = userPasswordsMap[user.username] || userPasswordsMap[user.id];
     if (fromMap) return fromMap;
+    // 2. Check if a password property was set on the user object (from in-memory update)
     const directPass = (user as unknown as { password?: string }).password;
     if (directPass) return directPass;
-    if (user.username === 'superadmin') return 'superadmin';
-    if (user.username === 'novios1') return 'novios123';
-    return user.username;
+    // 3. No record found — show indicator
+    return '(No registrada — cambie la contraseña)';
   };
 
   // Real-time synchronization of security lockout map, user status map & password map

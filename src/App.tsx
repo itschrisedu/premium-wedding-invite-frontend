@@ -57,6 +57,8 @@ export default function App() {
   const handleLoaderComplete = () => {
     setShowLoader(false);
     setAutoPlayMusic(true);
+    // Always start at the top (Hero/Portada)
+    window.scrollTo(0, 0);
   };
 
   const handleSelectGuest = (guest: Guest) => {
