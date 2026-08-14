@@ -89,6 +89,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [userStatusMap, setUserStatusMap] = useState<Record<string, 'active' | 'disabled'>>({});
   const [managedAdminUser, setManagedAdminUser] = useState<AdminUser | null>(null);
 
+  // Legal Terms & LOPDP / GDPR Privacy Consent Audit State
+  const [userTermsMap, setUserTermsMap] = useState<Record<string, { accepted: boolean; acceptedAt?: string; version?: string }>>(() => {
+    try {
+      const stored = localStorage.getItem('mateo_camila_terms_audit_v1');
+      return stored ? JSON.parse(stored) : { '1': { accepted: true, acceptedAt: new Date().toISOString(), version: 'v1.0-2026' } };
+    } catch {
+      return { '1': { accepted: true, acceptedAt: new Date().toISOString(), version: 'v1.0-2026' } };
+    }
+  });
+  const [hasAcceptedTermsCheckbox, setHasAcceptedTermsCheckbox] = useState(false);
+  const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
+
   // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -575,6 +587,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     }
   };
 
+  const acceptTermsAndConditions = async () => {
+    if (!currentUserId || !hasAcceptedTermsCheckbox) return;
+
+    setIsAcceptingTerms(true);
+    const nowIso = new Date().toISOString();
+    const newEntry = { accepted: true, acceptedAt: nowIso, version: 'v1.0-2026' };
+
+    setUserTermsMap(prev => {
+      const next = { ...prev, [currentUserId]: newEntry };
+      try {
+        localStorage.setItem('mateo_camila_terms_audit_v1', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+
+    const token = authService.getToken();
+    if (token) {
+      try {
+        await apiService.updateUserSettings(token, currentUserId, { terms: newEntry });
+      } catch {
+        // ignore
+      }
+    }
+    setIsAcceptingTerms(false);
+  };
+
   const toggleUserEditPermission = async (userId: string) => {
     const current = userEditPermissions[userId] !== false;
     const next = !current;
@@ -639,6 +679,96 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const sendWhatsApp = (guest: Guest) => {
     window.open(storageService.buildWhatsAppMessage(guest, appUrl), '_blank');
   };
+
+  // Check if current user has accepted Terms & Data Privacy (LOPDP / GDPR)
+  const currentTerms = userTermsMap[currentUserId];
+  const hasAcceptedTerms = isSuperadmin || Boolean(currentTerms?.accepted);
+
+  // MANDATORY TERMS ACCEPTANCE MODAL
+  if (!hasAcceptedTerms) {
+    return (
+      <AnimatePresence>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-black/92 backdrop-blur-2xl p-4 md:p-8 flex items-center justify-center">
+          <div className="max-w-2xl w-full rounded-3xl bg-[#2D3B2A] border-2 border-[var(--color-gold)] shadow-2xl p-6 sm:p-10 space-y-6 text-[#f5f0e6] my-8">
+            <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+              <div className="w-14 h-14 rounded-2xl bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 flex items-center justify-center text-[var(--color-gold-light)] shrink-0">
+                <FileText className="w-7 h-7 text-[var(--color-gold-light)]" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76] block font-bold">Cumplimiento Legal & Protección de Datos (LOPDP / GDPR)</span>
+                <h2 className="font-cinzel text-xl sm:text-2xl text-[#EAF0E6]">Términos de Servicio & Política de Privacidad</h2>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#EAF0E6]/90 leading-relaxed font-sans">
+              Para ingresar y gestionar tu plataforma de bodas, es requisito legal obligatorio leer y aceptar nuestros Términos de Servicio, Acuerdo de Confidencialidad y Tratamiento de Datos Personales.
+            </p>
+
+            {/* SCROLLABLE LEGAL TERMS DOCUMENT */}
+            <div className="max-h-72 overflow-y-auto p-4 rounded-2xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]/85 font-sans space-y-4">
+              <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">1. Protección de Datos Personales (Ley LOPDP & Normativa Internacional)</h3>
+              <p className="leading-relaxed">
+                El Administrador/Cliente otorga su consentimiento libre, previo, expreso, informado e inequívoco para la recolección, almacenamiento y procesamiento de la información de sus invitados (nombres, teléfonos, restricciones dietéticas, asistencia) con la exclusiva finalidad de coordinar la logística de la boda.
+              </p>
+
+              <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">2. Responsabilidad Exclusiva sobre el Contenido</h3>
+              <p className="leading-relaxed">
+                El cliente declara ser el único propietario o contar con las licencias correspondientes sobre las imágenes, música, textos, números de cuenta bancaria y referencias cargadas en la plataforma. La plataforma queda totalmente exenta de responsabilidad legal por disputas de propiedad intelectual o datos provistos por el cliente.
+              </p>
+
+              <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">3. Uso de Accesos y Seguridad de Credenciales</h3>
+              <p className="leading-relaxed">
+                Las credenciales de acceso al panel administrativo son personales e intransferibles. El usuario se compromete a resguardar la confidencialidad de su usuario y contraseña, asumiendo responsabilidad legal por cualquier modificación realizada desde su cuenta.
+              </p>
+
+              <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">4. Cláusula de Indemnidad y Respaldo Jurídico</h3>
+              <p className="leading-relaxed">
+                El cliente mantendrá indemne a la empresa desarrolladora frente a cualquier reclamo, multa, sanción o demanda promovida por terceros o invitados respecto al manejo de su información personal dentro de la invitación digital.
+              </p>
+
+              <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">5. Validez Legal y Firma Digital Auditoría</h3>
+              <p className="leading-relaxed">
+                La aceptación de esta casilla constituye una firma electrónica vinculante con registro auditado de fecha, hora UTC y versión del acuerdo firmado digitalmente por el usuario.
+              </p>
+            </div>
+
+            {/* CHECKBOX CONSENT */}
+            <div className="pt-2">
+              <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-[#EAF0E6] cursor-pointer hover:bg-white/10 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={hasAcceptedTermsCheckbox}
+                  onChange={e => setHasAcceptedTermsCheckbox(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-[var(--color-accent)] focus:ring-[var(--color-accent)] cursor-pointer"
+                />
+                <span className="leading-normal font-medium">
+                  Declaro que he leído, comprendo y <strong>ACEPTO INCONDICIONALMENTE</strong> los Términos de Servicio, la Política de Privacidad y la Ley de Protección de Datos Personales (LOPDP/GDPR).
+                </span>
+              </label>
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-white/10">
+              <button
+                onClick={() => authService.logout()}
+                className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono uppercase tracking-wider cursor-pointer"
+              >
+                Cerrar Sesión / Rechazar
+              </button>
+
+              <button
+                onClick={() => void acceptTermsAndConditions()}
+                disabled={!hasAcceptedTermsCheckbox || isAcceptingTerms}
+                className="px-8 py-3 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-xl hover:scale-105 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isAcceptingTerms ? 'Guardando Firma...' : 'Aceptar Términos y Acceder al Panel'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -1262,6 +1392,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               {canEdit ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                               <span>{canEdit ? 'Permitido' : 'Restringido'}</span>
                             </button>
+                          </div>
+
+                          {/* Terms & Privacy Audit Badge */}
+                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                            <span>Protección de Datos (LOPDP):</span>
+                            {userTermsMap[user.id]?.accepted ? (
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                <span>Aceptado ({new Date(userTermsMap[user.id].acceptedAt || '').toLocaleDateString('es-ES')})</span>
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-rose-400" />
+                                <span>Pendiente de Firma</span>
+                              </span>
+                            )}
                           </div>
 
                           {/* Password Management */}
