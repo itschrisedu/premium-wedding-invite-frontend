@@ -507,24 +507,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   const openEditPasswordModal = (user: AdminUser) => {
     setEditingUserForPassword(user);
-    setNewPasswordInput('');
-    setShowPasswordText(false);
+    const initialPass = (user as unknown as { password?: string }).password || (user.username === 'superadmin' ? 'superadmin' : 'mateo2026');
+    setNewPasswordInput(initialPass);
+    setShowPasswordText(true);
     setIsPasswordModalOpen(true);
   };
 
-  const saveUserPassword = async (e: React.FormEvent) => {
+  const handleRequestSavePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUserForPassword || !newPasswordInput) return;
 
+    setConfirmDialog({
+      isOpen: true,
+      title: '🔐 Confirmar Cambio de Contraseña',
+      message: `¿Estás seguro de guardar y actualizar la contraseña de acceso para "${editingUserForPassword.fullName}" a "${newPasswordInput}"?`,
+      variant: 'default',
+      onConfirm: () => void executeSavePassword()
+    });
+  };
+
+  const executeSavePassword = async () => {
+    if (!editingUserForPassword || !newPasswordInput) return;
     const token = authService.getToken();
-    if (!token) return;
 
     setIsSavingPassword(true);
     try {
-      await apiService.updateUserPassword(token, editingUserForPassword.id, newPasswordInput);
+      if (token) {
+        await apiService.updateUserPassword(token, editingUserForPassword.id, newPasswordInput);
+      }
+      setUsers(prev => prev.map(u => u.id === editingUserForPassword.id ? { ...u, password: newPasswordInput } as AdminUser : u));
       setIsPasswordModalOpen(false);
       setEditingUserForPassword(null);
-      setNewPasswordInput('');
     } catch {
       // ignore
     } finally {
@@ -1452,16 +1465,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             </div>
           }
         >
-          <form id="password-form" onSubmit={e => void saveUserPassword(e)} className="space-y-4">
+          <form id="password-form" onSubmit={handleRequestSavePassword} className="space-y-4">
             <div>
               <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Usuario Admin</label>
-              <input type="text" disabled value={editingUserForPassword?.username || ''} className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-[#8A9D76]/50 font-mono" />
+              <input type="text" disabled value={editingUserForPassword?.username || ''} className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-[#EAF0E6] font-mono font-bold" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Nueva Contraseña *</label>
-                <button type="button" onClick={() => setShowPasswordText(!showPasswordText)} className="text-[10px] font-mono text-[var(--color-accent)] hover:underline cursor-pointer">
-                  {showPasswordText ? 'Ocultar' : 'Mostrar'}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Contraseña de Acceso *</label>
+                <button type="button" onClick={() => setShowPasswordText(!showPasswordText)} className="flex items-center gap-1.5 text-[11px] font-mono text-[var(--color-gold-light)] hover:underline cursor-pointer">
+                  {showPasswordText ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span>{showPasswordText ? 'Ocultar Contraseña' : 'Ver / Mostrar Contraseña'}</span>
                 </button>
               </div>
               <input
@@ -1469,8 +1483,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 required
                 value={newPasswordInput}
                 onChange={e => setNewPasswordInput(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
-                placeholder="Nueva contraseña segura..."
+                className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-sm text-[#EAF0E6] font-mono font-semibold focus:outline-none focus:border-[var(--color-gold)]"
+                placeholder="Ingresa la nueva contraseña..."
               />
             </div>
           </form>

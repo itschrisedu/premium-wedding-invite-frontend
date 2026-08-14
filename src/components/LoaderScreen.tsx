@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Heart } from 'lucide-react';
+import { Mail, Sparkles, Heart } from 'lucide-react';
 import { weddingConfigService } from '../services/weddingConfigService';
 
 interface LoaderScreenProps {
@@ -10,6 +10,7 @@ interface LoaderScreenProps {
 export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isReady, setIsReady] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [config, setConfig] = useState(weddingConfigService.getConfig());
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
           setIsReady(true);
           return 100;
         }
-        return prev + 4;
+        return prev + 5;
       });
     }, 25);
 
@@ -37,100 +38,148 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
   const groomInit = (config.hero.groom || 'Mateo').trim().charAt(0).toUpperCase();
   const brideInit = (config.hero.bride || 'Camila').trim().charAt(0).toUpperCase();
 
+  const handleOpenEnvelope = () => {
+    if (isOpening) return;
+    setIsOpening(true);
+
+    // After 1.1s flap opening and letter slide animation, trigger site complete
+    setTimeout(() => {
+      onComplete();
+    }, 1100);
+  };
+
   return (
     <AnimatePresence>
       <motion.div
         id="loader-screen"
         initial={{ opacity: 1 }}
-        exit={{ opacity: 0, scale: 1.04 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden p-4"
+        exit={{ opacity: 0, scale: 1.05 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden p-4 select-none"
       >
         {/* Ambient background blur elements */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-[var(--color-gold)]/15 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[var(--color-gold-light)]/10 rounded-full blur-[140px] pointer-events-none" />
 
-        {/* ELEGANT WEDDING INVITATION CARD / ENVELOPE CONTAINER */}
-        <motion.div
-          initial={{ scale: 0.92, opacity: 0, y: 25 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="relative z-10 w-full max-w-lg p-8 sm:p-14 rounded-3xl bg-[var(--color-bg-elevated)] border-2 border-[var(--color-gold)]/30 shadow-[0_20px_60px_rgba(42,56,40,0.12)] flex flex-col items-center text-center overflow-hidden"
-        >
-          {/* Decorative Envelope Flap Accent Lines */}
-          <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[var(--color-gold)]/10 to-transparent pointer-events-none" />
-          <div className="absolute top-2 left-4 right-4 h-[1px] bg-[var(--color-gold)]/20 pointer-events-none" />
-          <div className="absolute bottom-2 left-4 right-4 h-[1px] bg-[var(--color-gold)]/20 pointer-events-none" />
-
-          {/* Monogram Badge (Matching Screenshot Circle) */}
+        {/* 3D WEDDING ENVELOPE WRAPPER */}
+        <div className="relative w-full max-w-lg perspective-[1200px] z-10 flex flex-col items-center">
+          {/* ENVELOPE BODY */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="relative mb-6 p-6 rounded-full bg-white border border-[var(--color-gold)] shadow-md flex items-center justify-center w-28 h-28 shrink-0"
+            initial={{ scale: 0.92, opacity: 0, y: 25 }}
+            animate={{
+              scale: isOpening ? 1.08 : 1,
+              opacity: 1,
+              y: isOpening ? -30 : 0
+            }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            className="relative w-full min-h-[440px] sm:min-h-[480px] rounded-3xl bg-[#FAFCF9] border-2 border-[var(--color-gold)]/40 shadow-[0_30px_70px_rgba(42,56,40,0.18)] flex flex-col items-center justify-center p-6 sm:p-10 text-center overflow-hidden"
           >
-            <span className="font-cinzel text-2xl font-bold text-[var(--color-text-primary)] tracking-wider">
-              {groomInit}<span className="text-[var(--color-accent)] font-serif italic text-xl mx-0.5">&</span>{brideInit}
-            </span>
-            <div className="absolute inset-0 rounded-full border border-[var(--color-gold)] animate-ping opacity-25 pointer-events-none" />
-          </motion.div>
+            {/* Horizontal Twine / Ribbon Cord Effect */}
+            <div className="absolute top-[48%] left-0 right-0 h-[3px] bg-gradient-to-r from-[#556B2F]/30 via-[#6B7F5A]/60 to-[#556B2F]/30 z-10 pointer-events-none shadow-sm" />
+            <div className="absolute top-[48%] left-0 right-0 h-[1px] -mt-[4px] bg-gradient-to-r from-amber-700/20 via-amber-800/40 to-amber-700/20 z-10 pointer-events-none" />
 
-          {/* Names */}
-          <motion.h1
-            initial={{ y: 15, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="font-cinzel font-bold text-3xl sm:text-4xl tracking-tight text-[var(--color-text-primary)] mb-2 uppercase"
-          >
-            {config.loaderText || `${config.hero.groom} & ${config.hero.bride}`}
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.85 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="text-[11px] font-mono uppercase tracking-[0.35em] text-[var(--color-text-muted)] mb-8 font-bold"
-          >
-            {config.hero.city} • {config.hero.dateFormatted}
-          </motion.p>
-
-          {/* Progress Bar & Counter or Enter Button */}
-          {!isReady ? (
-            <div className="w-full space-y-3 px-2">
-              <div className="h-1.5 w-full bg-black/10 rounded-full overflow-hidden p-0.5 border border-black/10">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-gold)] to-[var(--color-gold-light)] rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-[11px] font-mono text-[var(--color-text-muted)] font-semibold tracking-wider">
-                <span>{config.loaderSubtitle || 'Cargando experiencia...'}</span>
-                <span>{progress}%</span>
-              </div>
-            </div>
-          ) : (
+            {/* TOP TRIANGULAR ENVELOPE FLAP WITH 3D ROTATION */}
             <motion.div
-              initial={{ y: 15, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-4 w-full flex flex-col items-center"
+              animate={{
+                rotateX: isOpening ? 180 : 0,
+                zIndex: isOpening ? 0 : 30
+              }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+              className="absolute top-0 left-0 right-0 h-44 sm:h-52 origin-top z-30 pointer-events-none"
+              style={{ transformStyle: 'preserve-3d' }}
             >
-              <button
-                onClick={onComplete}
-                id="btn-enter-experience"
-                className="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-4.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs tracking-[0.2em] uppercase shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer w-full sm:w-auto"
-              >
-                <Sparkles className="w-4 h-4 text-white animate-spin" style={{ animationDuration: '4s' }} />
-                <span>Entrar a la Experiencia</span>
-                <Heart className="w-4 h-4 text-white fill-white group-hover:scale-125 transition-transform" />
-              </button>
-
-              <p className="text-[11px] text-[var(--color-text-muted)] italic font-serif">
-                Haz clic para activar el audio y la inmersión completa
-              </p>
+              <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-md">
+                <polygon points="0,0 50,48 100,0" fill="#ECF0EA" stroke="#B1C2A5" strokeWidth="0.7" />
+              </svg>
             </motion.div>
-          )}
-        </motion.div>
+
+            {/* WAX SEAL STAMP IN THE CENTER */}
+            <motion.div
+              animate={{
+                scale: isOpening ? [1, 1.2, 0] : 1,
+                opacity: isOpening ? 0 : 1,
+                rotate: isOpening ? 25 : 0
+              }}
+              transition={{ duration: 0.5 }}
+              onClick={isReady ? handleOpenEnvelope : undefined}
+              className={`absolute top-[48%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
+                isReady ? 'hover:scale-110 active:scale-95 animate-pulse' : ''
+              }`}
+              title="Sello de Lacre Nupcial"
+            >
+              {/* Seal Inner Ring & Monogram */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-white/40 flex flex-col items-center justify-center bg-black/10">
+                <span className="font-cinzel text-base sm:text-lg font-bold tracking-wider text-white">
+                  {groomInit}<span className="font-serif italic text-xs mx-0.5 text-emerald-200">&</span>{brideInit}
+                </span>
+                <span className="text-[7px] font-mono uppercase tracking-widest text-emerald-100 opacity-90">BODA</span>
+              </div>
+            </motion.div>
+
+            {/* INVITATION LETTER SLIDING OUT (CARD CONTENT) */}
+            <motion.div
+              animate={{
+                y: isOpening ? -60 : 0,
+                scale: isOpening ? 1.04 : 1
+              }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="relative z-20 flex flex-col items-center w-full pt-10"
+            >
+              {/* Circular Badge Icon */}
+              <div className="relative mb-4 p-5 rounded-full bg-white border border-[var(--color-gold)] shadow-sm flex items-center justify-center w-20 h-20">
+                <span className="font-cinzel text-xl font-bold text-[var(--color-text-primary)]">
+                  {groomInit}<span className="text-[var(--color-accent)] font-serif italic text-base mx-0.5">&</span>{brideInit}
+                </span>
+              </div>
+
+              {/* Names */}
+              <h1 className="font-cinzel font-bold text-2xl sm:text-3xl tracking-tight text-[var(--color-text-primary)] mb-1 uppercase">
+                {config.loaderText || `${config.hero.groom} & ${config.hero.bride}`}
+              </h1>
+
+              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--color-text-muted)] mb-6 font-bold">
+                {config.hero.city} • {config.hero.dateFormatted}
+              </p>
+
+              {/* Progress Bar or Action Button */}
+              {!isReady ? (
+                <div className="w-full space-y-2 max-w-xs px-2">
+                  <div className="h-1.5 w-full bg-black/10 rounded-full overflow-hidden p-0.5 border border-black/10">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-gold)] to-[var(--color-gold-light)] rounded-full"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[var(--color-text-muted)] font-semibold tracking-wider">
+                    <span>{config.loaderSubtitle || 'Cargando invitación...'}</span>
+                    <span>{progress}%</span>
+                  </div>
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="space-y-3 w-full flex flex-col items-center pt-2"
+                >
+                  <button
+                    onClick={handleOpenEnvelope}
+                    disabled={isOpening}
+                    id="btn-enter-experience"
+                    className="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs tracking-[0.2em] uppercase shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer w-full sm:w-auto"
+                  >
+                    <Mail className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
+                    <span>{isOpening ? 'Abriendo Invitación...' : 'Ver Invitación'}</span>
+                    <Sparkles className="w-3.5 h-3.5 text-white/80" />
+                  </button>
+
+                  <p className="text-[10px] text-[var(--color-text-muted)] italic font-serif">
+                    Haz clic para abrir el sobre y comenzar la música
+                  </p>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
