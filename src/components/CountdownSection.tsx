@@ -44,22 +44,22 @@ export const CountdownSection: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative rounded-3xl liquid-glass border border-amber-300/30 p-8 sm:p-12 text-center shadow-2xl overflow-hidden"
+        className="relative rounded-3xl bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] p-8 sm:p-12 text-center shadow-2xl overflow-hidden"
       >
         {/* Background Ambient Glow */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-amber-500/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-[var(--color-gold)]/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-orange-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-4">
-            <Clock className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-bg-base)] border border-[var(--color-gold)]/40 text-[var(--color-gold-dark)] text-[10px] font-bold uppercase tracking-[0.4em] mb-4 shadow-sm">
+            <Clock className="w-3.5 h-3.5 text-[var(--color-accent)] animate-pulse" />
             <span>El Gran Día Se Acerca</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white mb-2">
-            Cuenta <span className="italic font-serif font-normal text-amber-200">Regresiva</span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[var(--color-text-primary)] mb-2">
+            Cuenta <span className="italic font-serif font-bold text-[var(--color-accent)]">Regresiva</span>
           </h2>
 
-          <p className="text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase mb-10">
+          <p className="text-xs sm:text-sm text-[var(--color-text-muted)] font-bold tracking-wide uppercase mb-10">
             {COUPLE_INFO.dateFormatted} • Ambato, Ecuador
           </p>
 
@@ -70,23 +70,23 @@ export const CountdownSection: React.FC = () => {
               { label: 'Horas', value: timeLeft.hours },
               { label: 'Minutos', value: timeLeft.minutes },
               { label: 'Segundos', value: timeLeft.seconds }
-            ].map((item, idx) => (
+            ].map((item) => (
               <div
                 key={item.label}
-                className="flex flex-col items-center justify-center p-5 rounded-2xl bg-black/50 border border-white/15 backdrop-blur-xl shadow-xl"
+                className="flex flex-col items-center justify-center p-5 rounded-2xl bg-[var(--color-bg-base)] border border-[var(--color-gold)]/30 shadow-md"
               >
-                <span className="font-sans text-4xl sm:text-6xl font-bold text-white tracking-tight">
+                <span className="font-sans text-4xl sm:text-6xl font-bold text-[var(--color-accent)] tracking-tight">
                   {String(item.value).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-orange-300 font-bold mt-2">
+                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--color-text-primary)] font-bold mt-2">
                   {item.label}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 flex items-center gap-2 text-xs text-amber-200/70 font-serif italic">
-            <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+          <div className="mt-8 flex items-center gap-2 text-xs text-[var(--color-gold-dark)] font-serif italic font-bold">
+            <Heart className="w-3.5 h-3.5 text-[var(--color-accent)] fill-[var(--color-accent)]" />
             <span>"Contando cada segundo para decir Sí Acepto"</span>
           </div>
         </div>

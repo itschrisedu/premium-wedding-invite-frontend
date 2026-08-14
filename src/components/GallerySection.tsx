@@ -86,9 +86,9 @@ export const GallerySection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-amber-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] text-[var(--color-gold-dark)] text-[10px] font-bold uppercase tracking-[0.4em] mb-3 shadow-sm"
         >
-          <Camera className="w-3.5 h-3.5 text-amber-400" />
+          <Camera className="w-3.5 h-3.5 text-[var(--color-accent)]" />
           <span>Sesión Preboda Editorial</span>
         </motion.div>
 
@@ -97,19 +97,19 @@ export const GallerySection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-white"
+          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]"
         >
-          Galería de <span className="italic font-serif font-normal text-amber-200">Recuerdos</span>
+          Galería de <span className="italic font-serif font-bold text-[var(--color-accent)]">Recuerdos</span>
         </motion.h2>
 
-        <p className="mt-3 text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase max-w-xl mx-auto">
+        <p className="mt-3 text-xs sm:text-sm text-[var(--color-text-muted)] font-bold tracking-wide uppercase max-w-xl mx-auto">
           Capturas en Golden Hour y momentos inolvidables.
         </p>
       </div>
 
       {uploadedImages.length > 0 && (
-        <div className="mb-8 flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-amber-200/70 font-mono justify-center">
-          <CloudUpload className="w-4 h-4 text-amber-400" />
+        <div className="mb-8 flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-[var(--color-text-muted)] font-bold font-mono justify-center">
+          <CloudUpload className="w-4 h-4 text-[var(--color-accent)]" />
           <span>Fotos subidas activas</span>
         </div>
       )}

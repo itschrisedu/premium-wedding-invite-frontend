@@ -19,9 +19,9 @@ export const CoupleVideoSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 text-orange-300 text-[10px] font-bold uppercase tracking-[0.4em] mb-3"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-bg-elevated)] border border-[var(--color-gold)] text-[var(--color-gold-dark)] text-[10px] font-bold uppercase tracking-[0.4em] mb-3 shadow-sm"
         >
-          <Video className="w-3.5 h-3.5 text-orange-400" />
+          <Video className="w-3.5 h-3.5 text-[var(--color-accent)]" />
           <span>Film Nupcial Teaser</span>
         </motion.div>
 
@@ -30,12 +30,12 @@ export const CoupleVideoSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-white"
+          className="text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]"
         >
-          Momentos en <span className="italic font-serif font-normal text-amber-200">Movimiento</span>
+          Momentos en <span className="italic font-serif font-bold text-[var(--color-accent)]">Movimiento</span>
         </motion.h2>
 
-        <p className="mt-3 text-xs sm:text-sm text-white/70 font-sans tracking-wide uppercase max-w-xl mx-auto">
+        <p className="mt-3 text-xs sm:text-sm text-[var(--color-text-muted)] font-bold tracking-wide uppercase max-w-xl mx-auto">
           Un adelanto cinematográfico de nuestra historia grabado en los miradores de Tungurahua.
         </p>
       </div>

@@ -108,18 +108,18 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
             <div>
               <span className="text-[10px] font-mono text-[var(--color-gold-dark)] font-bold uppercase tracking-widest block">Pase Exclusivo</span>
               <h3 className="font-cinzel text-2xl font-bold text-[var(--color-text-primary)]">{currentGuest.name}</h3>
-              <span className="text-xs text-amber-200/70 font-mono mt-0.5 block">Categoría: {currentGuest.category}</span>
+              <span className="text-xs text-[var(--color-text-muted)] font-bold font-mono mt-0.5 block">Categoría: {currentGuest.category}</span>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="px-4 py-2 rounded-2xl glass-panel border border-amber-300/30 text-center">
-                <span className="font-cinzel text-xl font-bold text-amber-200 block">{currentGuest.passesAllowed}</span>
-                <span className="text-[9px] font-mono uppercase tracking-widest text-amber-200/60">Pases Totales</span>
+              <div className="px-4 py-2 rounded-2xl bg-[var(--color-bg-base)] border border-[var(--color-gold)] text-center">
+                <span className="font-cinzel text-xl font-bold text-[var(--color-accent)] block">{currentGuest.passesAllowed}</span>
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[var(--color-gold-dark)]">Pases Totales</span>
               </div>
 
               <div className={`px-4 py-2 rounded-2xl border text-center ${
-                currentGuest.status === 'confirmado' ? 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300' :
-                currentGuest.status === 'declinado' ? 'bg-rose-500/10 border-rose-400/30 text-rose-300' : 'bg-amber-500/10 border-amber-400/30 text-amber-300'
+                currentGuest.status === 'confirmado' ? 'bg-emerald-500/10 border-emerald-400/30 text-emerald-600' :
+                currentGuest.status === 'declinado' ? 'bg-rose-500/10 border-rose-400/30 text-rose-600' : 'bg-[var(--color-gold)]/10 border-[var(--color-gold)]/30 text-[var(--color-gold-dark)] font-bold'
               }`}>
                 <span className="text-xs font-mono font-semibold uppercase tracking-widest block">
                   {currentGuest.status}
@@ -133,7 +133,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
           <form onSubmit={handleConfirm} className="space-y-6">
             {/* Status Selection */}
             <div>
-              <label className="text-xs font-mono uppercase tracking-widest text-amber-200/80 block mb-3">
+              <label className="text-xs font-mono font-bold uppercase tracking-widest text-[var(--color-gold-dark)] block mb-3">
                 ¿Nos acompañarás en este día tan especial?
               </label>
 
@@ -143,14 +143,14 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                   onClick={() => setSelectedStatus('confirmado')}
                   className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                     selectedStatus === 'confirmado'
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 shadow-lg'
-                      : 'glass-panel border-white/10 text-amber-100/70 hover:border-white/20'
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-900 shadow-lg'
+                      : 'bg-[var(--color-bg-base)] border-[var(--color-gold)]/40 text-[var(--color-text-primary)] hover:border-[var(--color-gold)]'
                   }`}
                 >
-                  <CheckCircle2 className={`w-5 h-5 ${selectedStatus === 'confirmado' ? 'text-emerald-400' : 'text-amber-200/40'}`} />
+                  <CheckCircle2 className={`w-5 h-5 ${selectedStatus === 'confirmado' ? 'text-emerald-600' : 'text-[var(--color-text-muted)]'}`} />
                   <div>
-                    <strong className="text-sm font-semibold block">¡Sí, asistiré con alegría!</strong>
-                    <span className="text-[11px] opacity-70 font-serif">Confirmar presencia</span>
+                    <strong className="text-sm font-semibold block text-[var(--color-text-primary)]">¡Sí, asistiré con alegría!</strong>
+                    <span className="text-[11px] text-[var(--color-text-muted)] font-serif">Confirmar presencia</span>
                   </div>
                 </button>
 
@@ -159,14 +159,14 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                   onClick={() => setSelectedStatus('declinado')}
                   className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                     selectedStatus === 'declinado'
-                      ? 'bg-rose-500/20 border-rose-400 text-rose-200 shadow-lg'
-                      : 'glass-panel border-white/10 text-amber-100/70 hover:border-white/20'
+                      ? 'bg-rose-500/20 border-rose-500 text-rose-900 shadow-lg'
+                      : 'bg-[var(--color-bg-base)] border-[var(--color-gold)]/40 text-[var(--color-text-primary)] hover:border-[var(--color-gold)]'
                   }`}
                 >
-                  <XCircle className={`w-5 h-5 ${selectedStatus === 'declinado' ? 'text-rose-400' : 'text-amber-200/40'}`} />
+                  <XCircle className={`w-5 h-5 ${selectedStatus === 'declinado' ? 'text-rose-600' : 'text-[var(--color-text-muted)]'}`} />
                   <div>
-                    <strong className="text-sm font-semibold block">Lamento no poder asistir</strong>
-                    <span className="text-[11px] opacity-70 font-serif">Enviar mis mejores deseos</span>
+                    <strong className="text-sm font-semibold block text-[var(--color-text-primary)]">Lamento no poder asistir</strong>
+                    <span className="text-[11px] text-[var(--color-text-muted)] font-serif">Enviar mis mejores deseos</span>
                   </div>
                 </button>
               </div>
@@ -180,8 +180,8 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                 className="space-y-4 pt-2"
               >
                 <div>
-                  <label className="text-xs font-mono uppercase tracking-widest text-amber-200/80 flex items-center gap-2 mb-2">
-                    <Users className="w-3.5 h-3.5 text-amber-400" />
+                  <label className="text-xs font-mono font-bold uppercase tracking-widest text-[var(--color-gold-dark)] flex items-center gap-2 mb-2">
+                    <Users className="w-3.5 h-3.5 text-[var(--color-accent)]" />
                     Número de Asistentes Confirmados (Máximo {currentGuest.passesAllowed})
                   </label>
 
@@ -193,8 +193,8 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                         onClick={() => setPassesConfirmed(num)}
                         className={`w-12 h-12 rounded-xl border font-sans font-bold text-lg flex items-center justify-center transition-all cursor-pointer ${
                           passesConfirmed === num
-                            ? 'bg-[var(--color-accent)] text-white border-amber-400 scale-105 shadow-lg'
-                            : 'glass-panel border-white/15 text-amber-100 hover:border-white/30'
+                            ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold-dark)] scale-105 shadow-lg'
+                            : 'bg-[var(--color-bg-base)] border-[var(--color-gold)]/40 text-[var(--color-text-primary)] hover:border-[var(--color-gold)]'
                         }`}
                       >
                         {num}
@@ -205,8 +205,8 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
 
                 {/* Dietary Restrictions */}
                 <div>
-                  <label className="text-xs font-mono uppercase tracking-widest text-amber-200/80 flex items-center gap-2 mb-2">
-                    <Utensils className="w-3.5 h-3.5 text-amber-400" />
+                  <label className="text-xs font-mono font-bold uppercase tracking-widest text-[var(--color-gold-dark)] flex items-center gap-2 mb-2">
+                    <Utensils className="w-3.5 h-3.5 text-[var(--color-accent)]" />
                     Restricciones Alimentarias / Alergias (Opcional)
                   </label>
                   <input
@@ -214,7 +214,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                     value={dietary}
                     onChange={e => setDietary(e.target.value)}
                     placeholder="Ej. Vegetariano, sin celíacos, alergia a mariscos..."
-                    className="w-full px-4 py-3 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-300"
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-gold)] text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]/60 font-medium focus:outline-none focus:border-[var(--color-accent)]"
                   />
                 </div>
               </motion.div>
@@ -222,8 +222,8 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
 
             {/* Special Note to Couple */}
             <div>
-              <label className="text-xs font-mono uppercase tracking-widest text-amber-200/80 flex items-center gap-2 mb-2">
-                <Heart className="w-3.5 h-3.5 text-amber-400" />
+              <label className="text-xs font-mono font-bold uppercase tracking-widest text-[var(--color-gold-dark)] flex items-center gap-2 mb-2">
+                <Heart className="w-3.5 h-3.5 text-[var(--color-accent)]" />
                 Mensaje Especial para los Novios
               </label>
               <textarea
@@ -231,7 +231,7 @@ export const RSVPSection: React.FC<RSVPSectionProps> = ({ currentGuest, onSelect
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Escribe unas palabras para los novios..."
-                className="w-full px-4 py-3 rounded-xl glass-panel border border-white/15 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-300"
+                className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-gold)] text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]/60 font-medium focus:outline-none focus:border-[var(--color-accent)]"
               />
             </div>
 
