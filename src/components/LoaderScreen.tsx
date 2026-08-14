@@ -72,11 +72,11 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
               y: isOpening ? -30 : 0
             }}
             transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="relative w-full min-h-[380px] sm:min-h-[420px] rounded-3xl bg-[#FAFCF9] border-2 border-[var(--color-gold)]/40 shadow-[0_30px_70px_rgba(42,56,40,0.18)] flex flex-col items-center justify-center p-6 sm:p-12 text-center overflow-hidden"
+            className="relative w-full min-h-[460px] sm:min-h-[510px] rounded-3xl bg-[#FAFCF9] border-2 border-[var(--color-gold)]/40 shadow-[0_30px_70px_rgba(42,56,40,0.18)] flex flex-col items-center justify-between p-6 sm:p-10 text-center overflow-hidden"
           >
-            {/* Horizontal Twine / Ribbon Cord Effect */}
-            <div className="absolute top-[42%] left-0 right-0 h-[3px] bg-gradient-to-r from-[#556B2F]/30 via-[#6B7F5A]/60 to-[#556B2F]/30 z-10 pointer-events-none shadow-sm" />
-            <div className="absolute top-[42%] left-0 right-0 h-[1px] -mt-[4px] bg-gradient-to-r from-amber-700/20 via-amber-800/40 to-amber-700/20 z-10 pointer-events-none" />
+            {/* Horizontal Twine / Ribbon Cord Effect - Positioned at Flap Tip */}
+            <div className="absolute top-[108px] sm:top-[138px] left-0 right-0 h-[3px] bg-gradient-to-r from-[#556B2F]/30 via-[#6B7F5A]/60 to-[#556B2F]/30 z-10 pointer-events-none shadow-sm" />
+            <div className="absolute top-[108px] sm:top-[138px] left-0 right-0 h-[1px] -mt-[4px] bg-gradient-to-r from-amber-700/20 via-amber-800/40 to-amber-700/20 z-10 pointer-events-none" />
 
             {/* TOP TRIANGULAR ENVELOPE FLAP WITH 3D ROTATION */}
             <motion.div
@@ -85,7 +85,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 zIndex: isOpening ? 0 : 30
               }}
               transition={{ duration: 0.8, ease: 'easeInOut' }}
-              className="absolute top-0 left-0 right-0 h-36 sm:h-44 origin-top z-30 pointer-events-none"
+              className="absolute top-0 left-0 right-0 h-28 sm:h-36 origin-top z-30 pointer-events-none"
               style={{ transformStyle: 'preserve-3d' }}
             >
               <svg viewBox="0 0 100 45" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-md">
@@ -93,7 +93,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
               </svg>
             </motion.div>
 
-            {/* WAX SEAL STAMP IN THE CENTER */}
+            {/* WAX SEAL STAMP IN THE UPPER CENTER (TIP OF FLAP) */}
             <motion.div
               animate={{
                 scale: isOpening ? [1, 1.2, 0] : 1,
@@ -102,41 +102,41 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
               }}
               transition={{ duration: 0.5 }}
               onClick={isReady ? handleOpenEnvelope : undefined}
-              className={`absolute top-[42%] -translate-y-1/2 z-40 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
+              className={`absolute top-[108px] sm:top-[138px] -translate-y-1/2 z-40 w-18 h-18 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-[#8A9D76] via-[#6B7F5A] to-[#4D5E3F] border-2 border-[#EAF0E6] shadow-2xl flex items-center justify-center text-white cursor-pointer transition-transform ${
                 isReady ? 'hover:scale-110 active:scale-95 animate-pulse' : ''
               }`}
               title="Sello de Lacre Nupcial"
             >
               {/* Seal Inner Ring & Monogram */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-white/40 flex flex-col items-center justify-center bg-black/10 shadow-inner">
-                <span className="font-cinzel text-base sm:text-lg font-bold tracking-wider text-white">
+              <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-full border border-white/40 flex flex-col items-center justify-center bg-black/10 shadow-inner">
+                <span className="font-cinzel text-sm sm:text-base font-bold tracking-wider text-white">
                   {groomInit}<span className="font-serif italic text-xs mx-0.5 text-emerald-200">&</span>{brideInit}
                 </span>
-                <span className="text-[7px] font-mono uppercase tracking-widest text-emerald-100 opacity-90">BODA</span>
+                <span className="text-[6px] sm:text-[7px] font-mono uppercase tracking-widest text-emerald-100 opacity-90">BODA</span>
               </div>
             </motion.div>
 
-            {/* INVITATION LETTER SLIDING OUT (CARD CONTENT) */}
+            {/* INVITATION LETTER SLIDING OUT (CARD CONTENT) - POSITIONED BELOW SEAL */}
             <motion.div
               animate={{
                 y: isOpening ? -60 : 0,
                 scale: isOpening ? 1.04 : 1
               }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="relative z-20 flex flex-col items-center w-full pt-12 sm:pt-14"
+              className="relative z-20 flex flex-col items-center w-full pt-[135px] sm:pt-[175px] pb-4"
             >
               {/* Names */}
-              <h1 className="font-cinzel font-bold text-2xl sm:text-4xl tracking-tight text-[var(--color-text-primary)] mb-1.5 uppercase">
+              <h1 className="font-cinzel font-bold text-2xl sm:text-4xl tracking-tight text-[var(--color-text-primary)] mb-2 uppercase">
                 {config.loaderText || `${config.hero.groom} & ${config.hero.bride}`}
               </h1>
 
-              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--color-text-muted)] mb-6 font-bold">
+              <p className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.25em] text-[var(--color-text-muted)] mb-8 font-bold">
                 {config.hero.city} • {config.hero.dateFormatted}
               </p>
 
               {/* Progress Bar or Action Button */}
               {!isReady ? (
-                <div className="w-full space-y-2 max-w-xs px-2">
+                <div className="w-full space-y-2 max-w-xs px-2 mt-2">
                   <div className="h-1.5 w-full bg-black/10 rounded-full overflow-hidden p-0.5 border border-black/10">
                     <motion.div
                       className="h-full bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-gold)] to-[var(--color-gold-light)] rounded-full"
@@ -152,7 +152,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                 <motion.div
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="space-y-3 w-full flex flex-col items-center pt-2"
+                  className="space-y-3 w-full flex flex-col items-center pt-1"
                 >
                   <button
                     onClick={handleOpenEnvelope}
@@ -165,7 +165,7 @@ export const LoaderScreen: React.FC<LoaderScreenProps> = ({ onComplete }) => {
                     <Sparkles className="w-3.5 h-3.5 text-white/80" />
                   </button>
 
-                  <p className="text-[10px] text-[var(--color-text-muted)] italic font-serif">
+                  <p className="text-[10px] sm:text-xs text-[var(--color-text-muted)] italic font-serif">
                     Haz clic para abrir el sobre y comenzar la música
                   </p>
                 </motion.div>
