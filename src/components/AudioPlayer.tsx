@@ -6,19 +6,56 @@ interface AudioPlayerProps {
   autoPlayTriggered?: boolean;
 }
 
+// Utility: Extract YouTube Video ID from any format
+function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+}
+
+// Utility: Normalize Drive / Dropbox / Direct URLs
+function normalizeAudioUrl(url: string): { type: 'youtube' | 'direct'; url: string; ytId?: string } {
+  if (!url) return { type: 'direct', url: '' };
+
+  const ytId = extractYouTubeId(url);
+  if (ytId) {
+    return { type: 'youtube', url: `https://www.youtube.com/embed/${ytId}?enablejsapi=1&autoplay=1&loop=1&playlist=${ytId}&controls=0`, ytId };
+  }
+
+  // Google Drive conversion
+  if (url.includes('drive.google.com')) {
+    const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      return { type: 'direct', url: `https://docs.google.com/uc?export=download&id=${driveMatch[1]}` };
+    }
+  }
+
+  // Dropbox conversion
+  if (url.includes('dropbox.com')) {
+    return { type: 'direct', url: url.replace('dl=0', 'raw=1').replace('dl=1', 'raw=1') };
+  }
+
+  return { type: 'direct', url };
+}
+
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioConfig, setAudioConfig] = useState(weddingConfigService.getConfig().audio);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
+
+  const parsedAudio = normalizeAudioUrl(audioConfig.url);
 
   useEffect(() => {
     const unsub = weddingConfigService.subscribe(() => {
       const next = weddingConfigService.getConfig().audio;
       setAudioConfig(next);
-      if (audioRef.current && audioRef.current.src !== next.url) {
-        audioRef.current.src = next.url;
+      const parsedNext = normalizeAudioUrl(next.url);
+      if (parsedNext.type === 'direct' && audioRef.current && audioRef.current.src !== parsedNext.url) {
+        audioRef.current.src = parsedNext.url;
         audioRef.current.loop = next.loop;
         if (isPlaying) {
           audioRef.current.play().catch(() => {});
@@ -28,10 +65,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
     return unsub;
   }, [isPlaying]);
 
-  // Audio element setup for custom files/links
+  // Direct Audio Element Setup
   useEffect(() => {
-    if (typeof window !== 'undefined' && audioConfig.url) {
-      const audio = new Audio(audioConfig.url);
+    if (typeof window !== 'undefined' && parsedAudio.type === 'direct' && parsedAudio.url) {
+      const audio = new Audio(parsedAudio.url);
       audio.loop = audioConfig.loop;
       audioRef.current = audio;
 
@@ -40,9 +77,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
         audioRef.current = null;
       };
     }
-  }, []);
+  }, [parsedAudio.url, parsedAudio.type]);
 
-  // Ambient synth fallback
+  // Ambient synth fallback if audio file cannot play
   const startRomanticSynth = () => {
     if (!audioCtxRef.current) {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -105,12 +142,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
   };
 
   const playMusic = () => {
-    if (audioRef.current && audioConfig.url) {
+    if (parsedAudio.type === 'youtube') {
+      setIsPlaying(true);
+    } else if (audioRef.current && parsedAudio.url) {
       audioRef.current.loop = audioConfig.loop;
       audioRef.current.play().then(() => {
         setIsPlaying(true);
       }).catch(() => {
-        // Fallback to synth if audio play fails
         startRomanticSynth();
         setIsPlaying(true);
       });
@@ -144,6 +182,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
+      {/* Hidden YouTube Iframe Embed when YouTube URL is provided */}
+      {parsedAudio.type === 'youtube' && isPlaying && (
+        <iframe
+          ref={iframeRef}
+          src={`${parsedAudio.url}&autoplay=1`}
+          title="Fondo Musical YouTube"
+          className="sr-only pointer-events-none w-0 h-0 absolute opacity-0"
+          allow="autoplay"
+        />
+      )}
+
       <button
         onClick={toggleMusic}
         id="btn-toggle-music"
@@ -164,7 +213,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered }) =
           </span>
           <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5 max-w-[160px] truncate">
             <Music className="w-3 h-3 text-[var(--color-gold-light)] shrink-0" />
-            {audioConfig.title || "Vals Nupcial"}
+            {audioConfig.title || "Perfect - Ed Sheeran"}
           </span>
         </div>
 
