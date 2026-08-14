@@ -658,6 +658,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     });
   };
 
+  const unlockUserAccount = (username: string, userId: string) => {
+    setLockoutMap(prev => {
+      const next = { ...prev, [username]: { count: 0, lockedUntil: undefined } };
+      try { localStorage.setItem('mateo_camila_lockout_map_v2', JSON.stringify(next)); } catch {}
+      return next;
+    });
+    setUserStatusMap(prev => {
+      const next = { ...prev, [userId]: 'active' as const };
+      try { localStorage.setItem('mateo_camila_user_status_map_v1', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
   const executeSavePassword = async () => {
     if (!editingUserForPassword || !newPasswordInput) return;
     const token = authService.getToken();
@@ -668,6 +681,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
         await apiService.updateUserPassword(token, editingUserForPassword.id, newPasswordInput);
       }
       setUsers(prev => prev.map(u => u.id === editingUserForPassword.id ? { ...u, password: newPasswordInput } as AdminUser : u));
+
+      // Reset lockout & reactivate user upon password update
+      unlockUserAccount(editingUserForPassword.username, editingUserForPassword.id);
+
       setIsPasswordModalOpen(false);
       setEditingUserForPassword(null);
     } catch {
@@ -684,14 +701,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
     setIsSavingUser(true);
     try {
-      await apiService.createUser(token, userFormData);
+      const created = await apiService.createUser(token, {
+        ...userFormData,
+        username: userFormData.username.trim()
+      });
       setUsers(await apiService.listUsers(token));
       setIsUserModalOpen(false);
+
+      // Reset lockout & activate user upon creation
+      unlockUserAccount(created.username || userFormData.username.trim(), created.id);
 
       // Open Share Credentials & Domain Link Modal
       setShareCredentialsData({
         fullName: userFormData.fullName,
-        username: userFormData.username,
+        username: userFormData.username.trim(),
         password: userFormData.password
       });
       setIsCredentialsModalOpen(true);
@@ -717,11 +740,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
     // Reset failed login attempts and 24h lockout when Superadmin enables account
     if (next === 'active') {
-      setLockoutMap(prev => {
-        const updated = { ...prev, [user.username]: { count: 0 } };
-        try { localStorage.setItem('mateo_camila_lockout_map_v2', JSON.stringify(updated)); } catch {}
-        return updated;
-      });
+      unlockUserAccount(user.username, user.id);
     }
 
     const token = authService.getToken();
@@ -2226,6 +2245,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             <button onClick={() => toggleUserStatus(user)} className={`px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${status === 'active' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'}`}>
                               {status === 'active' ? 'Deshabilitar' : 'Habilitar'}
                             </button>
+                          </div>
+
+                          {/* Control de Bloqueo por Intentos Fallidos (3 Intentos Max) */}
+                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                            <span>Seguridad & Intentos Fallidos:</span>
+                            {(lockoutMap[user.username]?.count || 0) >= 3 ? (
+                              <button
+                                onClick={() => unlockUserAccount(user.username, user.id)}
+                                className="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-xs font-mono font-bold uppercase cursor-pointer border border-emerald-500/40 flex items-center gap-1.5 shadow-md"
+                              >
+                                <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>🔓 Desbloquear Intento (3/3 Bloqueado)</span>
+                              </button>
+                            ) : (lockoutMap[user.username]?.count || 0) > 0 ? (
+                              <button
+                                onClick={() => unlockUserAccount(user.username, user.id)}
+                                className="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30 text-xs font-mono font-bold uppercase cursor-pointer flex items-center gap-1.5"
+                              >
+                                <Unlock className="w-3.5 h-3.5 text-amber-300" />
+                                <span>Reiniciar Intentos ({lockoutMap[user.username].count}/3)</span>
+                              </button>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">
+                                ✓ Sin Bloqueos (0/3)
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
