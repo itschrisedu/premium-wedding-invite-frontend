@@ -924,7 +924,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-4 md:p-8">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-[#F9F8F3]/98 backdrop-blur-2xl p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6 pb-16">
           {/* Header Panel */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)] shadow-2xl text-[#f5f0e6]">
@@ -2062,51 +2062,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* 6. GALERÍA DE FOTOS Y ESTILO DE CARRUSEL */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Camera className="w-6 h-6 text-[var(--color-gold-light)]" />
-                    <div>
-                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Modo de Visualización de Galería</h2>
-                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">Selecciona entre Carrusel Slider o Grid Revista.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => weddingConfigService.updateConfig({ galleryConfig: { layoutStyle: 'grid' } })}
-                    className={`px-5 py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
-                      siteConfig.galleryConfig.layoutStyle === 'grid' ? 'bg-[var(--color-accent)] text-white font-bold border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-[#8A9D76]/70'
-                    }`}
-                  >
-                    Grid Tipo Revista
-                  </button>
-                  <button
-                    onClick={() => weddingConfigService.updateConfig({ galleryConfig: { layoutStyle: 'carousel' } })}
-                    className={`px-5 py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all cursor-pointer ${
-                      siteConfig.galleryConfig.layoutStyle === 'carousel' ? 'bg-[var(--color-accent)] text-white font-bold border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-[#8A9D76]/70'
-                    }`}
-                  >
-                    Carrusel Deslizable (Slider)
-                  </button>
-                </div>
-
-                {/* Photo Subida */}
-                <div className="pt-4 border-t border-white/10 space-y-4">
-                  <span className="text-xs text-[#EAF0E6] font-semibold block">Subir fotos a la galería</span>
-                  <select value={selectedAlbumId} onChange={e => setSelectedAlbumId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]">
-                    {albums.map(album => <option key={album.id} value={album.id}>{album.title} ({album.photoCount})</option>)}
-                  </select>
-                  <input type="file" multiple accept="image/*" onChange={e => setPhotoFiles(Array.from(e.target.files || []))} className="w-full text-xs text-[#EAF0E6]" />
-                  <button onClick={() => void uploadPhotos()} disabled={isUploadingPhotos || photoFiles.length === 0} className="py-2.5 px-6 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    <span>{isUploadingPhotos ? 'Subiendo...' : 'Subir Fotos Seleccionadas'}</span>
-                  </button>
                 </div>
               </div>
             </div>
