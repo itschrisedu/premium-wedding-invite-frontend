@@ -1,6 +1,6 @@
-import { COUPLE_INFO, TIMELINE_EVENTS, LOVE_STORY_CHAPTERS, VENUES, BANK_DETAILS } from '../data/weddingData';
+import { COUPLE_INFO, TIMELINE_EVENTS, LOVE_STORY_CHAPTERS, VENUES, BANK_DETAILS, GALLERY_IMAGES } from '../data/weddingData';
 import { ELEGANT_WEDDING_THEMES, ThemePalette, applyTheme } from '../data/weddingThemes';
-import { TimelineEvent, EventVenue, BankDetail } from '../types';
+import { TimelineEvent, EventVenue, BankDetail, GalleryImage } from '../types';
 
 export interface SectionVisibility {
   hero: boolean;
@@ -102,6 +102,7 @@ export interface WeddingSiteConfig {
   };
   galleryConfig: {
     layoutStyle: 'carousel' | 'grid' | 'masonry';
+    customPhotos?: GalleryImage[];
   };
   sectionVisibility: SectionVisibility;
 }
@@ -190,7 +191,8 @@ const DEFAULT_CONFIG: WeddingSiteConfig = {
     isVisible: true
   },
   galleryConfig: {
-    layoutStyle: 'carousel'
+    layoutStyle: 'carousel',
+    customPhotos: GALLERY_IMAGES
   },
   sectionVisibility: {
     hero: true,

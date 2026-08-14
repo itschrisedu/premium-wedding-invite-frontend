@@ -74,7 +74,7 @@ async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
     return null;
   }
 }
-import { Guest, GuestCategory } from '../types';
+import { Guest, GuestCategory, GalleryImage } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
 import { apiService, type AuthSession, type AdminUser, type GalleryAlbum } from '../services/apiService';
@@ -148,6 +148,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
   const [shareCredentialsData, setShareCredentialsData] = useState({ fullName: '', username: '', password: '' });
   const [copiedCredentialsToast, setCopiedCredentialsToast] = useState(false);
+  const [newPhotoUrl, setNewPhotoUrl] = useState('');
 
   // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
@@ -778,16 +779,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     });
   };
 
-  // --- Photo Upload ---
+  // --- Photo Upload (Files or URL links) ---
   const uploadPhotos = async () => {
-    const token = authService.getToken();
-    if (!token || !selectedAlbumId || photoFiles.length === 0) return;
-
+    if (photoFiles.length === 0) return;
     setIsUploadingPhotos(true);
+
     try {
-      await galleryService.uploadPhotos(token, selectedAlbumId, photoFiles);
+      const newCustomPhotos: GalleryImage[] = [];
+      for (const file of photoFiles) {
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+
+        newCustomPhotos.push({
+          id: `gal-${Date.now()}-${Math.random().toString().slice(-4)}`,
+          url: dataUrl,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          locationTag: 'Subida desde Panel',
+          caption: 'Fotografía de la sesión de bodas.',
+          aspectRatio: 'square'
+        });
+      }
+
+      const token = authService.getToken();
+      if (token && selectedAlbumId) {
+        await galleryService.uploadPhotos(token, selectedAlbumId, photoFiles).catch(() => {});
+      }
+
+      const current = siteConfig.galleryConfig.customPhotos || [];
+      weddingConfigService.updateConfig({
+        galleryConfig: {
+          ...siteConfig.galleryConfig,
+          customPhotos: [...current, ...newCustomPhotos].slice(0, 9)
+        }
+      });
       setPhotoFiles([]);
-      setAlbums(await galleryService.getAlbums());
     } finally {
       setIsUploadingPhotos(false);
     }
@@ -1511,6 +1539,182 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* 3. GALERÍA DE FOTOS & RECUERDOS (SUBIDA DE ARCHIVO O ENLACE URL DIRECTO - MÁX 9 FOTOS) */}
+              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Camera className="w-6 h-6 text-[var(--color-gold-light)]" />
+                    <div>
+                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Galería de Fotos & Recuerdos (Máx. 9 Fotos)</h2>
+                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                        Puedes agregar fotos usando <strong>un enlace/URL directo de imagen</strong> o <strong>subiendo el archivo de imagen</strong> desde tu dispositivo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => weddingConfigService.updateConfig({
+                        galleryConfig: { ...siteConfig.galleryConfig, layoutStyle: 'carousel' }
+                      })}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${
+                        siteConfig.galleryConfig.layoutStyle === 'carousel' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-white/50'
+                      }`}
+                    >
+                      Carrusel (Slider)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => weddingConfigService.updateConfig({
+                        galleryConfig: { ...siteConfig.galleryConfig, layoutStyle: 'grid' }
+                      })}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${
+                        siteConfig.galleryConfig.layoutStyle === 'grid' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-white/50'
+                      }`}
+                    >
+                      Grid Revista
+                    </button>
+                  </div>
+                </div>
+
+                {/* Adding New Photo Option */}
+                {canEditPage && (siteConfig.galleryConfig.customPhotos || []).length < 9 && (
+                  <div className="p-4 rounded-2xl bg-black/40 border border-white/15 space-y-3">
+                    <span className="text-xs font-mono font-bold uppercase text-[#B1C2A5] block">
+                      + Agregar Nueva Foto a la Galería ({ (siteConfig.galleryConfig.customPhotos || []).length } / 9 habilitadas)
+                    </span>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Option A: Photo URL Link */}
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                        <input
+                          type="text"
+                          value={newPhotoUrl}
+                          onChange={e => setNewPhotoUrl(e.target.value)}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                        />
+                        <button
+                          type="button"
+                          disabled={!newPhotoUrl.trim()}
+                          onClick={() => {
+                            const newPhoto: GalleryImage = {
+                              id: `gal-${Date.now()}`,
+                              url: newPhotoUrl.trim(),
+                              title: 'Momento Especial',
+                              locationTag: 'Ambato, Ecuador',
+                              caption: 'Fotografía de la sesión de bodas.',
+                              aspectRatio: 'square'
+                            };
+                            const current = siteConfig.galleryConfig.customPhotos || [];
+                            weddingConfigService.updateConfig({
+                              galleryConfig: {
+                                ...siteConfig.galleryConfig,
+                                customPhotos: [...current, newPhoto].slice(0, 9)
+                              }
+                            });
+                            setNewPhotoUrl('');
+                          }}
+                          className="w-full py-2 rounded-xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-wider disabled:opacity-40 cursor-pointer"
+                        >
+                          + Guardar Foto por Enlace URL
+                        </button>
+                      </div>
+
+                      {/* Option B: Direct Image File Upload */}
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => setPhotoFiles(Array.from(e.target.files || []))}
+                          className="w-full text-xs text-[#EAF0E6]"
+                        />
+                        <button
+                          type="button"
+                          disabled={isUploadingPhotos || photoFiles.length === 0}
+                          onClick={() => void uploadPhotos()}
+                          className="w-full py-2 rounded-xl bg-[var(--color-gold)]/30 hover:bg-[var(--color-gold)]/40 text-[var(--color-gold-light)] border border-[var(--color-gold)]/50 font-bold text-xs uppercase tracking-wider disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{isUploadingPhotos ? 'Subiendo...' : 'Subir Archivo de Imagen'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* List of Gallery Photos (Editable URL Link or File per Slot) */}
+                <div className="space-y-3 pt-2">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#B1C2A5] block">
+                    Fotos Actuales en Galería ({ (siteConfig.galleryConfig.customPhotos || []).length } de máx. 9)
+                  </span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {(siteConfig.galleryConfig.customPhotos || []).slice(0, 9).map((photo, pIdx) => (
+                      <div key={photo.id || pIdx} className="p-3.5 rounded-2xl bg-black/40 border border-white/15 space-y-3 flex flex-col justify-between">
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-white/10 group">
+                          <img src={photo.url} alt={photo.title} className="w-full h-full object-cover" />
+                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-[var(--color-gold-light)] font-mono font-bold text-[10px]">
+                            #{pIdx + 1}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div>
+                            <label className="text-[9px] font-mono uppercase text-[#B1C2A5] block mb-0.5">Título / Etiqueta</label>
+                            <input
+                              type="text"
+                              disabled={!canEditPage}
+                              value={photo.title}
+                              onChange={e => {
+                                const val = e.target.value;
+                                const updated = (siteConfig.galleryConfig.customPhotos || []).map((p, i) => i === pIdx ? { ...p, title: val } : p);
+                                weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
+                              }}
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[9px] font-mono uppercase text-[#B1C2A5] block mb-0.5">Enlace / URL Directo de la Foto</label>
+                            <input
+                              type="text"
+                              disabled={!canEditPage}
+                              value={photo.url}
+                              onChange={e => {
+                                const val = e.target.value;
+                                const updated = (siteConfig.galleryConfig.customPhotos || []).map((p, i) => i === pIdx ? { ...p, url: val } : p);
+                                weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
+                              }}
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {canEditPage && (
+                          <div className="pt-1 flex items-center justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (siteConfig.galleryConfig.customPhotos || []).filter((_, i) => i !== pIdx);
+                                weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
+                              }}
+                              className="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 font-mono text-[10px] uppercase font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
