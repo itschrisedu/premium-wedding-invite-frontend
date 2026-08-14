@@ -46,7 +46,7 @@ export interface BankDetail {
 
 export interface EventVenue {
   name: string;
-  type: 'ceremonia' | 'recepcion';
+  type: 'civil' | 'eclesiastico' | 'ceremonia' | 'recepcion' | 'recepcion_civil' | 'recepcion_eclesiastico';
   time: string;
   address: string;
   city: string;

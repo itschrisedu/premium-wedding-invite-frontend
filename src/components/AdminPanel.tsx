@@ -150,6 +150,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [copiedCredentialsToast, setCopiedCredentialsToast] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
 
+  // Superadmin Event Ceremony Permissions per Admin User (Civil / Eclesiástico / Recepción)
+  const [userCeremonyMap, setUserCeremonyMap] = useState<Record<string, { civil: boolean; eclesiastico: boolean; recepcion: boolean }>>(() => {
+    try {
+      const stored = localStorage.getItem('mateo_camila_user_ceremonies_v1');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const toggleUserCeremonyPerm = (userId: string, key: 'civil' | 'eclesiastico' | 'recepcion') => {
+    const current = userCeremonyMap[userId] || { civil: true, eclesiastico: true, recepcion: true };
+    const updatedUserPerms = { ...current, [key]: !current[key] };
+    const nextMap = { ...userCeremonyMap, [userId]: updatedUserPerms };
+    setUserCeremonyMap(nextMap);
+    try {
+      localStorage.setItem('mateo_camila_user_ceremonies_v1', JSON.stringify(nextMap));
+    } catch {
+      // ignore
+    }
+  };
+
   // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -192,7 +214,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   const [editingVenue, setEditingVenue] = useState<DynamicVenue | null>(null);
   const [venueFormData, setVenueFormData] = useState({
     name: '',
-    type: 'recepcion' as 'ceremonia' | 'recepcion',
+    type: 'recepcion' as 'civil' | 'eclesiastico' | 'ceremonia' | 'recepcion',
     time: '19:00 PM',
     address: '',
     city: 'Ambato, Ecuador',
@@ -2134,6 +2156,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             </button>
                           </div>
 
+                          {/* Permisos de Evento / Tipos de Matrimonio Habilitados */}
+                          <div className="pt-2 border-t border-white/10 space-y-1.5">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block font-bold">
+                              Habilitar Tipos de Matrimonio / Eventos:
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#EAF0E6]">
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                                <input
+                                  type="checkbox"
+                                  checked={(userCeremonyMap[user.id] || { civil: true }).civil !== false}
+                                  onChange={() => toggleUserCeremonyPerm(user.id, 'civil')}
+                                  className="w-3.5 h-3.5 rounded text-[var(--color-accent)] cursor-pointer"
+                                />
+                                <span className="font-mono text-[11px]">Civil</span>
+                              </label>
+
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                                <input
+                                  type="checkbox"
+                                  checked={(userCeremonyMap[user.id] || { eclesiastico: true }).eclesiastico !== false}
+                                  onChange={() => toggleUserCeremonyPerm(user.id, 'eclesiastico')}
+                                  className="w-3.5 h-3.5 rounded text-[var(--color-accent)] cursor-pointer"
+                                />
+                                <span className="font-mono text-[11px]">Eclesiástico</span>
+                              </label>
+
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                                <input
+                                  type="checkbox"
+                                  checked={(userCeremonyMap[user.id] || { recepcion: true }).recepcion !== false}
+                                  onChange={() => toggleUserCeremonyPerm(user.id, 'recepcion')}
+                                  className="w-3.5 h-3.5 rounded text-[var(--color-accent)] cursor-pointer"
+                                />
+                                <span className="font-mono text-[11px]">Recepción</span>
+                              </label>
+                            </div>
+                          </div>
+
                           {/* Terms & Privacy Audit Badge */}
                           <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
                             <span>Protección de Datos (LOPDP):</span>
@@ -2288,11 +2348,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo</label>
-                <select value={venueFormData.type} onChange={e => setVenueFormData({ ...venueFormData, type: e.target.value as 'ceremonia' | 'recepcion' })} className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]">
-                  <option value="ceremonia">Ceremonia Religiosa</option>
-                  <option value="recepcion">Recepción & Fiesta</option>
-                </select>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo de Evento / Lugar</label>
+                {(() => {
+                  const currentUserId = managedAdminUser?.id || session?.user?.id || '1';
+                  const activePerms = userCeremonyMap[currentUserId] || { civil: true, eclesiastico: true, recepcion: true };
+                  return (
+                    <select
+                      value={venueFormData.type}
+                      onChange={e => setVenueFormData({ ...venueFormData, type: e.target.value as any })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]"
+                    >
+                      {activePerms.civil !== false && (
+                        <option value="civil">Matrimonio Civil (Ceremonia Civil)</option>
+                      )}
+                      {activePerms.eclesiastico !== false && (
+                        <option value="eclesiastico">Matrimonio Eclesiástico (Ceremonia Religiosa)</option>
+                      )}
+                      <option value="ceremonia">Ceremonia Nupcial General</option>
+                      {activePerms.recepcion !== false && (
+                        <option value="recepcion">Recepción & Fiesta de Bodas</option>
+                      )}
+                    </select>
+                  );
+                })()}
               </div>
               <div>
                 <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Hora</label>

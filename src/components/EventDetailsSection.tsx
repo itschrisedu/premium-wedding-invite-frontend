@@ -74,7 +74,13 @@ export const EventDetailsSection: React.FC = () => {
               {/* Tag / Type */}
               <div className="flex items-center justify-between gap-4 mb-4">
                 <span className="px-3.5 py-1 rounded-full bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/30 font-mono text-xs text-[var(--color-gold-dark)] font-bold uppercase tracking-widest">
-                  {venue.type === 'ceremonia' ? 'Ceremonia Religiosa' : 'Recepción & Fiesta'}
+                  {venue.type === 'civil'
+                    ? 'Matrimonio Civil'
+                    : venue.type === 'eclesiastico'
+                    ? 'Matrimonio Eclesiástico'
+                    : venue.type === 'ceremonia'
+                    ? 'Ceremonia Nupcial'
+                    : 'Recepción & Fiesta'}
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-[var(--color-accent)]">
                   <Clock className="w-3.5 h-3.5 text-[var(--color-accent)]" />
