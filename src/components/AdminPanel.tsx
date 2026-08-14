@@ -1376,9 +1376,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Frase / Cita Nupcial</label>
                     <textarea rows={2} disabled={!canEditPage} value={siteConfig.hero.quote} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, quote: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL Foto de Portada (Hero Image)</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.coverImage} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, coverImage: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" />
+                  {/* Hero Cover Photo (Dual Mode: URL Link OR File Upload) */}
+                  <div className="md:col-span-2 p-4 rounded-2xl bg-black/50 border border-white/15 space-y-3">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
+                      📷 Foto de Portada Principal (Hero Image)
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Option A: Photo URL Link */}
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                        <input
+                          type="text"
+                          disabled={!canEditPage}
+                          value={siteConfig.hero.coverImage}
+                          onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, coverImage: e.target.value } })}
+                          placeholder="https://images.unsplash.com/photo-..."
+                          className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                        />
+                      </div>
+
+                      {/* Option B: Direct Image File Upload */}
+                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={!canEditPage}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => {
+                              if (ev.target?.result) {
+                                weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, coverImage: ev.target.result as string } });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full text-xs text-[#EAF0E6]"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1420,19 +1458,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   )}
                 </div>
 
-                {/* Main Story Photo URL Input */}
-                <div className="p-4 rounded-2xl bg-black/50 border border-white/15">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">
+                {/* Main Story Photo (Dual Mode: URL Link OR File Upload) */}
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-3">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
                     📷 Foto Principal de la Sección "Nuestra Historia"
                   </label>
-                  <input
-                    type="text"
-                    disabled={!canEditPage}
-                    value={siteConfig.hero.secondaryImage || siteConfig.hero.coverImage}
-                    onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, secondaryImage: e.target.value } })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
-                    placeholder="https://images.unsplash.com/..."
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Option A: Photo URL Link */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                      <input
+                        type="text"
+                        disabled={!canEditPage}
+                        value={siteConfig.hero.secondaryImage || siteConfig.hero.coverImage}
+                        onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, secondaryImage: e.target.value } })}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                      />
+                    </div>
+
+                    {/* Option B: Direct Image File Upload */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={!canEditPage}
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = ev => {
+                            if (ev.target?.result) {
+                              weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, secondaryImage: ev.target.result as string } });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full text-xs text-[#EAF0E6]"
+                      />
+                    </div>
+                  </div>
                   <span className="text-[10px] text-[#8A9D76]/70 font-serif italic mt-1 block">
                     Esta imagen se mostrará al lado izquierdo del timeline de capítulos en el sitio público.
                   </span>
