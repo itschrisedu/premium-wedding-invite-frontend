@@ -47,7 +47,8 @@ export const GallerySection: React.FC = () => {
     void loadUploaded();
   }, []);
 
-  const galleryItems = [...GALLERY_IMAGES, ...uploadedImages];
+  // Cap gallery photos to max 9 images for optimal load speed and gallery layout
+  const galleryItems = [...uploadedImages, ...GALLERY_IMAGES].slice(0, 9);
 
   const openLightbox = (img: DisplayImage, idx: number) => {
     setSelectedImage(img);

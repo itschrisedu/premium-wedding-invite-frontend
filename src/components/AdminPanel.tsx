@@ -42,7 +42,10 @@ import {
   KeyRound,
   ExternalLink,
   SlidersHorizontal,
-  BookOpen
+  BookOpen,
+  Shirt,
+  Video,
+  Film
 } from 'lucide-react';
 
 async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
@@ -1389,6 +1392,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   )}
                 </div>
 
+                {/* Main Story Photo URL Input */}
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/15">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">
+                    📷 Foto Principal de la Sección "Nuestra Historia"
+                  </label>
+                  <input
+                    type="text"
+                    disabled={!canEditPage}
+                    value={siteConfig.hero.secondaryImage || siteConfig.hero.coverImage}
+                    onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, secondaryImage: e.target.value } })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                  <span className="text-[10px] text-[#8A9D76]/70 font-serif italic mt-1 block">
+                    Esta imagen se mostrará al lado izquierdo del timeline de capítulos en el sitio público.
+                  </span>
+                </div>
+
                 <div className="space-y-4">
                   {siteConfig.loveStory.map((chapter, idx) => (
                     <div key={chapter.id || idx} className="p-5 rounded-2xl bg-black/40 border border-white/15 space-y-4">
@@ -1493,7 +1514,205 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 </div>
               </div>
 
-              {/* 4. MESA DE REGALOS (CUENTAS BANCARIAS DINÁMICAS) */}
+              {/* 3. MOMENTOS EN MOVIMIENTO (VIDEO & SLIDESHOW ANIMADO DE FOTOS) */}
+              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3">
+                  <Video className="w-6 h-6 text-[var(--color-gold-light)]" />
+                  <div>
+                    <h2 className="font-cinzel text-xl text-[#EAF0E6]">Momentos en Movimiento (Video & Slideshow)</h2>
+                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                      Elige entre reproducir un video URL o hacer un video-slideshow animado automático con todas las fotos subidas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-2">Modo de Presentación</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => weddingConfigService.updateConfig({
+                          videoConfig: { ...siteConfig.videoConfig, mode: 'slideshow' }
+                        })}
+                        className={`p-3.5 rounded-xl border font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                          siteConfig.videoConfig?.mode === 'slideshow' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-black/40 text-white/50 border-white/10'
+                        }`}
+                      >
+                        <Film className="w-4 h-4" />
+                        <span>🎞️ Video Slideshow (Fotos Subidas)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => weddingConfigService.updateConfig({
+                          videoConfig: { ...siteConfig.videoConfig, mode: 'video' }
+                        })}
+                        className={`p-3.5 rounded-xl border font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                          siteConfig.videoConfig?.mode === 'video' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-black/40 text-white/50 border-white/10'
+                        }`}
+                      >
+                        <Video className="w-4 h-4" />
+                        <span>🎥 Reproducir Video URL (YouTube / MP4)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título del Video / Teaser</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.videoConfig?.videoTitle || ''}
+                      onChange={e => weddingConfigService.updateConfig({
+                        videoConfig: { ...siteConfig.videoConfig, videoTitle: e.target.value }
+                      })}
+                      placeholder="Ej. MATEO & CAMILA — FILM NUPCIAL"
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL del Video (YouTube / MP4 Directo)</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.videoConfig?.videoUrl || ''}
+                      onChange={e => weddingConfigService.updateConfig({
+                        videoConfig: { ...siteConfig.videoConfig, videoUrl: e.target.value }
+                      })}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Frase Subtitulada del Video</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.videoConfig?.quote || ''}
+                      onChange={e => weddingConfigService.updateConfig({
+                        videoConfig: { ...siteConfig.videoConfig, quote: e.target.value }
+                      })}
+                      placeholder="Ej. 'El amor no se mira con los ojos, sino con el corazón.'"
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. CÓDIGO DE VESTIMENTA (ETIQUETA & REGLAS EDITABLES) */}
+              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+                <div className="flex items-center gap-3">
+                  <Shirt className="w-6 h-6 text-[var(--color-gold-light)]" />
+                  <div>
+                    <h2 className="font-cinzel text-xl text-[#EAF0E6]">Código de Vestimenta (Etiqueta & Reglas)</h2>
+                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                      Edita el mensaje principal, las reglas reservadas y las tarjetas para Caballeros y Damas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título de Sección</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.dressCode?.title || 'Código de Vestimenta'}
+                      onChange={e => weddingConfigService.updateConfig({
+                        dressCode: { ...siteConfig.dressCode, title: e.target.value }
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo de Estilo / Etiqueta</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.dressCode?.styleType || 'Formal Elegante'}
+                      onChange={e => weddingConfigService.updateConfig({
+                        dressCode: { ...siteConfig.dressCode, styleType: e.target.value }
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Mensaje de Bienvenida / Descripción</label>
+                    <textarea
+                      rows={2}
+                      disabled={!canEditPage}
+                      value={siteConfig.dressCode?.description || ''}
+                      onChange={e => weddingConfigService.updateConfig({
+                        dressCode: { ...siteConfig.dressCode, description: e.target.value }
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nota Especial / Reglas (Ej. Blanco reservado para la novia)</label>
+                    <input
+                      type="text"
+                      disabled={!canEditPage}
+                      value={siteConfig.dressCode?.rulesNotice || ''}
+                      onChange={e => weddingConfigService.updateConfig({
+                        dressCode: { ...siteConfig.dressCode, rulesNotice: e.target.value }
+                      })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                    />
+                  </div>
+                </div>
+
+                {/* Dress Code Cards */}
+                <div className="space-y-4 pt-2 border-t border-white/10">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#B1C2A5]">Tarjetas por Género (Caballeros & Damas)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(siteConfig.dressCode?.cards || []).map((card, cIdx) => (
+                      <div key={card.id || cIdx} className="p-4 rounded-2xl bg-black/40 border border-white/15 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-gold)]/20 text-[#8A9D76] font-mono text-[10px] font-bold uppercase">
+                            {card.gender}
+                          </span>
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-0.5">Título Tarjeta</label>
+                          <input
+                            type="text"
+                            disabled={!canEditPage}
+                            value={card.title}
+                            onChange={e => {
+                              const val = e.target.value;
+                              const updatedCards = siteConfig.dressCode.cards.map((c, i) => i === cIdx ? { ...c, title: val } : c);
+                              weddingConfigService.updateConfig({ dressCode: { ...siteConfig.dressCode, cards: updatedCards } });
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-0.5">Indicaciones de Vestuario</label>
+                          <textarea
+                            rows={2}
+                            disabled={!canEditPage}
+                            value={card.description}
+                            onChange={e => {
+                              const val = e.target.value;
+                              const updatedCards = siteConfig.dressCode.cards.map((c, i) => i === cIdx ? { ...c, description: val } : c);
+                              weddingConfigService.updateConfig({ dressCode: { ...siteConfig.dressCode, cards: updatedCards } });
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. MESA DE REGALOS (CUENTAS BANCARIAS DINÁMICAS) */}
               <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
