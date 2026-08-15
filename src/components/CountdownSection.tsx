@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Clock, Heart } from 'lucide-react';
 import { COUPLE_INFO } from '../data/weddingData';
+import { weddingConfigService } from '../services/weddingConfigService';
 
 interface TimeLeft {
   days: number;
@@ -11,10 +12,19 @@ interface TimeLeft {
 }
 
 export const CountdownSection: React.FC = () => {
+  const [heroConfig, setHeroConfig] = useState(weddingConfigService.getConfig().hero);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const targetDate = new Date(COUPLE_INFO.weddingDate).getTime();
+    const unsub = weddingConfigService.subscribe(() => {
+      setHeroConfig(weddingConfigService.getConfig().hero);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const targetDateStr = heroConfig.weddingDate || COUPLE_INFO.weddingDate;
+    const targetDate = new Date(targetDateStr).getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -34,7 +44,7 @@ export const CountdownSection: React.FC = () => {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroConfig.weddingDate]);
 
   return (
     <section id="cuenta-regresiva" className="relative py-20 px-6 max-w-5xl mx-auto my-12">
@@ -60,7 +70,7 @@ export const CountdownSection: React.FC = () => {
           </h2>
 
           <p className="text-xs sm:text-sm text-[var(--color-text-muted)] font-bold tracking-wide uppercase mb-10">
-            {COUPLE_INFO.dateFormatted} • Ambato, Ecuador
+            {heroConfig.dateFormatted || COUPLE_INFO.dateFormatted} • {heroConfig.city || 'Ambato, Ecuador'}
           </p>
 
           {/* Timer Grid */}

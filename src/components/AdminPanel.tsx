@@ -75,6 +75,75 @@ async function fetchAndCleanYouTubeTitle(url: string): Promise<string | null> {
     return null;
   }
 }
+
+function formatSpanishWeddingDateFromIso(isoOrDateTimeStr: string): string {
+  if (!isoOrDateTimeStr) return '';
+  const d = new Date(isoOrDateTimeStr);
+  if (isNaN(d.getTime())) return isoOrDateTimeStr;
+
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  const dayName = days[d.getDay()];
+  const dayNum = d.getDate();
+  const monthName = months[d.getMonth()];
+  const year = d.getFullYear();
+
+  return `${dayName}, ${dayNum} de ${monthName} de ${year}`;
+}
+
+function toDatetimeLocalValue(dateStr: string): string {
+  if (!dateStr) return '2026-11-14T16:30';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '2026-11-14T16:30';
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/es';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+dayjs.locale('es');
+
+const muiWeddingTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#6B7F5A',
+    },
+    text: {
+      primary: '#2A3828',
+      secondary: '#556B2F',
+    },
+  },
+  typography: {
+    fontFamily: '"Plus Jakarta Sans", sans-serif',
+  },
+});
+
+function formatSpanishWeddingDateFromDayjs(val: Dayjs | null): string {
+  if (!val || !val.isValid()) return '';
+  const d = val.locale('es');
+  const rawDayName = d.format('dddd');
+  const dayName = rawDayName.charAt(0).toUpperCase() + rawDayName.slice(1);
+  const dayNum = d.format('D');
+  const rawMonthName = d.format('MMMM');
+  const monthName = rawMonthName.charAt(0).toUpperCase() + rawMonthName.slice(1);
+  const year = d.format('YYYY');
+
+  return `${dayName}, ${dayNum} de ${monthName} de ${year}`;
+}
+
 import { Guest, GuestCategory, GalleryImage } from '../types';
 import { storageService } from '../services/storageService';
 import { authService } from '../services/authService';
@@ -240,6 +309,40 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
   // Custom Color Picker state
   const [customHex, setCustomHex] = useState('#6B7F5A');
   const [isWhiteBg, setIsWhiteBg] = useState(true);
+
+  // Dynamic MUI Theme based on Admin's selected palette/color
+  const activePrimaryColor = useMemo(() => {
+    return siteConfig.customThemeColors?.accent || siteConfig.customThemeColors?.goldPrimary || customHex || '#6B7F5A';
+  }, [siteConfig.customThemeColors, siteConfig.themeId, customHex]);
+
+  const dynamicMuiTheme = useMemo(() => {
+    return createTheme({
+      palette: {
+        primary: {
+          main: activePrimaryColor,
+        },
+        text: {
+          primary: '#2A3828',
+          secondary: '#556B2F',
+        },
+      },
+      typography: {
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
+      },
+      components: {
+        MuiPickersDay: {
+          styleOverrides: {
+            root: {
+              '&.Mui-selected': {
+                backgroundColor: `${activePrimaryColor} !important`,
+                color: '#ffffff !important',
+              },
+            },
+          },
+        },
+      },
+    });
+  }, [activePrimaryColor]);
 
   // User Management & Superadmin controls
   const [userEditPermissions, setUserEditPermissions] = useState<Record<string, boolean>>({});
@@ -1756,11 +1859,89 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre Novia</label>
                     <input type="text" disabled={!canEditPage} value={siteConfig.hero.bride} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, bride: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Fecha Formateada</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.dateFormatted} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, dateFormatted: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
+                  {/* Selector de Fecha y Hora del Gran Día (Genera Fecha Formateada & Sincroniza Cuenta Regresiva) */}
+                  <div className="md:col-span-2 p-4 rounded-2xl bg-[#F3F5F1]/80 border border-[#B1C2A5]/40 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="text-[11px] font-mono uppercase tracking-widest text-[#556B2F] font-bold flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[var(--color-gold-dark)]" />
+                        <span>Fecha y Hora del Matrimonio (Día, Mes, Año, Hora & Minutos)</span>
+                      </label>
+                      <span className="text-[9px] font-mono text-emerald-600 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                        ⚡ Formateo Automático + Sincronización Cuenta Regresiva
+                      </span>
+                    </div>
+
+                    <ThemeProvider theme={dynamicMuiTheme}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                          <div>
+                            <label className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/70 block mb-1">
+                              1. Selector Responsive de Fecha & Hora (MUI DatePicker)
+                            </label>
+                            <DateTimePicker
+                              disabled={!canEditPage}
+                              value={dayjs(siteConfig.hero.weddingDate || '2026-11-14T16:30')}
+                              onChange={(newValue) => {
+                                if (newValue && newValue.isValid()) {
+                                  const isoStr = newValue.format('YYYY-MM-DDTHH:mm');
+                                  const formatted = formatSpanishWeddingDateFromDayjs(newValue);
+                                  weddingConfigService.updateConfig({
+                                    hero: {
+                                      ...siteConfig.hero,
+                                      weddingDate: isoStr,
+                                      dateFormatted: formatted || siteConfig.hero.dateFormatted
+                                    }
+                                  });
+                                }
+                              }}
+                              slotProps={{
+                                textField: {
+                                  size: 'small',
+                                  fullWidth: true,
+                                  className: 'bg-white rounded-xl',
+                                  sx: {
+                                    '& .MuiOutlinedInput-root': {
+                                      borderRadius: '0.75rem',
+                                      fontSize: '0.825rem',
+                                      backgroundColor: '#ffffff',
+                                      '& fieldset': {
+                                        borderColor: '#B1C2A5'
+                                      },
+                                      '&:hover fieldset': {
+                                        borderColor: '#6B7F5A'
+                                      }
+                                    }
+                                  }
+                                }
+                              }}
+                            />
+                            <span className="text-[9px] text-[#627559]/60 font-serif italic block mt-1">
+                              Adaptado automáticamente para dispositivos Móviles, Tablets y Computadores.
+                            </span>
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/70 block mb-1">
+                              2. Fecha Formateada para Portada (Automática)
+                            </label>
+                            <input
+                              type="text"
+                              disabled={!canEditPage}
+                              value={siteConfig.hero.dateFormatted}
+                              onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, dateFormatted: e.target.value } })}
+                              placeholder="Ej. Sábado, 14 de Noviembre de 2026"
+                              className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#B1C2A5]/50 text-xs text-[#2A3828] font-medium shadow-sm focus:outline-none focus:border-[var(--color-gold)]"
+                            />
+                            <span className="text-[9px] text-emerald-600 font-mono block mt-1">
+                              ✨ Vista previa: {siteConfig.hero.dateFormatted || 'Sábado, 14 de Noviembre de 2026'}
+                            </span>
+                          </div>
+                        </div>
+                      </LocalizationProvider>
+                    </ThemeProvider>
                   </div>
-                  <div>
+
+                  <div className="md:col-span-2">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Ciudad / País</label>
                     <input type="text" disabled={!canEditPage} value={siteConfig.hero.city} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, city: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
