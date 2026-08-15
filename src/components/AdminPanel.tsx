@@ -105,35 +105,35 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
   const currentPhoto = imageValue || defaultFallback || '';
 
   return (
-    <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-4">
+    <div className="p-4 rounded-2xl bg-[#F3F5F1]/80 border border-[#B1C2A5]/40 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <label className="text-[11px] font-mono uppercase tracking-widest text-[#B1C2A5] font-bold block">
+          <label className="text-[11px] font-mono uppercase tracking-widest text-[#556B2F] font-bold block">
             {label}
           </label>
           {sublabel && (
-            <span className="text-[10px] text-[#8A9D76]/70 font-serif italic block mt-0.5">
+            <span className="text-[10px] text-[#627559]/70 font-serif italic block mt-0.5">
               {sublabel}
             </span>
           )}
         </div>
-        <span className="text-[9px] font-mono text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+        <span className="text-[9px] font-mono text-emerald-500 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">
           ⚡ Guardado Automático
         </span>
       </div>
 
       {/* Current Image Preview & Delete Action */}
       {currentPhoto ? (
-        <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+        <div className="p-3 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <img
               src={currentPhoto}
               alt="Vista previa"
-              className="w-16 h-16 rounded-lg object-cover border border-white/20 shrink-0 bg-black/40 shadow-md"
+              className="w-16 h-16 rounded-lg object-cover border border-[#B1C2A5]/50 shrink-0 bg-[#EAF0E6]/60 shadow-md"
             />
             <div className="min-w-0">
-              <span className="text-xs font-bold text-[#EAF0E6] block truncate">Imagen activa cargada</span>
-              <span className="text-[10px] font-mono text-[#8A9D76]/70 truncate block">
+              <span className="text-xs font-bold text-[#2A3828] block truncate">Imagen activa cargada</span>
+              <span className="text-[10px] font-mono text-[#627559]/70 truncate block">
                 {currentPhoto.startsWith('data:') ? '📷 Archivo cargado desde tu dispositivo' : currentPhoto}
               </span>
             </div>
@@ -143,7 +143,7 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
             <button
               type="button"
               onClick={() => onUpdate('')}
-              className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 border border-rose-500/30 text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
               title="Eliminar esta imagen para usar la predeterminada"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -152,7 +152,7 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
           )}
         </div>
       ) : (
-        <div className="p-3 rounded-xl bg-white/5 border border-dashed border-white/15 text-center text-xs text-[#8A9D76]/60 font-serif italic">
+        <div className="p-3 rounded-xl bg-[#6B7F5A]/5 border border-dashed border-[#B1C2A5]/40 text-center text-xs text-[#627559]/60 font-serif italic">
           Sin imagen personalizada cargada. (Se usará la foto predeterminada de la plantilla).
         </div>
       )}
@@ -160,8 +160,8 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
       {/* Dual Upload Selector */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Option A: Photo URL Link */}
-        <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
-          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
+        <div className="p-3.5 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 space-y-2">
+          <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">
             Opción A: Pegar Enlace / URL Directo
           </label>
           <input
@@ -170,16 +170,16 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
             value={imageValue || ''}
             onChange={e => onUpdate(e.target.value)}
             placeholder="https://images.unsplash.com/photo-..."
-            className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+            className="w-full px-3 py-2 rounded-xl bg-[#F3F5F1]/80 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono"
           />
-          <span className="text-[9px] font-mono text-emerald-400 block pt-1">
+          <span className="text-[9px] font-mono text-emerald-500 block pt-1">
             ⚡ Se guarda automáticamente al escribir o pegar el enlace.
           </span>
         </div>
 
         {/* Option B: Direct File Upload */}
-        <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
-          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">
+        <div className="p-3.5 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 space-y-2">
+          <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">
             Opción B: Subir Archivo de Imagen
           </label>
           <input
@@ -197,9 +197,9 @@ const SingleImageUploader: React.FC<SingleImageUploaderProps> = ({
               };
               reader.readAsDataURL(file);
             }}
-            className="w-full text-xs text-[#EAF0E6]"
+            className="w-full text-xs text-[#2A3828]"
           />
-          <span className="text-[9px] font-mono text-emerald-400 block pt-1">
+          <span className="text-[9px] font-mono text-emerald-500 block pt-1">
             ⚡ Se agrega y guarda automáticamente al seleccionar la foto.
           </span>
         </div>
@@ -501,18 +501,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       <AnimatePresence>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-4 md:p-8">
           <div className="max-w-lg mx-auto min-h-[calc(100vh-4rem)] flex items-center justify-center">
-            <div className="w-full rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)] shadow-2xl p-8 md:p-10 space-y-6 text-[#f5f0e6]">
+            <div className="w-full rounded-3xl bg-white border border-[var(--color-gold)] shadow-2xl p-8 md:p-10 space-y-6 text-[#2A3828]">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[var(--color-gold)]/10 border border-[var(--color-border-soft)]/30 flex items-center justify-center text-[#8A9D76]">
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--color-gold)]/10 border border-[var(--color-border-soft)]/30 flex items-center justify-center text-[#556B2F]">
                     <Shield className="w-6 h-6 text-[var(--color-gold-light)]" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]/70 block">Acceso Administrativo Nupcial</span>
-                    <h1 className="font-cinzel text-2xl font-light text-[#EAF0E6] gold-gradient-text">Boda & Matrimonio</h1>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/70 block">Acceso Administrativo Nupcial</span>
+                    <h1 className="font-cinzel text-2xl font-light text-[#2A3828] gold-gradient-text">Boda & Matrimonio</h1>
                   </div>
                 </div>
-                <button onClick={onClose} className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
+                <button onClick={onClose} className="p-2.5 rounded-full bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-white transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -582,14 +582,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 }}
               >
                 <div>
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Usuario</label>
-                  <input type="text" value={loginData.username} onChange={e => setLoginData({ ...loginData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" placeholder="superadmin" />
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Usuario</label>
+                  <input type="text" value={loginData.username} onChange={e => setLoginData({ ...loginData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" placeholder="superadmin" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Contraseña</label>
-                  <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" placeholder="••••••••" />
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Contraseña</label>
+                  <input type="password" value={loginData.password} onChange={e => setLoginData({ ...loginData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" placeholder="••••••••" />
                 </div>
-                {loginError && <p className="text-rose-300 text-xs font-mono">{loginError}</p>}
+                {loginError && <p className="text-rose-600 text-xs font-mono">{loginError}</p>}
                 <button type="submit" disabled={isLoggingIn} className="w-full py-3 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.2em] transition-all cursor-pointer disabled:opacity-50">
                   {isLoggingIn ? 'Validando...' : 'Entrar al panel'}
                 </button>
@@ -1223,23 +1223,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
     return (
       <AnimatePresence>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-black/92 backdrop-blur-2xl p-4 md:p-8 flex items-center justify-center">
-          <div className="max-w-2xl w-full rounded-3xl bg-[#2D3B2A] border-2 border-[var(--color-gold)] shadow-2xl p-6 sm:p-10 space-y-6 text-[#f5f0e6] my-8">
-            <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+          <div className="max-w-2xl w-full rounded-3xl bg-white border-2 border-[var(--color-gold)] shadow-2xl p-6 sm:p-10 space-y-6 text-[#2A3828] my-8">
+            <div className="flex items-center gap-4 border-b border-[#B1C2A5]/30 pb-4">
               <div className="w-14 h-14 rounded-2xl bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 flex items-center justify-center text-[var(--color-gold-light)] shrink-0">
                 <FileText className="w-7 h-7 text-[var(--color-gold-light)]" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76] block font-bold">Cumplimiento Legal & Protección de Datos (LOPDP / GDPR)</span>
-                <h2 className="font-cinzel text-xl sm:text-2xl text-[#EAF0E6]">Términos de Servicio & Política de Privacidad</h2>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block font-bold">Cumplimiento Legal & Protección de Datos (LOPDP / GDPR)</span>
+                <h2 className="font-cinzel text-xl sm:text-2xl text-[#2A3828]">Términos de Servicio & Política de Privacidad</h2>
               </div>
             </div>
 
-            <p className="text-xs text-[#EAF0E6]/90 leading-relaxed font-sans">
+            <p className="text-xs text-[#2A3828]/90 leading-relaxed font-sans">
               Para ingresar y gestionar tu plataforma de bodas, es requisito legal obligatorio leer y aceptar nuestros Términos de Servicio, Acuerdo de Confidencialidad y Tratamiento de Datos Personales.
             </p>
 
             {/* SCROLLABLE LEGAL TERMS DOCUMENT */}
-            <div className="max-h-72 overflow-y-auto p-4 rounded-2xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]/85 font-sans space-y-4">
+            <div className="max-h-72 overflow-y-auto p-4 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]/85 font-sans space-y-4">
               <h3 className="font-bold text-[var(--color-gold-light)] uppercase tracking-wider text-[11px]">1. Protección de Datos Personales (Ley LOPDP & Normativa Internacional)</h3>
               <p className="leading-relaxed">
                 El Administrador/Cliente otorga su consentimiento libre, previo, expreso, informado e inequívoco para la recolección, almacenamiento y procesamiento de la información de sus invitados (nombres, teléfonos, restricciones dietéticas, asistencia) con la exclusiva finalidad de coordinar la logística de la boda.
@@ -1268,7 +1268,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
             {/* CHECKBOX CONSENT */}
             <div className="pt-2">
-              <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 text-xs text-[#EAF0E6] cursor-pointer hover:bg-white/10 transition-colors">
+              <label className="flex items-start gap-3 p-4 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 text-xs text-[#2A3828] cursor-pointer hover:bg-[#6B7F5A]/10 transition-colors">
                 <input
                   type="checkbox"
                   checked={hasAcceptedTermsCheckbox}
@@ -1282,10 +1282,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             </div>
 
             {/* BUTTONS */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-[#B1C2A5]/30">
               <button
                 onClick={() => authService.logout()}
-                className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono uppercase tracking-wider cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-white text-xs font-mono uppercase tracking-wider cursor-pointer"
               >
                 Cerrar Sesión / Rechazar
               </button>
@@ -1309,7 +1309,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 overflow-y-auto bg-[#F9F8F3]/98 backdrop-blur-2xl p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6 pb-16">
           {/* Header Panel */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)] shadow-2xl text-[#f5f0e6]">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-white border border-[var(--color-gold)] shadow-2xl text-[#2A3828]">
             <div className="flex items-center gap-3">
               {/* Couple's Initials Circular Monogram Badge */}
               <div className="w-12 h-12 rounded-full bg-white border-2 border-[var(--color-gold)] flex items-center justify-center text-[#2A3828] font-cinzel font-bold text-sm shadow-md shrink-0">
@@ -1319,13 +1319,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-gold-light)] block">
                   {managedAdminUser ? `Gestionando Admin: ${managedAdminUser.fullName}` : 'Panel Administrativo Multitenant Nupcial'}
                 </span>
-                <h1 className="font-cinzel text-2xl md:text-3xl font-light text-[#EAF0E6] gold-gradient-text">{siteConfig.hero.groom} & {siteConfig.hero.bride}</h1>
+                <h1 className="font-cinzel text-2xl md:text-3xl font-light text-[#2A3828] gold-gradient-text">{siteConfig.hero.groom} & {siteConfig.hero.bride}</h1>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               {managedAdminUser && (
-                <button onClick={() => setManagedAdminUser(null)} className="px-4 py-2 rounded-full bg-[var(--color-gold)]/20 text-[#8A9D76] border border-[var(--color-gold)]/30 text-xs font-mono uppercase font-bold cursor-pointer">
+                <button onClick={() => setManagedAdminUser(null)} className="px-4 py-2 rounded-full bg-[var(--color-gold)]/20 text-[#556B2F] border border-[var(--color-gold)]/30 text-xs font-mono uppercase font-bold cursor-pointer">
                   ← Volver a Mi Vista
                 </button>
               )}
@@ -1335,22 +1335,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <span>+ Crear Nuevo Admin</span>
                 </button>
               )}
-              <button onClick={() => authService.logout()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 border border-white/15 text-white font-mono text-xs uppercase tracking-wider hover:bg-white/20 transition-all cursor-pointer">
-                <LogOut className="w-4 h-4 text-white" />
+              <button onClick={() => authService.logout()} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#6B7F5A]/10 border border-[#B1C2A5]/40 text-[#2A3828] font-mono text-xs uppercase tracking-wider hover:bg-[#6B7F5A]/15 transition-all cursor-pointer">
+                <LogOut className="w-4 h-4 text-[#556B2F]" />
                 <span>Salir</span>
               </button>
-              <button onClick={onClose} className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
+              <button onClick={onClose} className="p-2.5 rounded-full bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-[#2A3828] transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl bg-[#2D3B2A] border border-[var(--color-gold)]">
+          <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl bg-white border border-[var(--color-gold)]">
             <button
               onClick={() => setActiveTab('invitados')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'invitados' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#8A9D76]/70 hover:bg-white/10'
+                activeTab === 'invitados' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#627559]/70 hover:bg-[#6B7F5A]/10'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -1360,7 +1360,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             <button
               onClick={() => setActiveTab('apariencia')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'apariencia' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#8A9D76]/70 hover:bg-white/10'
+                activeTab === 'apariencia' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#627559]/70 hover:bg-[#6B7F5A]/10'
               }`}
             >
               <Palette className="w-4 h-4" />
@@ -1370,7 +1370,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             <button
               onClick={() => setActiveTab('secciones')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'secciones' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#8A9D76]/70 hover:bg-white/10'
+                activeTab === 'secciones' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#627559]/70 hover:bg-[#6B7F5A]/10'
               }`}
             >
               <Layout className="w-4 h-4" />
@@ -1381,7 +1381,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               <button
                 onClick={() => setActiveTab('usuarios')}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                  activeTab === 'usuarios' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#8A9D76]/70 hover:bg-white/10'
+                  activeTab === 'usuarios' ? 'bg-[var(--color-accent)] text-white font-bold shadow-lg' : 'text-[#627559]/70 hover:bg-[#6B7F5A]/10'
                 }`}
               >
                 <UserCog className="w-4 h-4" />
@@ -1395,26 +1395,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
             <div className="space-y-6">
               {/* Stats Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-white/10">
-                  <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]/60">Total Invitaciones</span><Users className="w-4 h-4 text-[var(--color-gold-light)]" /></div>
-                  <span className="font-cinzel text-3xl font-light text-[#EAF0E6] block">{totalGuests}</span>
-                  <span className="text-[11px] text-[#8A9D76]/50 font-serif">Familias / Personas</span>
+                <div className="p-6 rounded-2xl bg-white border border-[#B1C2A5]/30">
+                  <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/60">Total Invitaciones</span><Users className="w-4 h-4 text-[var(--color-gold-light)]" /></div>
+                  <span className="font-cinzel text-3xl font-light text-[#2A3828] block">{totalGuests}</span>
+                  <span className="text-[11px] text-[#627559]/50 font-serif">Familias / Personas</span>
                 </div>
-                <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-emerald-500/20 bg-emerald-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-emerald-300">Confirmados</span><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div><span className="font-cinzel text-3xl font-light text-emerald-300 block">{confirmedCount}</span><span className="text-[11px] text-emerald-200/60 font-serif">{totalPassesConfirmed} Pases Confirmados</span></div>
-                <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-[var(--color-gold)]/20 bg-[var(--color-gold)]/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]">Pendientes</span><Clock className="w-4 h-4 text-[var(--color-gold-light)]" /></div><span className="font-cinzel text-3xl font-light text-[#8A9D76] block">{pendingCount}</span><span className="text-[11px] text-[#8A9D76]/60 font-serif">Por Responder</span></div>
-                <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-rose-500/20 bg-rose-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-rose-300">Declinados</span><XCircle className="w-4 h-4 text-rose-400" /></div><span className="font-cinzel text-3xl font-light text-rose-300 block">{declinedCount}</span><span className="text-[11px] text-rose-200/60 font-serif">No Asistirán</span></div>
-                <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-[var(--color-border-soft)]/30 flex flex-col justify-between"><div><div className="flex items-center justify-between mb-1"><span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]/70">% Confirmado</span><RefreshCw className="w-4 h-4 text-[var(--color-gold-light)]" /></div><span className="font-cinzel text-3xl font-light text-[#EAF0E6] gold-gradient-text block">{confirmationPercentage}%</span></div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mt-3 border border-white/10"><div className="h-full bg-gradient-to-r from-[var(--color-accent)] to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${confirmationPercentage}%` }} /></div></div>
+                <div className="p-6 rounded-2xl bg-white border border-emerald-500/30 bg-emerald-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-emerald-600">Confirmados</span><CheckCircle2 className="w-4 h-4 text-emerald-500" /></div><span className="font-cinzel text-3xl font-light text-emerald-600 block">{confirmedCount}</span><span className="text-[11px] text-emerald-700/60 font-serif">{totalPassesConfirmed} Pases Confirmados</span></div>
+                <div className="p-6 rounded-2xl bg-white border border-[var(--color-gold)]/20 bg-[var(--color-gold)]/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F]">Pendientes</span><Clock className="w-4 h-4 text-[var(--color-gold-light)]" /></div><span className="font-cinzel text-3xl font-light text-[#556B2F] block">{pendingCount}</span><span className="text-[11px] text-[#627559]/60 font-serif">Por Responder</span></div>
+                <div className="p-6 rounded-2xl bg-white border border-rose-500/20 bg-rose-500/5"><div className="flex items-center justify-between mb-2"><span className="text-[10px] font-mono uppercase tracking-widest text-rose-600">Declinados</span><XCircle className="w-4 h-4 text-rose-400" /></div><span className="font-cinzel text-3xl font-light text-rose-600 block">{declinedCount}</span><span className="text-[11px] text-rose-700/60 font-serif">No Asistirán</span></div>
+                <div className="p-6 rounded-2xl bg-white border border-[var(--color-border-soft)]/30 flex flex-col justify-between"><div><div className="flex items-center justify-between mb-1"><span className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/70">% Confirmado</span><RefreshCw className="w-4 h-4 text-[var(--color-gold-light)]" /></div><span className="font-cinzel text-3xl font-light text-[#2A3828] gold-gradient-text block">{confirmationPercentage}%</span></div><div className="w-full h-2 bg-[#6B7F5A]/10 rounded-full overflow-hidden mt-3 border border-[#B1C2A5]/30"><div className="h-full bg-gradient-to-r from-[var(--color-accent)] to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${confirmationPercentage}%` }} /></div></div>
               </div>
 
               {/* Action Bar */}
-              <div className="p-6 rounded-2xl bg-[#2D3B2A] border border-white/15 flex flex-wrap items-center justify-between gap-4">
+              <div className="p-6 rounded-2xl bg-white border border-[#B1C2A5]/40 flex flex-wrap items-center justify-between gap-4">
                 <div className="relative flex-1 min-w-[240px]">
                   <Search className="w-4 h-4 text-[var(--color-gold-light)] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscador por nombre o teléfono..." className="w-full pl-11 pr-4 py-2.5 rounded-full bg-black/40 border border-white/20 text-xs text-[#EAF0E6] placeholder-[#8A9D76]/40 focus:outline-none focus:border-[var(--color-gold)]" />
+                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscador por nombre o teléfono..." className="w-full pl-11 pr-4 py-2.5 rounded-full bg-[#EAF0E6]/60 border border-[#B1C2A5]/50 text-xs text-[#2A3828] placeholder-[#627559]/40 focus:outline-none focus:border-[var(--color-gold)]" />
                 </div>
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-[var(--color-gold-light)]" />
-                  <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#2D3B2A] border border-white/20 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]">
+                  <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="px-4 py-2 rounded-full bg-white border border-[#B1C2A5]/50 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]">
                     <option value="todos">Todas las Categorías</option>
                     <option value="Familia">Familia</option>
                     <option value="Amigos">Amigos</option>
@@ -1423,7 +1423,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 rounded-full bg-[#2D3B2A] border border-white/20 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]">
+                  <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 rounded-full bg-white border border-[#B1C2A5]/50 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]">
                     <option value="todos">Todos los Estados</option>
                     <option value="confirmado">Confirmados</option>
                     <option value="pendiente">Pendientes</option>
@@ -1434,12 +1434,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   <Plus className="w-4 h-4 text-white" />
                   <span>Nuevo Invitado</span>
                 </button>
-                <button onClick={exportGuestsCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar reporte en formato Excel / CSV">
+                <button onClick={exportGuestsCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-600 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar reporte en formato Excel / CSV">
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Excel</span>
                   <Download className="w-3 h-3 opacity-60" />
                 </button>
-                <button onClick={exportGuestsPDF} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar / Imprimir reporte en formato PDF">
+                <button onClick={exportGuestsPDF} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-600 font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Descargar / Imprimir reporte en formato PDF">
                   <FileText className="w-4 h-4" />
                   <span>PDF</span>
                   <Download className="w-3 h-3 opacity-60" />
@@ -1447,11 +1447,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* Guest Table */}
-              <div className="rounded-3xl bg-[#2D3B2A] border border-white/15 overflow-hidden shadow-2xl">
+              <div className="rounded-3xl bg-white border border-[#B1C2A5]/40 overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs text-[#EAF0E6]">
+                  <table className="w-full text-left border-collapse text-xs text-[#2A3828]">
                     <thead>
-                      <tr className="bg-white/5 border-b border-white/10 text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]/80">
+                      <tr className="bg-[#6B7F5A]/5 border-b border-[#B1C2A5]/30 text-[10px] font-mono uppercase tracking-widest text-[#627559]/80">
                         <th className="p-4">Invitado / Familia</th>
                         <th className="p-4">Categoría</th>
                         <th className="p-4">Pases</th>
@@ -1459,28 +1459,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         <th className="p-4 text-right">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-[#B1C2A5]/20">
                       {filteredGuests.length > 0 ? filteredGuests.map(guest => (
-                        <tr key={guest.id} className="hover:bg-white/[0.03] transition-colors">
-                          <td className="p-4 font-medium"><strong className="text-[#EAF0E6] block text-sm">{guest.name}</strong><span className="text-[10px] text-[#8A9D76]/70 italic block">{guest.phone || 'Sin teléfono'}</span></td>
-                          <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 font-mono text-[10px]">{guest.category}</span></td>
-                          <td className="p-4 font-mono font-semibold text-[#B1C2A5]">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
-                          <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-[var(--color-gold)]/20 text-[#8A9D76] border border-[var(--color-gold)]/30'}`}>{guest.status}</span></td>
+                        <tr key={guest.id} className="hover:bg-[#6B7F5A]/[0.05] transition-colors">
+                          <td className="p-4 font-medium"><strong className="text-[#2A3828] block text-sm">{guest.name}</strong><span className="text-[10px] text-[#627559]/70 italic block">{guest.phone || 'Sin teléfono'}</span></td>
+                          <td className="p-4"><span className="px-2.5 py-1 rounded-md bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 font-mono text-[10px]">{guest.category}</span></td>
+                          <td className="p-4 font-mono font-semibold text-[#556B2F]">{guest.status === 'confirmado' ? <span>{guest.passesConfirmed} de {guest.passesAllowed}</span> : <span>{guest.passesAllowed} asignados</span>}</td>
+                          <td className="p-4"><span className={`px-3 py-1 rounded-full font-mono text-[10px] font-semibold uppercase tracking-wider ${guest.status === 'confirmado' ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30' : guest.status === 'declinado' ? 'bg-rose-500/20 text-rose-600 border border-rose-500/30' : 'bg-[var(--color-gold)]/20 text-[#556B2F] border border-[var(--color-gold)]/30'}`}>{guest.status}</span></td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer" title="Enviar enlace personalizado por WhatsApp">
+                              <button onClick={() => sendWhatsApp(guest)} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 transition-colors cursor-pointer" title="Enviar enlace personalizado por WhatsApp">
                                 <Send className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#8A9D76] hover:bg-[var(--color-gold)]/30 transition-colors cursor-pointer">
+                              <button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#556B2F] hover:bg-[var(--color-gold)]/30 transition-colors cursor-pointer">
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={() => deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer">
+                              <button onClick={() => deleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 transition-colors cursor-pointer">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>
                         </tr>
-                      )) : (<tr><td colSpan={5} className="p-8 text-center text-[#8A9D76]/50 font-serif italic">No se encontraron invitados.</td></tr>)}
+                      )) : (<tr><td colSpan={5} className="p-8 text-center text-[#627559]/50 font-serif italic">No se encontraron invitados.</td></tr>)}
                     </tbody>
                   </table>
                 </div>
@@ -1492,12 +1492,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           {activeTab === 'apariencia' && (
             <div className="space-y-6">
               {/* Custom Global Color Picker & Manual Input Card */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)] shadow-2xl space-y-6 text-[#f5f0e6]">
+              <div className="p-6 rounded-3xl bg-white border border-[var(--color-gold)] shadow-2xl space-y-6 text-[#2A3828]">
                 <div className="flex items-center gap-3">
                   <SlidersHorizontal className="w-6 h-6 text-[var(--color-accent)]" />
                   <div>
-                    <h2 className="font-cinzel text-2xl text-[#EAF0E6]">Personalización de Color Global (Picker & HEX / RGB)</h2>
-                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                    <h2 className="font-cinzel text-2xl text-[#2A3828]">Personalización de Color Global (Picker & HEX / RGB)</h2>
+                    <p className="text-xs text-[#627559]/70 font-serif italic">
                       Selecciona o ingresa cualquier color en rueda cromática o código Hexadecimal. Se aplicará a todos los botones, acentos y componentes:
                     </p>
                   </div>
@@ -1506,7 +1506,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                   {/* Wheel Picker */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Selector de Rueda de Color</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Selector de Rueda de Color</label>
                     <div className="flex items-center gap-4">
                       <input
                         type="color"
@@ -1523,21 +1523,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                   {/* Manual HEX Input */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Código Hexadecimal Manual</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Código Hexadecimal Manual</label>
                     <input
                       type="text"
                       value={customHex}
                       onChange={e => setCustomHex(e.target.value)}
                       placeholder="#6B7F5A"
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs text-[#EAF0E6] font-mono"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/50 text-xs text-[#2A3828] font-mono"
                     />
                   </div>
 
                   {/* White Background Option */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Fondo Principal por Defecto</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Fondo Principal por Defecto</label>
                     <div className="flex items-center gap-4 pt-1">
-                      <label className="flex items-center gap-2 text-xs text-[#EAF0E6] cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs text-[#2A3828] cursor-pointer">
                         <input
                           type="checkbox"
                           checked={isWhiteBg}
@@ -1549,10 +1549,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                <div className="pt-4 border-t border-[#B1C2A5]/30 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full border border-white/30" style={{ backgroundColor: customHex }} />
-                    <span className="text-xs font-serif italic text-[#B1C2A5]">Vista previa del tono primario</span>
+                    <span className="text-xs font-serif italic text-[#556B2F]">Vista previa del tono primario</span>
                   </div>
 
                   <button
@@ -1565,10 +1565,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* Preset Wedding Palettes */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-4">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-4">
                 <div>
-                  <h2 className="font-cinzel text-2xl text-[#EAF0E6]">Paletas Predefinidas para Boda & Matrimonio</h2>
-                  <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                  <h2 className="font-cinzel text-2xl text-[#2A3828]">Paletas Predefinidas para Boda & Matrimonio</h2>
+                  <p className="text-xs text-[#627559]/70 font-serif italic">
                     Paletas de alta costura pre-diseñadas para un cambio instantáneo:
                   </p>
                 </div>
@@ -1580,24 +1580,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       onClick={() => weddingConfigService.setTheme(theme.id)}
                       className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 ${
                         siteConfig.themeId === theme.id
-                          ? 'bg-white/10 border-[var(--color-gold)] shadow-2xl ring-2 ring-[var(--color-gold)]/50'
-                          : 'bg-black/30 border-white/10 hover:border-white/25'
+                          ? 'bg-[#6B7F5A]/10 border-[var(--color-gold)] shadow-2xl ring-2 ring-[var(--color-gold)]/50'
+                          : 'bg-[#EAF0E6]/50 border-[#B1C2A5]/30 hover:border-white/25'
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-cinzel text-lg text-[#EAF0E6] font-medium">{theme.name}</h3>
+                          <h3 className="font-cinzel text-lg text-[#2A3828] font-medium">{theme.name}</h3>
                           {siteConfig.themeId === theme.id && (
                             <span className="w-6 h-6 rounded-full bg-[var(--color-gold)] text-black flex items-center justify-center font-bold text-xs">✓</span>
                           )}
                         </div>
-                        <p className="text-xs text-[#EAF0E6]/70 font-serif italic leading-relaxed mb-4">
+                        <p className="text-xs text-[#2A3828]/70 font-serif italic leading-relaxed mb-4">
                           {theme.description}
                         </p>
                       </div>
 
                       {/* Color Preview Dots */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-2 pt-2 border-t border-[#B1C2A5]/30">
                         <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewBg }} title="Color Fondo" />
                         <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewGold }} title="Color Acento" />
                         <div className="w-7 h-7 rounded-full border border-white/30" style={{ backgroundColor: theme.previewAccent }} title="Color Secundario" />
@@ -1613,17 +1613,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           {activeTab === 'secciones' && (
             <div className="space-y-8">
               {!canEditPage && (
-                <div className="p-4 rounded-2xl bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[#B1C2A5] text-xs flex items-center gap-3">
+                <div className="p-4 rounded-2xl bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[#556B2F] text-xs flex items-center gap-3">
                   <Lock className="w-5 h-5 text-[var(--color-gold-light)] shrink-0" />
                   <span>Tu cuenta tiene restringidos los permisos de edición por el Superadmin. Contacta al Superadmin para solicitar permisos de edición de página.</span>
                 </div>
               )}
 
               {/* 1. VISIBILIDAD DE SECCIONES PRINCIPALES */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div>
-                  <h2 className="font-cinzel text-2xl text-[#EAF0E6]">Visibilidad de Secciones (Switch ON / OFF)</h2>
-                  <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                  <h2 className="font-cinzel text-2xl text-[#2A3828]">Visibilidad de Secciones (Switch ON / OFF)</h2>
+                  <p className="text-xs text-[#627559]/70 font-serif italic">
                     Activa o desactiva con un switch las secciones principales que aparecerán en el sitio público:
                   </p>
                 </div>
@@ -1646,7 +1646,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         key={sec.key}
                         onClick={() => canEditPage && toggleSection(sec.key as keyof WeddingSiteConfig['sectionVisibility'])}
                         className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                          isVisible ? 'bg-[var(--color-gold)]/10 border-[var(--color-gold)]/40 text-[#EAF0E6]' : 'bg-black/30 border-white/10 text-white/40'
+                          isVisible ? 'bg-[var(--color-gold)]/10 border-[var(--color-gold)]/40 text-[#2A3828]' : 'bg-[#EAF0E6]/50 border-[#B1C2A5]/30 text-white/40'
                         }`}
                       >
                         <span className="text-xs font-mono font-semibold">{sec.name}</span>
@@ -1658,12 +1658,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 2. AUDIO & MÚSICA EN BUCLE */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center gap-3">
                   <Music className="w-6 h-6 text-[var(--color-gold-light)]" />
                   <div>
-                    <h2 className="font-cinzel text-xl text-[#EAF0E6]">Música de Fondo & Reproductor en Bucle</h2>
-                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                    <h2 className="font-cinzel text-xl text-[#2A3828]">Música de Fondo & Reproductor en Bucle</h2>
+                    <p className="text-xs text-[#627559]/70 font-serif italic">
                       Soporta enlaces de <strong>YouTube</strong> (ej. <code>https://www.youtube.com/watch?v=...</code>), <strong>Google Drive</strong> o URLs directas de MP3. Solo se reproducirá el audio en segundo plano sin mostrar video.
                     </p>
                   </div>
@@ -1672,7 +1672,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5]">Título de la Canción & Artista</label>
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F]">Título de la Canción & Artista</label>
                       <button
                         type="button"
                         disabled={!canEditPage || !siteConfig.audio.url}
@@ -1694,11 +1694,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       value={siteConfig.audio.title}
                       onChange={e => weddingConfigService.updateConfig({ audio: { ...siteConfig.audio, title: e.target.value } })}
                       placeholder="Ej. Perfect - Ed Sheeran"
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Enlace del Audio (YouTube / Drive / MP3)</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Enlace del Audio (YouTube / Drive / MP3)</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -1713,13 +1713,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         }
                       }}
                       placeholder="https://www.youtube.com/watch?v=2Vv-BfVoq4g"
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="flex items-center gap-6 pt-2">
-                  <label className="flex items-center gap-3 text-xs text-[#EAF0E6] cursor-pointer">
+                  <label className="flex items-center gap-3 text-xs text-[#2A3828] cursor-pointer">
                     <input
                       type="checkbox"
                       disabled={!canEditPage}
@@ -1728,7 +1728,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     />
                     <span>Bucle Infinito (`loop` continuo al terminar)</span>
                   </label>
-                  <label className="flex items-center gap-3 text-xs text-[#EAF0E6] cursor-pointer">
+                  <label className="flex items-center gap-3 text-xs text-[#2A3828] cursor-pointer">
                     <input
                       type="checkbox"
                       disabled={!canEditPage}
@@ -1741,32 +1741,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 3. HERO & NOVIOS EDITOR */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center gap-3">
                   <Heart className="w-6 h-6 text-[var(--color-gold-light)]" />
-                  <h2 className="font-cinzel text-xl text-[#EAF0E6]">Información Principal de la Boda & Novios</h2>
+                  <h2 className="font-cinzel text-xl text-[#2A3828]">Información Principal de la Boda & Novios</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre Novio</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.groom} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, groom: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre Novio</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.groom} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, groom: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre Novia</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.bride} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, bride: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre Novia</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.bride} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, bride: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Fecha Formateada</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.dateFormatted} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, dateFormatted: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Fecha Formateada</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.dateFormatted} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, dateFormatted: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Ciudad / País</label>
-                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.city} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, city: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Ciudad / País</label>
+                    <input type="text" disabled={!canEditPage} value={siteConfig.hero.city} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, city: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Frase / Cita Nupcial</label>
-                    <textarea rows={2} disabled={!canEditPage} value={siteConfig.hero.quote} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, quote: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Frase / Cita Nupcial</label>
+                    <textarea rows={2} disabled={!canEditPage} value={siteConfig.hero.quote} onChange={e => weddingConfigService.updateConfig({ hero: { ...siteConfig.hero, quote: e.target.value } })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
                   </div>
                   
                   {/* Hero Cover Photo (SingleImageUploader) */}
@@ -1782,13 +1782,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 4. NUESTRA HISTORIA (CAPÍTULOS DE AMOR - MÁXIMO 5 TARJETAS) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <BookOpen className="w-6 h-6 text-[var(--color-gold-light)]" />
                     <div>
-                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Nuestra Historia (Línea de Tiempo & Capítulos)</h2>
-                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                      <h2 className="font-cinzel text-xl text-[#2A3828]">Nuestra Historia (Línea de Tiempo & Capítulos)</h2>
+                      <p className="text-xs text-[#627559]/70 font-serif italic">
                         Edita los capítulos principales de tu historia de amor (máximo 5 capítulos).
                       </p>
                     </div>
@@ -1826,13 +1826,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="space-y-4">
                   {siteConfig.loveStory.map((chapter, idx) => (
-                    <div key={chapter.id || idx} className="p-5 rounded-2xl bg-black/40 border border-white/15 space-y-4">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div key={chapter.id || idx} className="p-5 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 space-y-4">
+                      <div className="flex items-center justify-between border-b border-[#B1C2A5]/30 pb-3">
                         <div className="flex items-center gap-2">
                           <span className="w-6 h-6 rounded-full bg-[var(--color-gold)]/20 border border-[var(--color-gold)]/40 text-[var(--color-gold-light)] font-mono font-bold text-xs flex items-center justify-center">
                             {idx + 1}
                           </span>
-                          <strong className="text-sm font-cinzel text-[#EAF0E6]">{chapter.title || `Capítulo ${idx + 1}`}</strong>
+                          <strong className="text-sm font-cinzel text-[#2A3828]">{chapter.title || `Capítulo ${idx + 1}`}</strong>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -1840,10 +1840,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, isVisible: !c.isVisible } : c);
                               weddingConfigService.updateConfig({ loveStory: updated });
                             }}
-                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#B1C2A5]"
+                            className="p-1.5 rounded-lg bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-[#556B2F]"
                             title={chapter.isVisible !== false ? "Visible" : "Oculto"}
                           >
-                            {chapter.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                            {chapter.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-500" /> : <EyeOff className="w-4 h-4 text-white/40" />}
                           </button>
                           {canEditPage && siteConfig.loveStory.length > 1 && (
                             <button
@@ -1851,7 +1851,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 const updated = siteConfig.loveStory.filter((_, i) => i !== idx);
                                 weddingConfigService.updateConfig({ loveStory: updated });
                               }}
-                              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"
+                              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30"
                               title="Eliminar este capítulo"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1862,7 +1862,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Año / Fecha</label>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Año / Fecha</label>
                           <input
                             type="text"
                             disabled={!canEditPage}
@@ -1872,12 +1872,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, year: val } : c);
                               weddingConfigService.updateConfig({ loveStory: updated });
                             }}
-                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono font-bold"
                             placeholder="Ej. 2021"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título del Capítulo</label>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Título del Capítulo</label>
                           <input
                             type="text"
                             disabled={!canEditPage}
@@ -1887,12 +1887,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, title: val } : c);
                               weddingConfigService.updateConfig({ loveStory: updated });
                             }}
-                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            className="w-full px-3 py-2 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                             placeholder="Ej. El Encuentro en Ficoa"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Lugar / Ubicación</label>
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Lugar / Ubicación</label>
                           <input
                             type="text"
                             disabled={!canEditPage}
@@ -1902,14 +1902,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, location: val } : c);
                               weddingConfigService.updateConfig({ loveStory: updated });
                             }}
-                            className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            className="w-full px-3 py-2 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                             placeholder="Ej. Ficoa, Ambato"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Contenido / Historia</label>
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Contenido / Historia</label>
                         <textarea
                           rows={2}
                           disabled={!canEditPage}
@@ -1919,7 +1919,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             const updated = siteConfig.loveStory.map((c, i) => i === idx ? { ...c, content: val } : c);
                             weddingConfigService.updateConfig({ loveStory: updated });
                           }}
-                          className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                          className="w-full px-3 py-2 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                           placeholder="Escribe los detalles de este capítulo..."
                         />
                       </div>
@@ -1929,13 +1929,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 3. GALERÍA DE FOTOS & RECUERDOS (SUBIDA DE ARCHIVO O ENLACE URL DIRECTO - MÁX 9 FOTOS) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <Camera className="w-6 h-6 text-[var(--color-gold-light)]" />
                     <div>
-                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Galería de Fotos & Recuerdos (Máx. 9 Fotos)</h2>
-                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                      <h2 className="font-cinzel text-xl text-[#2A3828]">Galería de Fotos & Recuerdos (Máx. 9 Fotos)</h2>
+                      <p className="text-xs text-[#627559]/70 font-serif italic">
                         Puedes agregar fotos usando <strong>un enlace/URL directo de imagen</strong> o <strong>subiendo el archivo de imagen</strong> desde tu dispositivo.
                       </p>
                     </div>
@@ -1948,7 +1948,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         galleryConfig: { ...siteConfig.galleryConfig, layoutStyle: 'carousel' }
                       })}
                       className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${
-                        siteConfig.galleryConfig.layoutStyle === 'carousel' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-white/50'
+                        siteConfig.galleryConfig.layoutStyle === 'carousel' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-[#EAF0E6]/60 border-[#B1C2A5]/40 text-white/50'
                       }`}
                     >
                       Carrusel (Slider)
@@ -1959,7 +1959,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         galleryConfig: { ...siteConfig.galleryConfig, layoutStyle: 'grid' }
                       })}
                       className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${
-                        siteConfig.galleryConfig.layoutStyle === 'grid' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-black/40 border-white/15 text-white/50'
+                        siteConfig.galleryConfig.layoutStyle === 'grid' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)]' : 'bg-[#EAF0E6]/60 border-[#B1C2A5]/40 text-white/50'
                       }`}
                     >
                       Grid Revista
@@ -1969,21 +1969,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 {/* Adding New Photo Option */}
                 {canEditPage && (siteConfig.galleryConfig.customPhotos || []).length < 9 && (
-                  <div className="p-4 rounded-2xl bg-black/40 border border-white/15 space-y-3">
-                    <span className="text-xs font-mono font-bold uppercase text-[#B1C2A5] block">
+                  <div className="p-4 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 space-y-3">
+                    <span className="text-xs font-mono font-bold uppercase text-[#556B2F] block">
                       + Agregar Nueva Foto a la Galería ({ (siteConfig.galleryConfig.customPhotos || []).length } / 9 habilitadas)
                     </span>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Option A: Photo URL Link */}
-                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
+                      <div className="p-3.5 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Opción A: Pegar Enlace / URL Directo de la Foto</label>
                         <input
                           type="text"
                           value={newPhotoUrl}
                           onChange={e => setNewPhotoUrl(e.target.value)}
                           placeholder="https://images.unsplash.com/photo-..."
-                          className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                          className="w-full px-3 py-2 rounded-xl bg-[#F3F5F1]/80 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono"
                         />
                         <button
                           type="button"
@@ -2013,8 +2013,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       </div>
 
                       {/* Option B: Direct Image File Upload */}
-                      <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
+                      <div className="p-3.5 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 space-y-2">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Opción B: Subir Archivo de Imagen desde tu Dispositivo</label>
                         <input
                           type="file"
                           accept="image/*"
@@ -2045,9 +2045,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               reader.readAsDataURL(file);
                             });
                           }}
-                          className="w-full text-xs text-[#EAF0E6]"
+                          className="w-full text-xs text-[#2A3828]"
                         />
-                        <span className="text-[9px] font-mono text-emerald-400 block pt-1">
+                        <span className="text-[9px] font-mono text-emerald-500 block pt-1">
                           ⚡ Se agrega y guarda automáticamente al seleccionar la foto.
                         </span>
                       </div>
@@ -2057,14 +2057,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 {/* List of Gallery Photos (Editable URL Link or File per Slot) */}
                 <div className="space-y-3 pt-2">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#B1C2A5] block">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#556B2F] block">
                     Fotos Actuales en Galería ({ (siteConfig.galleryConfig.customPhotos || []).length } de máx. 9)
                   </span>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(siteConfig.galleryConfig.customPhotos || []).slice(0, 9).map((photo, pIdx) => (
-                      <div key={photo.id || pIdx} className="p-3.5 rounded-2xl bg-black/40 border border-white/15 space-y-3 flex flex-col justify-between">
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-white/10 group">
+                      <div key={photo.id || pIdx} className="p-3.5 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 space-y-3 flex flex-col justify-between">
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-[#B1C2A5]/30 group">
                           <img src={photo.url} alt={photo.title} className="w-full h-full object-cover" />
                           <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-[var(--color-gold-light)] font-mono font-bold text-[10px]">
                             #{pIdx + 1}
@@ -2073,7 +2073,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                         <div className="space-y-2">
                           <div>
-                            <label className="text-[9px] font-mono uppercase text-[#B1C2A5] block mb-0.5">Título / Etiqueta</label>
+                            <label className="text-[9px] font-mono uppercase text-[#556B2F] block mb-0.5">Título / Etiqueta</label>
                             <input
                               type="text"
                               disabled={!canEditPage}
@@ -2083,12 +2083,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 const updated = (siteConfig.galleryConfig.customPhotos || []).map((p, i) => i === pIdx ? { ...p, title: val } : p);
                                 weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
                               }}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[9px] font-mono uppercase text-[#B1C2A5] block mb-0.5">Enlace / URL Directo de la Foto</label>
+                            <label className="text-[9px] font-mono uppercase text-[#556B2F] block mb-0.5">Enlace / URL Directo de la Foto</label>
                             <input
                               type="text"
                               disabled={!canEditPage}
@@ -2098,7 +2098,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 const updated = (siteConfig.galleryConfig.customPhotos || []).map((p, i) => i === pIdx ? { ...p, url: val } : p);
                                 weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
                               }}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono"
                             />
                           </div>
                         </div>
@@ -2111,7 +2111,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 const updated = (siteConfig.galleryConfig.customPhotos || []).filter((_, i) => i !== pIdx);
                                 weddingConfigService.updateConfig({ galleryConfig: { ...siteConfig.galleryConfig, customPhotos: updated } });
                               }}
-                              className="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 font-mono text-[10px] uppercase font-bold flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 font-mono text-[10px] uppercase font-bold flex items-center gap-1 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Eliminar</span>
@@ -2125,12 +2125,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 3. MOMENTOS EN MOVIMIENTO (VIDEO & SLIDESHOW ANIMADO DE FOTOS) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center gap-3">
                   <Video className="w-6 h-6 text-[var(--color-gold-light)]" />
                   <div>
-                    <h2 className="font-cinzel text-xl text-[#EAF0E6]">Momentos en Movimiento (Video & Slideshow)</h2>
-                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                    <h2 className="font-cinzel text-xl text-[#2A3828]">Momentos en Movimiento (Video & Slideshow)</h2>
+                    <p className="text-xs text-[#627559]/70 font-serif italic">
                       Elige entre reproducir un video URL o hacer un video-slideshow animado automático con todas las fotos subidas.
                     </p>
                   </div>
@@ -2138,7 +2138,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-2">Modo de Presentación</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-2">Modo de Presentación</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button
                         type="button"
@@ -2146,7 +2146,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                           videoConfig: { ...siteConfig.videoConfig, mode: 'slideshow' }
                         })}
                         className={`p-3.5 rounded-xl border font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                          siteConfig.videoConfig?.mode === 'slideshow' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-black/40 text-white/50 border-white/10'
+                          siteConfig.videoConfig?.mode === 'slideshow' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-[#EAF0E6]/60 text-white/50 border-[#B1C2A5]/30'
                         }`}
                       >
                         <Film className="w-4 h-4" />
@@ -2158,7 +2158,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                           videoConfig: { ...siteConfig.videoConfig, mode: 'video' }
                         })}
                         className={`p-3.5 rounded-xl border font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                          siteConfig.videoConfig?.mode === 'video' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-black/40 text-white/50 border-white/10'
+                          siteConfig.videoConfig?.mode === 'video' ? 'bg-[var(--color-accent)] text-white border-[var(--color-gold)] shadow-lg' : 'bg-[#EAF0E6]/60 text-white/50 border-[#B1C2A5]/30'
                         }`}
                       >
                         <Video className="w-4 h-4" />
@@ -2168,7 +2168,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título del Video / Teaser</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Título del Video / Teaser</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2177,12 +2177,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         videoConfig: { ...siteConfig.videoConfig, videoTitle: e.target.value }
                       })}
                       placeholder="Ej. MATEO & CAMILA — FILM NUPCIAL"
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL del Video (YouTube / MP4 Directo)</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">URL del Video (YouTube / MP4 Directo)</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2191,12 +2191,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         videoConfig: { ...siteConfig.videoConfig, videoUrl: e.target.value }
                       })}
                       placeholder="https://www.youtube.com/watch?v=..."
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Frase Subtitulada del Video</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Frase Subtitulada del Video</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2205,7 +2205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         videoConfig: { ...siteConfig.videoConfig, quote: e.target.value }
                       })}
                       placeholder="Ej. 'El amor no se mira con los ojos, sino con el corazón.'"
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
 
@@ -2222,12 +2222,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 4. CÓDIGO DE VESTIMENTA (ETIQUETA & REGLAS EDITABLES) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center gap-3">
                   <Shirt className="w-6 h-6 text-[var(--color-gold-light)]" />
                   <div>
-                    <h2 className="font-cinzel text-xl text-[#EAF0E6]">Código de Vestimenta (Etiqueta & Reglas)</h2>
-                    <p className="text-xs text-[#8A9D76]/70 font-serif italic">
+                    <h2 className="font-cinzel text-xl text-[#2A3828]">Código de Vestimenta (Etiqueta & Reglas)</h2>
+                    <p className="text-xs text-[#627559]/70 font-serif italic">
                       Edita el mensaje principal, las reglas reservadas y las tarjetas para Caballeros y Damas.
                     </p>
                   </div>
@@ -2235,7 +2235,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Título de Sección</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Título de Sección</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2243,12 +2243,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       onChange={e => weddingConfigService.updateConfig({
                         dressCode: { ...siteConfig.dressCode, title: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo de Estilo / Etiqueta</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Tipo de Estilo / Etiqueta</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2256,12 +2256,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       onChange={e => weddingConfigService.updateConfig({
                         dressCode: { ...siteConfig.dressCode, styleType: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Mensaje de Bienvenida / Descripción</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Mensaje de Bienvenida / Descripción</label>
                     <textarea
                       rows={2}
                       disabled={!canEditPage}
@@ -2269,12 +2269,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       onChange={e => weddingConfigService.updateConfig({
                         dressCode: { ...siteConfig.dressCode, description: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nota Especial / Reglas (Ej. Blanco reservado para la novia)</label>
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nota Especial / Reglas (Ej. Blanco reservado para la novia)</label>
                     <input
                       type="text"
                       disabled={!canEditPage}
@@ -2282,24 +2282,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                       onChange={e => weddingConfigService.updateConfig({
                         dressCode: { ...siteConfig.dressCode, rulesNotice: e.target.value }
                       })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     />
                   </div>
                 </div>
 
                 {/* Dress Code Cards */}
-                <div className="space-y-4 pt-2 border-t border-white/10">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#B1C2A5]">Tarjetas por Género (Caballeros & Damas)</h3>
+                <div className="space-y-4 pt-2 border-t border-[#B1C2A5]/30">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#556B2F]">Tarjetas por Género (Caballeros & Damas)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(siteConfig.dressCode?.cards || []).map((card, cIdx) => (
-                      <div key={card.id || cIdx} className="p-4 rounded-2xl bg-black/40 border border-white/15 space-y-3">
+                      <div key={card.id || cIdx} className="p-4 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-gold)]/20 text-[#8A9D76] font-mono text-[10px] font-bold uppercase">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-gold)]/20 text-[#556B2F] font-mono text-[10px] font-bold uppercase">
                             {card.gender}
                           </span>
                         </div>
                         <div>
-                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-0.5">Título Tarjeta</label>
+                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#556B2F] block mb-0.5">Título Tarjeta</label>
                           <input
                             type="text"
                             disabled={!canEditPage}
@@ -2309,11 +2309,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updatedCards = siteConfig.dressCode.cards.map((c, i) => i === cIdx ? { ...c, title: val } : c);
                               weddingConfigService.updateConfig({ dressCode: { ...siteConfig.dressCode, cards: updatedCards } });
                             }}
-                            className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            className="w-full px-3 py-1.5 rounded-lg bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-0.5">Indicaciones de Vestuario</label>
+                          <label className="text-[9px] font-mono uppercase tracking-widest text-[#556B2F] block mb-0.5">Indicaciones de Vestuario</label>
                           <textarea
                             rows={2}
                             disabled={!canEditPage}
@@ -2323,7 +2323,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                               const updatedCards = siteConfig.dressCode.cards.map((c, i) => i === cIdx ? { ...c, description: val } : c);
                               weddingConfigService.updateConfig({ dressCode: { ...siteConfig.dressCode, cards: updatedCards } });
                             }}
-                            className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-[#EAF0E6]"
+                            className="w-full px-3 py-1.5 rounded-lg bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                           />
                         </div>
                       </div>
@@ -2333,13 +2333,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 5. MESA DE REGALOS (CUENTAS BANCARIAS DINÁMICAS) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <Building2 className="w-6 h-6 text-[var(--color-gold-light)]" />
                     <div>
-                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Cuentas Bancarias & Mesa de Regalos</h2>
-                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">Agrega, edita o desactiva tarjetas de cuentas bancarias según lo necesites.</p>
+                      <h2 className="font-cinzel text-xl text-[#2A3828]">Cuentas Bancarias & Mesa de Regalos</h2>
+                      <p className="text-xs text-[#627559]/70 font-serif italic">Agrega, edita o desactiva tarjetas de cuentas bancarias según lo necesites.</p>
                     </div>
                   </div>
                   {canEditPage && (
@@ -2352,20 +2352,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {siteConfig.bankAccounts.map(b => (
-                    <div key={b.id} className={`p-4 rounded-2xl border flex items-center justify-between ${b.isVisible !== false ? 'bg-black/40 border-white/15' : 'bg-white/5 border-white/5 opacity-50'}`}>
+                    <div key={b.id} className={`p-4 rounded-2xl border flex items-center justify-between ${b.isVisible !== false ? 'bg-[#EAF0E6]/60 border-[#B1C2A5]/40' : 'bg-[#6B7F5A]/5 border-white/5 opacity-50'}`}>
                       <div>
-                        <strong className="text-[#EAF0E6] block text-sm">{b.bankName}</strong>
-                        <span className="text-xs text-[#8A9D76]/70 font-mono">{b.accountType} • {b.accountNumber}</span>
-                        <span className="text-[10px] text-[#8A9D76]/60 block mt-0.5">{b.holderName}</span>
+                        <strong className="text-[#2A3828] block text-sm">{b.bankName}</strong>
+                        <span className="text-xs text-[#627559]/70 font-mono">{b.accountType} • {b.accountNumber}</span>
+                        <span className="text-[10px] text-[#627559]/60 block mt-0.5">{b.holderName}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => toggleBankVisibility(b.id)} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-[#B1C2A5]" title={b.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
-                          {b.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                        <button onClick={() => toggleBankVisibility(b.id)} className="p-2 rounded-lg bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-[#556B2F]" title={b.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
+                          {b.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-500" /> : <EyeOff className="w-4 h-4 text-white/40" />}
                         </button>
                         {canEditPage && (
                           <>
-                            <button onClick={() => openEditBank(b)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#8A9D76] hover:bg-[var(--color-gold)]/30"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => deleteBank(b.id, b.bankName)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => openEditBank(b)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#556B2F] hover:bg-[var(--color-gold)]/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => deleteBank(b.id, b.bankName)} className="p-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
                           </>
                         )}
                       </div>
@@ -2374,7 +2374,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 </div>
 
                 {/* Honeymoon Card Image (SingleImageUploader) */}
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-[#B1C2A5]/30">
                   <SingleImageUploader
                     label="📷 Foto de Fondo de Luna de Miel & Regalos"
                     imageValue={siteConfig.honeymoon?.imageUrl}
@@ -2385,13 +2385,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </div>
 
               {/* 5. LUGARES DEL EVENTO (VENUES) */}
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-white/20 shadow-2xl space-y-6">
+              <div className="p-6 rounded-3xl bg-white border border-[#B1C2A5]/50 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <Calendar className="w-6 h-6 text-[var(--color-gold-light)]" />
                     <div>
-                      <h2 className="font-cinzel text-xl text-[#EAF0E6]">Lugares del Evento (Ceremonia & Recepción)</h2>
-                      <p className="text-xs text-[#8A9D76]/70 font-serif italic">Gestiona las tarjetas de lugares de la boda.</p>
+                      <h2 className="font-cinzel text-xl text-[#2A3828]">Lugares del Evento (Ceremonia & Recepción)</h2>
+                      <p className="text-xs text-[#627559]/70 font-serif italic">Gestiona las tarjetas de lugares de la boda.</p>
                     </div>
                   </div>
                   {canEditPage && (
@@ -2404,19 +2404,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {siteConfig.venues.map(v => (
-                    <div key={v.id} className={`p-4 rounded-2xl border flex items-center justify-between ${v.isVisible !== false ? 'bg-black/40 border-white/15' : 'bg-white/5 border-white/5 opacity-50'}`}>
+                    <div key={v.id} className={`p-4 rounded-2xl border flex items-center justify-between ${v.isVisible !== false ? 'bg-[#EAF0E6]/60 border-[#B1C2A5]/40' : 'bg-[#6B7F5A]/5 border-white/5 opacity-50'}`}>
                       <div>
-                        <strong className="text-[#EAF0E6] block text-sm">{v.name} ({v.type.toUpperCase()})</strong>
-                        <span className="text-xs text-[#8A9D76]/70 font-mono">{v.time} • {v.address}</span>
+                        <strong className="text-[#2A3828] block text-sm">{v.name} ({v.type.toUpperCase()})</strong>
+                        <span className="text-xs text-[#627559]/70 font-mono">{v.time} • {v.address}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => toggleVenueVisibility(v.id)} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-[#B1C2A5]" title={v.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
-                          {v.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                        <button onClick={() => toggleVenueVisibility(v.id)} className="p-2 rounded-lg bg-[#6B7F5A]/10 hover:bg-[#6B7F5A]/15 text-[#556B2F]" title={v.isVisible !== false ? "Ocultar tarjeta" : "Mostrar tarjeta"}>
+                          {v.isVisible !== false ? <Eye className="w-4 h-4 text-emerald-500" /> : <EyeOff className="w-4 h-4 text-white/40" />}
                         </button>
                         {canEditPage && (
                           <>
-                            <button onClick={() => openEditVenue(v)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#8A9D76] hover:bg-[var(--color-gold)]/30"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={() => deleteVenue(v.id, v.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => openEditVenue(v)} className="p-2 rounded-lg bg-[var(--color-gold)]/20 text-[#556B2F] hover:bg-[var(--color-gold)]/30"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={() => deleteVenue(v.id, v.name)} className="p-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30"><Trash2 className="w-4 h-4" /></button>
                           </>
                         )}
                       </div>
@@ -2430,11 +2430,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           {/* TAB 4: SUPERADMIN & USUARIOS */}
           {activeTab === 'usuarios' && isSuperadmin && (
             <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-[#2D3B2A] border border-[var(--color-gold)]/20 shadow-2xl space-y-6 text-[#f5f0e6]">
+              <div className="p-6 rounded-3xl bg-white border border-[var(--color-gold)]/20 shadow-2xl space-y-6 text-[#2A3828]">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#8A9D76]/70 block">Gobernanza de Plataforma Multitenant</span>
-                    <h2 className="font-cinzel text-2xl text-[#EAF0E6]">Administración de Usuarios (Admins / Novios)</h2>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#627559]/70 block">Gobernanza de Plataforma Multitenant</span>
+                    <h2 className="font-cinzel text-2xl text-[#2A3828]">Administración de Usuarios (Admins / Novios)</h2>
                   </div>
                   <button onClick={openCreateUser} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-105 transition-all cursor-pointer">
                     <UserPlus className="w-4 h-4 text-white" />
@@ -2448,23 +2448,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     const canEdit = userEditPermissions[user.id] !== false;
 
                     return (
-                      <div key={user.id} className="p-6 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-4">
+                      <div key={user.id} className="p-6 rounded-2xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/30 flex flex-col justify-between gap-4">
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <strong className="text-[#EAF0E6] block text-base">{user.fullName}</strong>
-                            <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase font-bold ${status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                            <strong className="text-[#2A3828] block text-base">{user.fullName}</strong>
+                            <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] uppercase font-bold ${status === 'active' ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-600 border border-rose-500/30'}`}>
                               {status === 'active' ? 'Activo' : 'Deshabilitado'}
                             </span>
                           </div>
-                          <span className="text-[11px] font-mono text-[#8A9D76]/60 block">Usuario: {user.username} · Rol: {user.role}</span>
+                          <span className="text-[11px] font-mono text-[#627559]/60 block">Usuario: {user.username} · Rol: {user.role}</span>
                         </div>
 
-                        <div className="space-y-3 pt-3 border-t border-white/10">
+                        <div className="space-y-3 pt-3 border-t border-[#B1C2A5]/30">
                           {/* Impersonation & Credentials Share */}
                           <div className="space-y-2">
                             <button
                               onClick={() => impersonateAdminSite(user)}
-                              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--color-gold)]/20 hover:bg-[var(--color-gold)]/30 border border-[var(--color-gold)]/40 text-[#B1C2A5] text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--color-gold)]/20 hover:bg-[var(--color-gold)]/30 border border-[var(--color-gold)]/40 text-[#556B2F] text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               <span>⚙️ Administrar & Editar Sitio de este Admin</span>
@@ -2479,22 +2479,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                          <div className="flex items-center justify-between text-xs text-[#2A3828]">
                             <span>Estado de Cuenta:</span>
-                            <button onClick={() => toggleUserStatus(user)} className={`px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${status === 'active' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'}`}>
+                            <button onClick={() => toggleUserStatus(user)} className={`px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${status === 'active' ? 'bg-rose-500/20 text-rose-600 hover:bg-rose-500/30' : 'bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30'}`}>
                               {status === 'active' ? 'Deshabilitar' : 'Habilitar'}
                             </button>
                           </div>
 
                           {/* Control de Bloqueo por Intentos Fallidos (3 Intentos Max) */}
-                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                          <div className="flex items-center justify-between text-xs text-[#2A3828]">
                             <span>Seguridad & Intentos Fallidos:</span>
                             {(lockoutMap[user.username]?.count || 0) >= 3 ? (
                               <button
                                 onClick={() => unlockUserAccount(user.username, user.id)}
-                                className="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-xs font-mono font-bold uppercase cursor-pointer border border-emerald-500/40 flex items-center gap-1.5 shadow-md"
+                                className="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 text-xs font-mono font-bold uppercase cursor-pointer border border-emerald-500/40 flex items-center gap-1.5 shadow-md"
                               >
-                                <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+                                <Unlock className="w-3.5 h-3.5 text-emerald-500" />
                                 <span>🔓 Desbloquear Intento (3/3 Bloqueado)</span>
                               </button>
                             ) : (lockoutMap[user.username]?.count || 0) > 0 ? (
@@ -2506,27 +2506,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 <span>Reiniciar Intentos ({lockoutMap[user.username].count}/3)</span>
                               </button>
                             ) : (
-                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px] font-mono font-bold">
                                 ✓ Sin Bloqueos (0/3)
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                          <div className="flex items-center justify-between text-xs text-[#2A3828]">
                             <span>Permisos de Edición:</span>
-                            <button onClick={() => toggleUserEditPermission(user.id)} className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${canEdit ? 'bg-[var(--color-gold)]/20 text-[#8A9D76] hover:bg-[var(--color-gold)]/30' : 'bg-white/10 text-white/50'}`}>
+                            <button onClick={() => toggleUserEditPermission(user.id)} className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono uppercase font-bold cursor-pointer transition-colors ${canEdit ? 'bg-[var(--color-gold)]/20 text-[#556B2F] hover:bg-[var(--color-gold)]/30' : 'bg-[#6B7F5A]/10 text-white/50'}`}>
                               {canEdit ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                               <span>{canEdit ? 'Permitido' : 'Restringido'}</span>
                             </button>
                           </div>
 
                           {/* Permisos de Evento / Tipos de Matrimonio Habilitados */}
-                          <div className="pt-2 border-t border-white/10 space-y-1.5">
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block font-bold">
+                          <div className="pt-2 border-t border-[#B1C2A5]/30 space-y-1.5">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block font-bold">
                               Habilitar Tipos de Matrimonio / Eventos:
                             </span>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#EAF0E6]">
-                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#2A3828]">
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-[#6B7F5A]/5 hover:bg-[#6B7F5A]/10 px-2.5 py-1 rounded-lg border border-[#B1C2A5]/30">
                                 <input
                                   type="checkbox"
                                   checked={(userCeremonyMap[user.id] || { civil: true }).civil !== false}
@@ -2536,7 +2536,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 <span className="font-mono text-[11px]">Civil</span>
                               </label>
 
-                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-[#6B7F5A]/5 hover:bg-[#6B7F5A]/10 px-2.5 py-1 rounded-lg border border-[#B1C2A5]/30">
                                 <input
                                   type="checkbox"
                                   checked={(userCeremonyMap[user.id] || { eclesiastico: true }).eclesiastico !== false}
@@ -2546,7 +2546,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                                 <span className="font-mono text-[11px]">Eclesiástico</span>
                               </label>
 
-                              <label className="flex items-center gap-1.5 cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                              <label className="flex items-center gap-1.5 cursor-pointer bg-[#6B7F5A]/5 hover:bg-[#6B7F5A]/10 px-2.5 py-1 rounded-lg border border-[#B1C2A5]/30">
                                 <input
                                   type="checkbox"
                                   checked={(userCeremonyMap[user.id] || { recepcion: true }).recepcion !== false}
@@ -2559,15 +2559,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                           </div>
 
                           {/* Terms & Privacy Audit Badge */}
-                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                          <div className="flex items-center justify-between text-xs text-[#2A3828]">
                             <span>Protección de Datos (LOPDP):</span>
                             {userTermsMap[user.id]?.accepted ? (
-                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                                 <span>Aceptado ({new Date(userTermsMap[user.id].acceptedAt || '').toLocaleDateString('es-ES')})</span>
                               </span>
                             ) : (
-                              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-600 border border-rose-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
                                 <Clock className="w-3 h-3 text-rose-400" />
                                 <span>Pendiente de Firma</span>
                               </span>
@@ -2575,9 +2575,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                           </div>
 
                           {/* Password Management */}
-                          <div className="flex items-center justify-between text-xs text-[#EAF0E6]">
+                          <div className="flex items-center justify-between text-xs text-[#2A3828]">
                             <span>Contraseña de Acceso:</span>
-                            <button onClick={() => openEditPasswordModal(user)} className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--color-gold)]/20 text-[#8A9D76] hover:bg-[var(--color-gold)]/30 text-xs font-mono uppercase font-bold cursor-pointer">
+                            <button onClick={() => openEditPasswordModal(user)} className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--color-gold)]/20 text-[#556B2F] hover:bg-[var(--color-gold)]/30 text-xs font-mono uppercase font-bold cursor-pointer">
                               <KeyRound className="w-3.5 h-3.5" />
                               <span>Cambiar / Ver Contraseña</span>
                             </button>
@@ -2585,7 +2585,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                         </div>
 
                         <div className="pt-2 flex justify-end">
-                          <button onClick={() => deleteUserCascade(user)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 transition-colors cursor-pointer text-xs font-bold uppercase tracking-wider">
+                          <button onClick={() => deleteUserCascade(user)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 transition-colors cursor-pointer text-xs font-bold uppercase tracking-wider">
                             <Trash2 className="w-4 h-4" />
                             <span>Eliminar Admin (Cascada)</span>
                           </button>
@@ -2611,20 +2611,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={() => setIsGuestModalOpen(false)} className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" form="guest-form" disabled={isSavingGuest} className="px-6 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingGuest ? 'Guardando...' : 'Guardar Invitado'}</button>
             </div>
           }
         >
           <form id="guest-form" onSubmit={e => void saveGuest(e)} className="space-y-4">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre Completo / Familia *</label>
-              <input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" placeholder="Ej. Familia Naranjo Viteri" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre Completo / Familia *</label>
+              <input type="text" required value={guestFormData.name} onChange={e => setGuestFormData({ ...guestFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" placeholder="Ej. Familia Naranjo Viteri" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Categoría</label>
-                <select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Categoría</label>
+                <select value={guestFormData.category} onChange={e => setGuestFormData({ ...guestFormData, category: e.target.value as GuestCategory })} className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]">
                   <option value="Familia">Familia</option>
                   <option value="Amigos">Amigos</option>
                   <option value="VIP">VIP</option>
@@ -2632,17 +2632,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Pases Asignados</label>
-                <input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Pases Asignados</label>
+                <input type="number" min={1} max={10} value={guestFormData.passesAllowed} onChange={e => setGuestFormData({ ...guestFormData, passesAllowed: Number(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" />
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Teléfono / WhatsApp (para envío directo)</label>
-              <input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" placeholder="+593 99 876 5432" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Teléfono / WhatsApp (para envío directo)</label>
+              <input type="text" value={guestFormData.phone} onChange={e => setGuestFormData({ ...guestFormData, phone: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" placeholder="+593 99 876 5432" />
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Notas Internas</label>
-              <textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] focus:outline-none focus:border-[var(--color-gold)]" placeholder="Ej. Padrinos de boda..." />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Notas Internas</label>
+              <textarea rows={2} value={guestFormData.notes} onChange={e => setGuestFormData({ ...guestFormData, notes: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] focus:outline-none focus:border-[var(--color-gold)]" placeholder="Ej. Padrinos de boda..." />
             </div>
           </form>
         </Modal>
@@ -2655,38 +2655,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsBankModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={() => setIsBankModalOpen(false)} className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" form="bank-form" className="px-6 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar Cuenta</button>
             </div>
           }
         >
           <form id="bank-form" onSubmit={saveBank} className="space-y-4">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre del Banco *</label>
-              <input type="text" required value={bankFormData.bankName} onChange={e => setBankFormData({ ...bankFormData, bankName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="Ej. Banco Pichincha" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre del Banco *</label>
+              <input type="text" required value={bankFormData.bankName} onChange={e => setBankFormData({ ...bankFormData, bankName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="Ej. Banco Pichincha" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo de Cuenta</label>
-                <input type="text" required value={bankFormData.accountType} onChange={e => setBankFormData({ ...bankFormData, accountType: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="Cuenta de Ahorros" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Tipo de Cuenta</label>
+                <input type="text" required value={bankFormData.accountType} onChange={e => setBankFormData({ ...bankFormData, accountType: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="Cuenta de Ahorros" />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Número de Cuenta *</label>
-                <input type="text" required value={bankFormData.accountNumber} onChange={e => setBankFormData({ ...bankFormData, accountNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" placeholder="2205481904" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Número de Cuenta *</label>
+                <input type="text" required value={bankFormData.accountNumber} onChange={e => setBankFormData({ ...bankFormData, accountNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono" placeholder="2205481904" />
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre del Titular</label>
-              <input type="text" value={bankFormData.holderName} onChange={e => setBankFormData({ ...bankFormData, holderName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre del Titular</label>
+              <input type="text" value={bankFormData.holderName} onChange={e => setBankFormData({ ...bankFormData, holderName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">C.I. / RUC</label>
-                <input type="text" value={bankFormData.idNumber} onChange={e => setBankFormData({ ...bankFormData, idNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">C.I. / RUC</label>
+                <input type="text" value={bankFormData.idNumber} onChange={e => setBankFormData({ ...bankFormData, idNumber: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Email</label>
-                <input type="email" value={bankFormData.email} onChange={e => setBankFormData({ ...bankFormData, email: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Email</label>
+                <input type="email" value={bankFormData.email} onChange={e => setBankFormData({ ...bankFormData, email: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
               </div>
             </div>
           </form>
@@ -2700,19 +2700,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           size="lg"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsVenueModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={() => setIsVenueModalOpen(false)} className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" form="venue-form" className="px-6 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">Guardar Lugar</button>
             </div>
           }
         >
           <form id="venue-form" onSubmit={saveVenue} className="space-y-4">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre del Lugar *</label>
-              <input type="text" required value={venueFormData.name} onChange={e => setVenueFormData({ ...venueFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="Ej. Quinta Loren" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre del Lugar *</label>
+              <input type="text" required value={venueFormData.name} onChange={e => setVenueFormData({ ...venueFormData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="Ej. Quinta Loren" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Tipo de Evento / Lugar</label>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Tipo de Evento / Lugar</label>
                 {(() => {
                   const currentUserId = managedAdminUser?.id || session?.user?.id || '1';
                   const activePerms = userCeremonyMap[currentUserId] || { civil: true, eclesiastico: true, recepcion: true };
@@ -2720,7 +2720,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                     <select
                       value={venueFormData.type}
                       onChange={e => setVenueFormData({ ...venueFormData, type: e.target.value as any })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#B1C2A5]/40 text-xs text-[#2A3828]"
                     >
                       {activePerms.civil !== false && (
                         <>
@@ -2743,17 +2743,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 })()}
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Hora</label>
-                <input type="text" value={venueFormData.time} onChange={e => setVenueFormData({ ...venueFormData, time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="19:00 PM" />
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Hora</label>
+                <input type="text" value={venueFormData.time} onChange={e => setVenueFormData({ ...venueFormData, time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="19:00 PM" />
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Dirección</label>
-              <input type="text" value={venueFormData.address} onChange={e => setVenueFormData({ ...venueFormData, address: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="Av. Los Guaytambos, Ficoa" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Dirección</label>
+              <input type="text" value={venueFormData.address} onChange={e => setVenueFormData({ ...venueFormData, address: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="Av. Los Guaytambos, Ficoa" />
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">URL Google Maps</label>
-              <input type="text" value={venueFormData.googleMapsUrl} onChange={e => setVenueFormData({ ...venueFormData, googleMapsUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6] font-mono" placeholder="https://maps.google.com/..." />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">URL Google Maps</label>
+              <input type="text" value={venueFormData.googleMapsUrl} onChange={e => setVenueFormData({ ...venueFormData, googleMapsUrl: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono" placeholder="https://maps.google.com/..." />
             </div>
             {/* Venue Image (SingleImageUploader) */}
             <SingleImageUploader
@@ -2763,8 +2763,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               onUpdate={newUrl => setVenueFormData({ ...venueFormData, imageUrl: newUrl })}
             />
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Descripción</label>
-              <textarea rows={2} value={venueFormData.description} onChange={e => setVenueFormData({ ...venueFormData, description: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Descripción</label>
+              <textarea rows={2} value={venueFormData.description} onChange={e => setVenueFormData({ ...venueFormData, description: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" />
             </div>
           </form>
         </Modal>
@@ -2777,15 +2777,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsUserModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={() => setIsUserModalOpen(false)} className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" form="user-form" disabled={isSavingUser} className="px-6 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">{isSavingUser ? 'Guardando...' : 'Crear Admin'}</button>
             </div>
           }
         >
           <form id="user-form" onSubmit={e => void saveUser(e)} className="space-y-4">
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Nombre Novios / Nombres *</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="Ej. Mateo & Camila" /></div>
-            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Usuario / Subdominio *</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="mateoycamila" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Contraseña *</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-[#EAF0E6]" placeholder="••••••••" /></div></div>
-            <div><label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-[#2D3B2A] border border-white/15 text-xs text-[#EAF0E6]"><option value="admin">Admin (Novios)</option><option value="superadmin">Superadmin</option></select></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Nombre Novios / Nombres *</label><input type="text" required value={userFormData.fullName} onChange={e => setUserFormData({ ...userFormData, fullName: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="Ej. Mateo & Camila" /></div>
+            <div className="grid grid-cols-2 gap-4"><div><label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Usuario / Subdominio *</label><input type="text" required value={userFormData.username} onChange={e => setUserFormData({ ...userFormData, username: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="mateoycamila" /></div><div><label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Contraseña *</label><input type="password" required value={userFormData.password} onChange={e => setUserFormData({ ...userFormData, password: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-xs text-[#2A3828]" placeholder="••••••••" /></div></div>
+            <div><label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Rol</label><select value={userFormData.role} onChange={e => setUserFormData({ ...userFormData, role: e.target.value as 'superadmin' | 'admin' | 'user' })} className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#B1C2A5]/40 text-xs text-[#2A3828]"><option value="admin">Admin (Novios)</option><option value="superadmin">Superadmin</option></select></div>
           </form>
         </Modal>
 
@@ -2797,19 +2797,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
           size="md"
           footer={
             <div className="flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setIsPasswordModalOpen(false)} className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={() => setIsPasswordModalOpen(false)} className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" form="password-form" disabled={isSavingPassword} className="px-6 py-2.5 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold text-xs uppercase tracking-[0.15em] shadow-lg cursor-pointer disabled:opacity-50">{isSavingPassword ? 'Actualizando...' : 'Guardar Nueva Contraseña'}</button>
             </div>
           }
         >
           <form id="password-form" onSubmit={handleRequestSavePassword} className="space-y-4">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block mb-1">Usuario Admin</label>
-              <input type="text" disabled value={editingUserForPassword?.username || ''} className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-[#EAF0E6] font-mono font-bold" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block mb-1">Usuario Admin</label>
+              <input type="text" disabled value={editingUserForPassword?.username || ''} className="w-full px-4 py-2.5 rounded-xl bg-[#6B7F5A]/5 border border-[#B1C2A5]/30 text-xs text-[#2A3828] font-mono font-bold" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-[#B1C2A5] block">Contraseña de Acceso *</label>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-[#556B2F] block">Contraseña de Acceso *</label>
                 <button type="button" onClick={() => setShowPasswordText(!showPasswordText)} className="flex items-center gap-1.5 text-[11px] font-mono text-[var(--color-gold-light)] hover:underline cursor-pointer">
                   {showPasswordText ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   <span>{showPasswordText ? 'Ocultar Contraseña' : 'Ver / Mostrar Contraseña'}</span>
@@ -2820,7 +2820,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
                 required
                 value={newPasswordInput}
                 onChange={e => setNewPasswordInput(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-sm text-[#EAF0E6] font-mono font-semibold focus:outline-none focus:border-[var(--color-gold)]"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#EAF0E6]/60 border border-[#B1C2A5]/40 text-sm text-[#2A3828] font-mono font-semibold focus:outline-none focus:border-[var(--color-gold)]"
                 placeholder="Ingresa la nueva contraseña..."
               />
             </div>
@@ -2838,46 +2838,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               <button
                 type="button"
                 onClick={() => setIsCredentialsModalOpen(false)}
-                className="px-5 py-2.5 rounded-full bg-white/10 text-xs text-[#EAF0E6] hover:bg-white/20 transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#6B7F5A]/10 text-xs text-[#2A3828] hover:bg-[#6B7F5A]/15 transition-colors cursor-pointer"
               >
                 Cerrar
               </button>
             </div>
           }
         >
-          <div className="space-y-5 text-[#EAF0E6]">
-            <p className="text-xs text-[#8A9D76]/80 leading-relaxed font-sans">
+          <div className="space-y-5 text-[#2A3828]">
+            <p className="text-xs text-[#627559]/80 leading-relaxed font-sans">
               Aquí tienes el enlace del subdominio/sitio asignado a este administrador junto con su usuario y contraseña para enviarle directamente por WhatsApp o correo.
             </p>
 
-            <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-3 font-mono text-xs">
+            <div className="p-4 rounded-2xl bg-[#F3F5F1]/80 border border-[#B1C2A5]/40 space-y-3 font-mono text-xs">
               <div>
-                <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">🌐 Enlace Directo al Sitio del Admin:</span>
+                <span className="text-[10px] text-[#556B2F] uppercase tracking-widest block mb-0.5">🌐 Enlace Directo al Sitio del Admin:</span>
                 <input
                   type="text"
                   readOnly
                   value={`${window.location.origin}${window.location.pathname}?admin=${encodeURIComponent(shareCredentialsData.username)}`}
-                  className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-emerald-300 font-mono font-bold"
+                  className="w-full px-3 py-2 rounded-xl bg-[#6B7F5A]/10 border border-[#B1C2A5]/40 text-xs text-emerald-600 font-mono font-bold"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">👤 Usuario:</span>
+                  <span className="text-[10px] text-[#556B2F] uppercase tracking-widest block mb-0.5">👤 Usuario:</span>
                   <input
                     type="text"
                     readOnly
                     value={shareCredentialsData.username}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-[#6B7F5A]/10 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-[#B1C2A5] uppercase tracking-widest block mb-0.5">🔑 Contraseña:</span>
+                  <span className="text-[10px] text-[#556B2F] uppercase tracking-widest block mb-0.5">🔑 Contraseña:</span>
                   <input
                     type="text"
                     readOnly
                     value={shareCredentialsData.password}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-[#EAF0E6] font-mono font-bold"
+                    className="w-full px-3 py-2 rounded-xl bg-[#6B7F5A]/10 border border-[#B1C2A5]/40 text-xs text-[#2A3828] font-mono font-bold"
                   />
                 </div>
               </div>
@@ -2902,7 +2902,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, appUrl 
               </button>
 
               {copiedCredentialsToast && (
-                <p className="text-center text-xs font-mono text-emerald-300 font-bold animate-pulse">
+                <p className="text-center text-xs font-mono text-emerald-600 font-bold animate-pulse">
                   ✅ ¡Ficha de accesos y link copiados al portapapeles con éxito!
                 </p>
               )}
